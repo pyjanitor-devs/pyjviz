@@ -1,0 +1,217 @@
+
+    digraph G {
+    rankdir = "LR"
+    fontname="Helvetica,Arial,sans-serif"
+    node [ 
+      style=filled
+      shape=rect
+      pencolor="#00000044" // frames color
+      fontname="Helvetica,Arial,sans-serif"
+      shape=plaintext
+    ]
+    edge [fontname="Helvetica,Arial,sans-serif"]    
+    
+
+        subgraph cluster_d6752897344897090673 {
+          label = "c";
+        
+
+            node_2117386489683576386 [
+                color="#88000022"
+                shape = rect
+                label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
+                         <tr> <td> <b>pyjviz:Obj:140673665198416</b><br/>(10, 1)</td> </tr>
+                         <tr> <td align="left"><i>columns:</i><br align="left"/></td></tr>
+                <tr><td align="left"><FONT POINT-SIZE="8px">a</FONT></td></tr>
+                         </table>>
+                ];
+
+            
+
+            node_d6690387342062994852 [
+                color="#88000022"
+                shape = rect
+                label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
+                         <tr> <td> <b>pyjviz:Obj:140673665198944</b><br/>(10, 1)</td> </tr>
+                         <tr> <td align="left"><i>columns:</i><br align="left"/></td></tr>
+                <tr><td align="left"><FONT POINT-SIZE="8px">a</FONT></td></tr>
+                         </table>>
+                ];
+
+            
+
+            node_7392498952323132526 [
+                color="#88000022"
+                shape = rect
+                label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
+                         <tr> <td> <b>pyjviz:Obj:140673665201056</b><br/>(10, 1)</td> </tr>
+                         <tr> <td align="left"><i>columns:</i><br align="left"/></td></tr>
+                <tr><td align="left"><FONT POINT-SIZE="8px">a</FONT></td></tr>
+                         </table>>
+                ];
+
+            
+
+            node_d1164042839508096159 [
+                color="#88000022"
+                shape = rect
+                label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
+                         <tr> <td> <b>pyjviz:Obj:140673663550128</b><br/>(10, 1)</td> </tr>
+                         <tr> <td align="left"><i>columns:</i><br align="left"/></td></tr>
+                <tr><td align="left"><FONT POINT-SIZE="8px">a</FONT></td></tr>
+                         </table>>
+                ];
+
+            
+
+            node_d8378941622810924278 [ label = "a0#0" ];
+            
+
+            node_d2632429672108662993 [ label = "a0#1" ];
+            
+}
+
+        subgraph cluster_d5121200228224477340 {
+          label = "c1";
+        
+
+            node_5431180251049859242 [
+                color="#88000022"
+                shape = rect
+                label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
+                         <tr> <td> <b>pyjviz:Obj:140673665201632</b><br/>(10, 1)</td> </tr>
+                         <tr> <td align="left"><i>columns:</i><br align="left"/></td></tr>
+                <tr><td align="left"><FONT POINT-SIZE="8px">a</FONT></td></tr>
+                         </table>>
+                ];
+
+            
+
+            node_2843923569985712060 [ label = "a0#2" ];
+            
+}
+
+        subgraph cluster_d795625442463828300 {
+          label = "cc";
+        
+
+            node_d8653844521189749602 [
+                color="#88000022"
+                shape = rect
+                label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
+                         <tr> <td> <b>pyjviz:Obj:140673665202544</b><br/>(10, 1)</td> </tr>
+                         <tr> <td align="left"><i>columns:</i><br align="left"/></td></tr>
+                <tr><td align="left"><FONT POINT-SIZE="8px">a</FONT></td></tr>
+                         </table>>
+                ];
+
+            
+
+            node_d4675690879541734610 [
+                color="#88000022"
+                shape = rect
+                label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
+                         <tr> <td> <b>pyjviz:Obj:140673665203264</b><br/>(10, 1)</td> </tr>
+                         <tr> <td align="left"><i>columns:</i><br align="left"/></td></tr>
+                <tr><td align="left"><FONT POINT-SIZE="8px">a</FONT></td></tr>
+                         </table>>
+                ];
+
+            
+
+            node_6101910802347194535 [
+                color="#88000022"
+                shape = rect
+                label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
+                         <tr> <td> <b>pyjviz:Obj:140673665202976</b><br/>(10, 1)</td> </tr>
+                         <tr> <td align="left"><i>columns:</i><br align="left"/></td></tr>
+                <tr><td align="left"><FONT POINT-SIZE="8px">a</FONT></td></tr>
+                         </table>>
+                ];
+
+            
+
+            node_d6963590105876594406 [ label = "a0#3" ];
+            
+
+            node_d3431233166182136406 [ label = "a0#4" ];
+            
+
+            node_8873941925146335799 [ label = "a2#5" ];
+            
+}
+
+        subgraph cluster_5388115806004157608 {
+          label = "cc1";
+        
+
+            node_d6612231674392865537 [
+                color="#88000022"
+                shape = rect
+                label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
+                         <tr> <td> <b>pyjviz:Obj:140673665202256</b><br/>(10, 1)</td> </tr>
+                         <tr> <td align="left"><i>columns:</i><br align="left"/></td></tr>
+                <tr><td align="left"><FONT POINT-SIZE="8px">a</FONT></td></tr>
+                         </table>>
+                ];
+
+            
+
+            node_8144648293528000163 [
+                color="#88000022"
+                shape = rect
+                label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
+                         <tr> <td> <b>pyjviz:Obj:140673665199568</b><br/>(10, 1)</td> </tr>
+                         <tr> <td align="left"><i>columns:</i><br align="left"/></td></tr>
+                <tr><td align="left"><FONT POINT-SIZE="8px">a</FONT></td></tr>
+                         </table>>
+                ];
+
+            
+
+            node_d7312244861861801708 [ label = "a0#6" ];
+            
+
+            node_6894814176954132599 [ label = "a0#7" ];
+            
+
+            node_6323411034047999226 [ label = "a2#8" ];
+            
+}
+
+            node_2117386489683576386 -> node_d8378941622810924278;
+            node_d8378941622810924278 -> node_d6690387342062994852;
+            
+
+            node_2117386489683576386 -> node_d2632429672108662993;
+            node_d2632429672108662993 -> node_7392498952323132526;
+            
+
+            node_2117386489683576386 -> node_2843923569985712060;
+            node_2843923569985712060 -> node_5431180251049859242;
+            
+
+            node_2117386489683576386 -> node_d6963590105876594406;
+            node_d6963590105876594406 -> node_d8653844521189749602;
+            
+
+            node_d8653844521189749602 -> node_d3431233166182136406;
+            node_d3431233166182136406 -> node_d4675690879541734610;
+            
+
+            node_d4675690879541734610 -> node_8873941925146335799;
+            node_8873941925146335799 -> node_6101910802347194535;
+            
+
+            node_2117386489683576386 -> node_d7312244861861801708;
+            node_d7312244861861801708 -> node_d6612231674392865537;
+            
+
+            node_d6612231674392865537 -> node_6894814176954132599;
+            node_6894814176954132599 -> node_8144648293528000163;
+            
+
+            node_8144648293528000163 -> node_6323411034047999226;
+            node_6323411034047999226 -> node_d1164042839508096159;
+            
+}

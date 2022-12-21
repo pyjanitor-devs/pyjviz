@@ -1,0 +1,23 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+<pyjviz:Thread:9020> rdf:type <pyjviz:Thread> .
+<pyjviz:Chain:139765291626176> rdf:type <pyjviz:Chain> .
+<pyjviz:Chain:139765291626176> rdf:label "c" .
+<pyjviz:MethodCall:0> rdf:type <pyjviz:MethodCall> .
+<pyjviz:MethodCall:0> rdf:label "a0" .
+<pyjviz:MethodCall:0> <pyjviz:method-thread> <pyjviz:Thread:9020> .
+<pyjviz:MethodCall:0> <pyjviz:method-counter> 0 .
+<pyjviz:MethodCall:0> <pyjviz:method-call-chain> <pyjviz:Chain:139765291626176> .
+<pyjviz:Obj:139765291626368> rdf:type <pyjviz:DataFrame> .
+<pyjviz:Obj:139765291626368> <pyjviz:df-shape> "(10, 1)" .
+<pyjviz:Obj:139765291626368> <pyjviz:df-columns> "a" .
+<pyjviz:ObjOnChain:1> rdf:type <pyjviz:ObjOnChain> .
+<pyjviz:ObjOnChain:1> <pyjviz:pinned_obj> <pyjviz:Obj:139765291626368> .
+<pyjviz:ObjOnChain:1> <pyjviz:chain> <pyjviz:Chain:139765291626176> .
+<pyjviz:MethodCall:0> <pyjviz:method-call-arg0> <pyjviz:ObjOnChain:1> .
+<pyjviz:Obj:139765269372336> rdf:type <pyjviz:DataFrame> .
+<pyjviz:Obj:139765269372336> <pyjviz:df-shape> "(10, 1)" .
+<pyjviz:Obj:139765269372336> <pyjviz:df-columns> "a" .
+<pyjviz:ObjOnChain:2> rdf:type <pyjviz:ObjOnChain> .
+<pyjviz:ObjOnChain:2> <pyjviz:pinned_obj> <pyjviz:Obj:139765269372336> .
+<pyjviz:ObjOnChain:2> <pyjviz:chain> <pyjviz:Chain:139765291626176> .
+<pyjviz:MethodCall:0> <pyjviz:method-call-return> <pyjviz:ObjOnChain:2> .
