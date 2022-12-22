@@ -101,24 +101,29 @@ def dump_dot_code(g):
     for chain, chain_label in chains:
         #ipdb.set_trace()
         rq = """
-        select ?method_call_obj ?caller_obj ?ret_obj ?arg1_obj { 
+        select ?method_call_obj ?caller_obj ?ret_obj ?arg1_obj ?arg2_obj { 
           ?method_call_obj rdf:type <pyjviz:MethodCall>; <pyjviz:method-call-chain> ?chain;
                            <pyjviz:method-call-arg0> ?caller_obj;
                            <pyjviz:method-call-return> ?ret_obj .
           optional { ?method_call_obj <pyjviz:method-call-arg1> ?arg1_obj }
+          optional { ?method_call_obj <pyjviz:method-call-arg2> ?arg2_obj }
         }
         """
-        for method_call_obj, caller_obj, ret_obj, arg1_obj in g.query(rq, initBindings = {'chain': chain}):
+        for method_call_obj, caller_obj, ret_obj, arg1_obj, arg2_obj in g.query(rq, initBindings = {'chain': chain}):
             print(f"""
             node_{uri_to_dot_id(caller_obj)} -> node_{uri_to_dot_id(method_call_obj)};
             node_{uri_to_dot_id(method_call_obj)} -> node_{uri_to_dot_id(ret_obj)};
             """, file = out_fd)
+
+            # NB: copy-paste is bad
             if arg1_obj:
                 print(f"""
                 node_{uri_to_dot_id(arg1_obj)} -> node_{uri_to_dot_id(method_call_obj)};
                 """, file = out_fd)
-                
-
+            if arg2_obj:
+                print(f"""
+                node_{uri_to_dot_id(arg2_obj)} -> node_{uri_to_dot_id(method_call_obj)};
+                """, file = out_fd)
             
     print("}", file = out_fd)
     return out_fd.getvalue()
