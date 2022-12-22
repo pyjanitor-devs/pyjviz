@@ -16,7 +16,7 @@ def a0(df: pd.DataFrame) -> TestDF:
     return df
 
 if __name__ == "__main__":
-    # configure pyjrdf
+    # configure pyjviz
     rdflog_fn = pyjviz.get_rdflog_filename(sys.argv[0])
     pyjviz.RDFLogger.init(rdflog_fn)
 

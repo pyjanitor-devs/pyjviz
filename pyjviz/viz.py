@@ -123,10 +123,6 @@ def dump_dot_code(g):
     print("}", file = out_fd)
     return out_fd.getvalue()
 
-def get_rdflog_filename(argv0):
-    rdflog_fn = os.path.basename(argv0).replace(".py", ".ttl")
-    return os.path.join("rdflog", rdflog_fn)
-
 def render_rdflog(rdflog_ttl_fn, verbose = True):
     rdflogging.rdflogger.flush__()
     g = rdflib.Graph()

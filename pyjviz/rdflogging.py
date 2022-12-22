@@ -4,6 +4,10 @@ import sys
 import os.path
 import pandas as pd
 
+def get_rdflog_filename(argv0):
+    rdflog_fn = os.path.basename(argv0).replace(".py", ".ttl")
+    return os.path.expanduser(os.path.join("~/.pyjviz/rdflog", rdflog_fn))
+
 def open_pyjrdf_output__(out_fn):
     out_dir = os.path.dirname(out_fn)    
     if out_dir != "" and not os.path.exists(out_dir):
