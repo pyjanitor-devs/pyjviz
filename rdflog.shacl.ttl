@@ -1,0 +1,38 @@
+# sh ~/shacl-1.4.2/bin/shaclvalidate.sh -shapesfile ~/projects/pyjviz/rdflog.shacl.ttl -datafile ~/.pyjviz/rdflog/conditional_join.ttl
+#
+@base <https://github.com/pyjanitor-devs/pyjviz/rdflog.shacl.ttl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix dash: <http://datashapes.org/dash#> .
+
+<Chain> rdf:type rdfs:Class; rdf:type sh:NodeShape; sh:closed true; dash:closedByType true;
+	sh:property [sh:path rdf:type;  sh:minCount 1; sh:maxCount 1];
+	sh:property [sh:path rdf:label; sh:minCount 1; sh:maxCount 1];
+	sh:property [sh:path <parent-chain>; sh:minCount 0; sh:maxCount 1].
+
+<Thread> rdf:type rdfs:Class; rdf:type sh:NodeShape; sh:closed true; dash:closedByType true;
+	 sh:property [sh:path rdf:type;  sh:minCount 1; sh:maxCount 1].
+
+<DataFrame> rdf:type rdfs:Class; rdf:type sh:NodeShape; sh:closed true; dash:closedByType true;
+      	    sh:property [sh:path rdf:type;  sh:minCount 1; sh:maxCount 1];
+      	    sh:property [sh:path <df-shape>; sh:minCount 1; sh:maxCount 1];
+      	    sh:property [sh:path <df-columns>; sh:minCount 1; sh:maxCount 1].      
+
+<ObjOnChain> rdf:type rdfs:Class; rdf:type sh:NodeShape; sh:closed true; dash:closedByType true;
+	     sh:property [sh:path rdf:type;  sh:minCount 1; sh:maxCount 1];
+	     sh:property [sh:path <pinned_obj>; sh:minCount 1; sh:maxCount 1];
+	     sh:property [sh:path <chain>; sh:minCount 1; sh:maxCount 1];
+	     sh:property [sh:path <chain-replacement>; sh:minCount 0; sh:maxCount 1].
+
+<MethodCall> rdf:type rdfs:Class; rdf:type sh:NodeShape; sh:closed true; dash:closedByType true;
+	     sh:property [sh:path rdf:type;  sh:minCount 1; sh:maxCount 1];
+	     sh:property [sh:path rdf:label; sh:minCount 1; sh:maxCount 1];
+	     sh:property [sh:path <method-thread>; sh:minCount 1; sh:maxCount 1];
+	     sh:property [sh:path <method-counter>; sh:minCount 1; sh:maxCount 1];
+	     sh:property [sh:path <method-call-chain>; sh:minCount 1; sh:maxCount 1];
+	     sh:property [sh:path <method-call-arg0>; sh:minCount 1; sh:maxCount 1];
+	     sh:property [sh:path <method-call-return>; sh:minCount 1; sh:maxCount 1];
+	     sh:property [sh:path <method-call-arg1>; sh:minCount 0; sh:maxCount 1];
+	     sh:property [sh:path <method-call-arg2>; sh:minCount 0; sh:maxCount 1].
+	     

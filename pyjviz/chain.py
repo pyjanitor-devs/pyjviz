@@ -33,24 +33,24 @@ class MethodCallWrapper:
                 thread_uri = rdfl.register_thread(thread_id)
                 method_call_chain_uri = rdfl.register_chain(self.method_call_chain)
                 method_call_id = rdfl.random_id; rdfl.random_id += 1
-                method_call_uri = f"<pyjviz:MethodCall:{method_call_id}>"
+                method_call_uri = f"<MethodCall#{method_call_id}>"
                 
-                rdfl.dump_triple__(method_call_uri, "rdf:type", "<pyjviz:MethodCall>")
+                rdfl.dump_triple__(method_call_uri, "rdf:type", "<MethodCall>")
                 rdfl.dump_triple__(method_call_uri, "rdf:label", f'"{self.method_name}"')
-                rdfl.dump_triple__(method_call_uri, "<pyjviz:method-thread>", thread_uri)
+                rdfl.dump_triple__(method_call_uri, "<method-thread>", thread_uri)
                 global method_counter
-                rdfl.dump_triple__(method_call_uri, "<pyjviz:method-counter>", method_counter); method_counter += 1
-                rdfl.dump_triple__(method_call_uri, "<pyjviz:method-call-chain>", method_call_chain_uri)
+                rdfl.dump_triple__(method_call_uri, "<method-counter>", method_counter); method_counter += 1
+                rdfl.dump_triple__(method_call_uri, "<method-call-chain>", method_call_chain_uri)
                 pinned_arg0_uri = rdfl.register_pinned_obj_on_chain(self.self_w.obj, self.self_w.obj_chain)
-                rdfl.dump_triple__(method_call_uri, "<pyjviz:method-call-arg0>", pinned_arg0_uri)
+                rdfl.dump_triple__(method_call_uri, "<method-call-arg0>", pinned_arg0_uri)
                 pinned_ret_uri = rdfl.register_pinned_obj_on_chain(ret_obj, self.method_call_chain)
-                rdfl.dump_triple__(method_call_uri, "<pyjviz:method-call-return>", pinned_ret_uri)
+                rdfl.dump_triple__(method_call_uri, "<method-call-return>", pinned_ret_uri)
 
                 c = 1
                 for arg in method_args_:
                     if isinstance(arg, ObjWrapper):
                         arg_uri = rdfl.register_pinned_obj_on_chain(arg.obj, arg.obj_chain)
-                        rdfl.dump_triple__(method_call_uri, f"<pyjviz:method-call-arg{c}>", arg_uri)
+                        rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_uri)
                     c += 1
                 
             ret = ObjWrapper(ret_obj, self.method_call_chain, None)
@@ -79,7 +79,7 @@ class ObjWrapper:
         rdfl = rdflogging.rdflogger
         pinned_obj_uri = rdfl.register_pinned_obj_on_chain(self.obj, self.obj_chain)
         replacement_chain_uri = rdfl.register_chain(method_call_return_chain)
-        rdflogging.rdflogger.dump_triple__(pinned_obj_uri, "<pyjviz:chain-replacement>", replacement_chain_uri)
+        rdflogging.rdflogger.dump_triple__(pinned_obj_uri, "<chain-replacement>", replacement_chain_uri)
         return ObjWrapper(self.obj, self.obj_chain, method_call_return_chain)
     
     def __getattr__(self, attr):
