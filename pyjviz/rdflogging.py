@@ -1,5 +1,6 @@
 # pyjrdf to keep all rdf logging functionality
 #
+import ipdb
 import sys
 import os.path
 import pandas as pd
@@ -19,7 +20,6 @@ def open_pyjrdf_output__(out_fn):
     print("@base <https://github.com/pyjanitor-devs/pyjviz/rdflog.shacl.ttl#> .", file = out_fd)
     print("@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .", file = out_fd)
     print("@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .", file = out_fd)
-    print("<ObjOnChain> rdf:type rdfs:Class .", file = out_fd)
     
     return out_fd
 
@@ -33,10 +33,10 @@ class RDFLogger:
     
     def __init__(self, out_filename):        
         self.out_fd = open_pyjrdf_output__(out_filename)
-        self.known_objs = {}
-        self.known_chains = {}
-        self.known_obj_chain_pairs = {}
         self.known_threads = {}
+        self.known_chains = {}
+        self.known_objs = {}
+        self.known_oscas = {} # osca - object state chain assignment
         self.random_id = 0 # should be better way
 
     def flush__(self):
@@ -45,18 +45,18 @@ class RDFLogger:
     def dump_triple__(self, subj, pred, obj):
         print(subj, pred, obj, ".", file = self.out_fd)
 
-    def register_obj(self, obj):
-        obj_id = id(obj)
-        obj_uri = None
-        if not obj_id in self.known_objs:
-            obj_uri = self.known_objs[obj_id] = f"<Obj#{obj_id}>"
-            self.dump_triple__(obj_uri, "rdf:type", "<DataFrame>")
-            self.dump_triple__(obj_uri, "<df-shape>", f'"{obj.shape}"')
-            self.dump_triple__(obj_uri, "<df-columns>", '"' + f"{','.join(obj.columns)}" + '"')
+    def register_obj(self, tracking_obj):
+        obj_uuid = str(tracking_obj.uuid)
+        if obj_uuid in self.known_objs:
+            ret_uri = self.known_objs[obj_uuid]
         else:
-            obj_uri = self.known_objs[obj_id]
-        return obj_uri
+            ret_uri = self.known_objs[obj_uuid] = f"<Obj#{obj_uuid}>"
+            self.dump_triple__(ret_uri, "rdf:type", "<Obj>")
+            self.dump_triple__(ret_uri, "obj-type", "<DataFrame>")
+            self.dump_triple__(ret_uri, "obj-uuid", f'"{obj_uuid}"')
 
+        return ret_uri
+        
     def register_chain(self, chain):
         chain_id = id(chain)
         chain_uri = None
@@ -78,19 +78,35 @@ class RDFLogger:
         else:
             thread_uri = self.known_threads[thread_id]
         return thread_uri
-
-    def register_pinned_obj_on_chain(self, obj, chain):
-        obj_id = id(obj)
-        chain_id = id(chain)
-        k = (obj_id, chain_id)
-        if not k in self.known_obj_chain_pairs:
-            obj_uri = self.register_obj(obj)
-            chain_uri = self.register_chain(chain)
-            pinned_obj_on_chain_uri = self.known_obj_chain_pairs[k] = f"<ObjOnChain#{self.random_id}>"; self.random_id += 1
-            self.dump_triple__(pinned_obj_on_chain_uri, "rdf:type", "<ObjOnChain>")
-            self.dump_triple__(pinned_obj_on_chain_uri, "<pinned_obj>", obj_uri)
-            self.dump_triple__(pinned_obj_on_chain_uri, "<chain>", chain_uri)
+    
+    def register_osca(self, tracking_obj, chain):
+        k = (tracking_obj.uuid, tracking_obj.version, id(chain))
+        if k in self.known_oscas:
+            osca_uri = self.known_oscas[k]
         else:
-            pinned_obj_on_chain_uri = self.known_obj_chain_pairs[k]
-        return pinned_obj_on_chain_uri
+            osca_uri = self.known_oscas[k] = f"<ObjStateChainAssignment#{self.random_id}>"; self.random_id += 1
+            self.dump_triple__(osca_uri, "rdf:type", "<ObjStateChainAssignment>")
+            obj_state_uri = self.dump_obj_state(tracking_obj)
+            self.dump_triple__(osca_uri, "<obj-state>", obj_state_uri)
+            chain_uri = self.register_chain(chain)
+            self.dump_triple__(osca_uri, "<chain>", chain_uri)
             
+        return osca_uri
+    
+    def dump_obj_state(self, tracking_obj):
+        obj = tracking_obj.obj_wref()
+        obj_uri = self.register_obj(tracking_obj)
+        obj_state_uri = f"<ObjState#{self.random_id}>"; self.random_id += 1
+
+        if obj is None:
+            print("got you")
+            ipdb.set_trace()
+            
+        if isinstance(obj.u_obj, pd.DataFrame):
+            df = obj.u_obj
+            self.dump_triple__(obj_state_uri, "rdf:type", "<ObjState>")
+            self.dump_triple__(obj_state_uri, "<obj>", obj_uri)
+            self.dump_triple__(obj_state_uri, "<version>", f'"{tracking_obj.version}"')
+            self.dump_triple__(obj_state_uri, "<df-shape>", f'"{df.shape}"')
+            self.dump_triple__(obj_state_uri, "<df-columns>", f'"{df.columns}"')
+        return obj_state_uri

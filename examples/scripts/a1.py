@@ -1,4 +1,4 @@
-#import ipdb
+import ipdb
 import janitor
 import pandas_flavor as pf
 import pyjviz
@@ -27,6 +27,7 @@ if __name__ == "__main__":
     print(TestDF, TestDF.__name__, TestDF.__supertype__)
     print(TestDF.columns)
 
+    ipdb.set_trace()
     with pyjviz.Chain("c") as c:
         df = pd.DataFrame({'a': range(10)})
         df1 = c.pin(df).a0()
