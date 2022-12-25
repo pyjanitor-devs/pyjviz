@@ -79,23 +79,22 @@ class RDFLogger:
             thread_uri = self.known_threads[thread_id]
         return thread_uri
     
-    def register_osca(self, tracking_obj, chain):
-        k = (tracking_obj.uuid, tracking_obj.version, id(chain))
+    def register_osca(self, obj, chain):
+        k = (obj.uuid, obj.last_version_num, chain.uuid)
         if k in self.known_oscas:
             osca_uri = self.known_oscas[k]
         else:
             osca_uri = self.known_oscas[k] = f"<ObjStateChainAssignment#{self.random_id}>"; self.random_id += 1
             self.dump_triple__(osca_uri, "rdf:type", "<ObjStateChainAssignment>")
-            obj_state_uri = self.dump_obj_state(tracking_obj)
+            obj_state_uri = self.dump_obj_state(obj)
             self.dump_triple__(osca_uri, "<obj-state>", obj_state_uri)
             chain_uri = self.register_chain(chain)
             self.dump_triple__(osca_uri, "<chain>", chain_uri)
             
         return osca_uri
     
-    def dump_obj_state(self, tracking_obj):
-        obj = tracking_obj.obj_wref()
-        obj_uri = self.register_obj(tracking_obj)
+    def dump_obj_state(self, obj):
+        obj_uri = self.register_obj(obj)
         obj_state_uri = f"<ObjState#{self.random_id}>"; self.random_id += 1
 
         if obj is None:
@@ -106,7 +105,7 @@ class RDFLogger:
             df = obj.u_obj
             self.dump_triple__(obj_state_uri, "rdf:type", "<ObjState>")
             self.dump_triple__(obj_state_uri, "<obj>", obj_uri)
-            self.dump_triple__(obj_state_uri, "<version>", f'"{tracking_obj.version}"')
+            self.dump_triple__(obj_state_uri, "<version>", f'"{obj.last_version_num}"')
             self.dump_triple__(obj_state_uri, "<df-shape>", f'"{df.shape}"')
             self.dump_triple__(obj_state_uri, "<df-columns>", f'"{df.columns}"')
         return obj_state_uri

@@ -1,11 +1,13 @@
 import threading
+import uuid
 import pandas as pd
 from . import uw
-from . import obj_tracking
+#from . import obj_tracking
 from . import rdflogging
 
 class Chain:
     def __init__(self, chain_name, parent_chain = None):
+        self.uuid = uuid.uuid4()
         self.is_active = False
         self.chain_name = chain_name
         self.parent_chain = parent_chain
@@ -24,6 +26,5 @@ class Chain:
         
     def pin(self, orig_obj):
         obj = uw.uw_object_factory.create_obj(orig_obj)
-        t_obj = obj_tracking.tracking_store.set_tracking_obj_attr(obj, 'obj_chain', self)
-        rdflogging.rdflogger.register_osca(t_obj, self)
+        rdflogging.rdflogger.register_osca(obj, self)
         return obj

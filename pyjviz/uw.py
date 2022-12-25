@@ -1,6 +1,7 @@
 import ipdb
 import threading
-from . import obj_tracking
+import uuid
+#from . import obj_tracking
 from . import rdflogging
 
 method_counter = 0
@@ -16,9 +17,8 @@ class UWMethodCall:
 
         print("__call__", self.method_name)
         ipdb.set_trace()
-        t_obj = obj_tracking.tracking_store.get_tracking_obj(self.obj)        
-        obj_chain = getattr(t_obj, 'obj_chain', None)
-        method_call_chain = getattr(t_obj, 'method_chain', None)
+        obj_chain = self.obj.obj_chain
+        method_call_chain = self.obj.method_chain
         method_call_chain = method_call_chain if method_call_chain else obj_chain
 
         if rdflogging.rdflogger:
@@ -54,19 +54,17 @@ class UWMethodCall:
 
         if ret is None:
             ret_obj = self.obj
-            ret_tobj = t_obj
-            ret_tobj.incr_version()
+            ret_obj.incr_version()
         else:
             ret_obj, obj_found = uw_object_factory.get_obj(ret)
-            ret_tobj = obj_tracking.tracking_store.get_tracking_obj(ret_obj)
             if obj_found:
-                ret_tobj.incr_version()
+                ret_obj.incr_version()
 
-        ret_tobj.obj_chain = t_obj.obj_chain
+        ret_obj.obj_chain = self.obj.obj_chain
                 
         if rdflogging.rdflogger:
             if obj_chain and obj_chain.is_active:                
-                ret_osca_uri = rdfl.register_osca(ret_tobj, method_call_chain)
+                ret_osca_uri = rdfl.register_osca(ret_obj, method_call_chain)
                 rdfl.dump_triple__(method_call_uri, "<method-call-return>", ret_osca_uri)                
             
         return ret_obj
@@ -77,6 +75,17 @@ class UWObject:
             raise Exception("use UWObjectFactory to create UWObject")
         self.u_obj = u_obj
 
+        self.uuid = uuid.uuid4()
+        self.pyid = id(self)
+        self.last_version_num = 0
+        self.obj_chain = None
+        self.method_chain = None
+
+    def incr_version(self):
+        ret = self.last_version_num
+        self.last_version_num += 1
+        return ret
+        
     def __getattr__(self, attr):
         u_obj = self.__getattribute__('u_obj')
         method_name = attr
@@ -84,15 +93,14 @@ class UWObject:
         return UWMethodCall(self, method_name, bound_method)
     
     def continue_to(self, method_call_chain):
-        obj_tracking.tracking_store.set_tracking_obj_attr(self, 'method_call_chain', method_call_chain)
+        self.method_call_chain = method_call_chain
         return self
 
     def return_to(self, method_call_return_chain):
         rdfl = rdflogging.rdflogger
         method_call_return_chain_uri = rdfl.register_chain(method_call_return_chain)
-        t_obj = obj_tracking.tracking_store.get_tracking_obj(self)
-        t_obj.method_call_chain = method_call_return_chain
-        osca_uri = rdfl.register_osca(t_obj, method_call_return_chain)
+        self.method_call_chain = method_call_return_chain
+        osca_uri = rdfl.register_osca(self, method_call_return_chain)
         rdfl.dump_triple__(osca_uri, "<chain-replacement>", method_call_return_chain_uri)
         return self
 
