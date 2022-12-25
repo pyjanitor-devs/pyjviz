@@ -23,7 +23,7 @@ class Chain:
         print(f"deleting chain {self.chain_name} {id(self)}")
         
     def pin(self, orig_obj):
-        obj = uw.UWObject(orig_obj)
+        obj = uw.uw_object_factory.create_obj(orig_obj)
         t_obj = obj_tracking.tracking_store.set_tracking_obj_attr(obj, 'obj_chain', self)
         rdflogging.rdflogger.register_osca(t_obj, self)
         return obj

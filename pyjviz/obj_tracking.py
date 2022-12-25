@@ -1,9 +1,12 @@
 import weakref
 import uuid
 
+def obj_del_cb(ref):
+    print("obj deleted", ref)
+
 class TrackingObj:
     def __init__(self, obj):
-        self.obj_wref = weakref.ref(obj)
+        self.obj_wref = weakref.ref(obj, obj_del_cb)
         self.uuid = uuid.uuid4()
         self.pyid = id(obj)
         self.version = 0
@@ -19,7 +22,6 @@ class TrackingObj:
 class TrackingStore:
     def __init__(self):
         self.tracking_objs = {} # id(obj) -> TrackingObj
-        self.tracking_objs_by_wrapped_obj_id = {} # id(obj.obj) -> TrackingObj
 
     def get_tracking_obj(self, obj):
         obj_pyid = id(obj)
@@ -31,13 +33,9 @@ class TrackingStore:
 
         if tracking_obj is None:
             tracking_obj = self.tracking_objs[obj_pyid] = TrackingObj(obj)
-            self.tracking_objs_by_wrapped_obj_id[id(obj.u_obj)] = tracking_obj
 
         return tracking_obj
 
-    def find_tracking_obj(self, wrapped_obj):
-        return self.tracking_objs_by_wrapped_obj_id.get(id(wrapped_obj))
-    
     def set_tracking_obj_attr(self, obj, attr_name, attr_value):
         tracking_obj = self.get_tracking_obj(obj)
         setattr(tracking_obj, attr_name, attr_value)

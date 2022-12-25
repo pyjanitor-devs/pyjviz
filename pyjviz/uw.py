@@ -15,7 +15,7 @@ class UWMethodCall:
         rdfl = rdflogging.rdflogger
 
         print("__call__", self.method_name)
-        #ipdb.set_trace()
+        ipdb.set_trace()
         t_obj = obj_tracking.tracking_store.get_tracking_obj(self.obj)        
         obj_chain = getattr(t_obj, 'obj_chain', None)
         method_call_chain = getattr(t_obj, 'method_chain', None)
@@ -57,14 +57,13 @@ class UWMethodCall:
             ret_tobj = t_obj
             ret_tobj.incr_version()
         else:
-            ret_tobj = obj_tracking.tracking_store.find_tracking_obj(ret)
-            if ret_tobj:
-                ret_obj = ret_tobj.obj_wref()
+            ret_obj, obj_found = uw_object_factory.get_obj(ret)
+            ret_tobj = obj_tracking.tracking_store.get_tracking_obj(ret_obj)
+            if obj_found:
                 ret_tobj.incr_version()
-            else:
-                ret_obj = UWObject(ret)
-                ret_tobj = obj_tracking.tracking_store.get_tracking_obj(ret_obj)
 
+        ret_tobj.obj_chain = t_obj.obj_chain
+                
         if rdflogging.rdflogger:
             if obj_chain and obj_chain.is_active:                
                 ret_osca_uri = rdfl.register_osca(ret_tobj, method_call_chain)
@@ -73,7 +72,9 @@ class UWMethodCall:
         return ret_obj
 
 class UWObject:
-    def __init__(self, u_obj):
+    def __init__(self, u_obj, right_way = False):
+        if not right_way:
+            raise Exception("use UWObjectFactory to create UWObject")
         self.u_obj = u_obj
 
     def __getattr__(self, attr):
@@ -94,3 +95,19 @@ class UWObject:
         osca_uri = rdfl.register_osca(t_obj, method_call_return_chain)
         rdfl.dump_triple__(osca_uri, "<chain-replacement>", method_call_return_chain_uri)
         return self
+
+class UWObjectFactory:
+    def __init__(self):
+        self.objs = {} # id(obj.u_obj) -> obj
+
+    def create_obj(self, u_obj):
+        ret = UWObject(u_obj, True)
+        self.objs[id(u_obj)] = ret
+        return ret
+
+    def get_obj(self, wrapped_obj):
+        ret0 = self.objs.get(id(wrapped_obj), None)
+        return (ret0, True) if ret0 else (self.create_obj(wrapped_obj), False)
+    
+    
+uw_object_factory = UWObjectFactory()
