@@ -151,7 +151,7 @@ def dump_dot_code(g):
     for obj, obj_state in g.query(rq, base = rdflogging.base_uri):
         print(f"node_{uri_to_dot_id(obj)} -> node_{uri_to_dot_id(obj_state)}", file = out_fd)
                 
-    if 0:
+    if 0: # show transient objects
         rq = """
         select ?obj ?obj_type ?obj_uuid { ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid }
         """
