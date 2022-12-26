@@ -54,7 +54,7 @@ if __name__ == "__main__":
     with pyjviz.Chain("c") as c:
         s_df = c.pin(df)
         r1 = s_df.x()
-        if 0:
+        if 1:
             r20 = prun(lambda: s_df.y(0))
             r21 = prun(lambda: s_df.y(1))
             res = r1.m(pwait(r20), pwait(r21))

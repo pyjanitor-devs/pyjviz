@@ -90,10 +90,9 @@ class UWObject:
 
     def pin(self, chain):
         self.obj_chain = chain
-        if 0: # create obj chain assignment
-            chain_uri = None
-            obj_uri = None
-            obj_chain_assignment_uri = None
+        if 1: # create obj chain assignment
+            rdfl = rdflogging.rdflogger
+            rdfl.dump_obj_chain_assignment(self, chain)
         return self
             
     def continue_to(self, method_call_chain):

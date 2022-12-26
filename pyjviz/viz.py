@@ -44,8 +44,24 @@ def dump_dot_code(g):
         subgraph cluster_{uri_to_dot_id(chain)} {{
           label = "{chain_label}";
         """, file = out_fd)
-
-
+        
+        rq = """
+        select ?obj ?obj_type ?obj_uuid { 
+          [] rdf:type <ObjChainAssignment>; <obj> ?obj; <chain> ?chain.
+          ?chain rdf:type <Chain>.
+          ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid.
+        }
+        """
+        for obj, obj_type, obj_uuid in g.query(rq, base = rdflogging.base_uri, initBindings = {'chain': chain}):
+            print(f"""
+            node_{uri_to_dot_id(obj)} [
+            color="#88000022"
+            shape = rect
+            label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
+            <tr> <td> <b>{obj_type}</b><br/>{obj_uuid}</td> </tr>
+            </table>>
+            ];
+            """, file = out_fd)
         
         if 0:
             rq = """
@@ -125,7 +141,17 @@ def dump_dot_code(g):
                 node_{uri_to_dot_id(arg2_obj)} -> node_{uri_to_dot_id(method_call_obj)};
                 """, file = out_fd)
 
-    if 1:
+    rq = """
+    select ?obj ?obj_state { 
+      [] rdf:type <ObjChainAssignment>; <obj> ?obj. 
+      ?obj_state rdf:type <ObjState>; <obj> ?obj 
+    }
+    """
+    #ipdb.set_trace()
+    for obj, obj_state in g.query(rq, base = rdflogging.base_uri):
+        print(f"node_{uri_to_dot_id(obj)} -> node_{uri_to_dot_id(obj_state)}", file = out_fd)
+                
+    if 0:
         rq = """
         select ?obj ?obj_type ?obj_uuid { ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid }
         """
