@@ -19,6 +19,11 @@
       sh:property [sh:path <obj-type>; sh:minCount 1; sh:maxCount 1];
       sh:property [sh:path <obj-uuid>; sh:minCount 1; sh:maxCount 1].
 
+<ObjChainAssignment> rdf:type rdfs:Class; rdf:type sh:NodeShape; sh:closed true; dash:closedByType true;
+		     sh:property [sh:path rdf:type; sh:minCount 1; sh:maxCount 1];
+		     sh:property [sh:path <obj> sh:minCount 1; sh:maxCount 1];
+		     sh:property [sh:path <chain> sh:minCount 1; sh:maxCount 1].
+
 <ObjState> rdf:type rdfs:Class; rdf:type sh:NodeShape; sh:closed true; dash:closedByType true;
 	   sh:property [sh:path rdf:type; sh:minCount 1; sh:maxCount 1];
 	   sh:property [sh:path <obj>; sh:minCount 1; sh:maxCount 1];

@@ -19,7 +19,7 @@ class UWMethodCall:
         #ipdb.set_trace()
         obj_chain_uri = rdfl.register_chain(self.obj.obj_chain)
 
-        if self.obj.obj_chain.is_active:
+        if 1: # self.obj.obj_chain.is_active:
             thread_id = threading.get_native_id()
             thread_uri = rdfl.register_thread(thread_id)
             method_call_id = rdfl.random_id; rdfl.random_id += 1
@@ -32,19 +32,16 @@ class UWMethodCall:
             rdfl.dump_triple__(method_call_uri, "<method-counter>", method_counter); method_counter += 1
             rdfl.dump_triple__(method_call_uri, "<method-call-chain>", obj_chain_uri)
 
-            arg0_obj = self.obj
-            arg0_obj_state_uri = arg0_obj.last_obj_state_uri
-            if arg0_obj_state_uri is None:
-                arg0_obj_state_uri = rdfl.dump_obj_state(arg0_obj)
-            rdfl.dump_triple__(method_call_uri, "<method-call-arg0>", arg0_obj_state_uri)
+            if self.obj.last_obj_state_uri is None:
+                self.obj.last_obj_state_uri = rdfl.dump_obj_state(self.obj)
+            rdfl.dump_triple__(method_call_uri, "<method-call-arg0>", self.obj.last_obj_state_uri)
 
             c = 1
             for arg_obj in method_args:
                 if isinstance(arg_obj, UWObject):
-                    arg_obj_state_uri = arg_obj.last_obj_state_uri
-                    if arg_obj_state_uri is None:
-                        arg_obj_state_uri = rdfl.dump_obj_state(arg_obj)
-                    rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj_state_uri)
+                    if arg_obj.last_obj_state_uri is None:
+                        arg_obj.last_obj_state_uri = rdfl.dump_obj_state(arg_obj)
+                    rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.last_obj_state_uri)
                 c += 1
                 
         real_method_args = [x.u_obj if isinstance(x, UWObject) else x for x in method_args]
@@ -60,17 +57,16 @@ class UWMethodCall:
             else:
                 ret_obj.obj_chain = self.obj.obj_chain
                 
-        if self.obj.obj_chain.is_active:
-            ret_obj_state_uri = rdfl.dump_obj_state(ret_obj)
-            ret_obj.last_obj_state_uri = ret_obj_state_uri
-            rdfl.dump_triple__(method_call_uri, "<method-call-return>", ret_obj_state_uri)
+        if 1: # self.obj.obj_chain.is_active:
+            ret_obj.last_obj_state_uri = rdfl.dump_obj_state(ret_obj)
+            rdfl.dump_triple__(method_call_uri, "<method-call-return>", ret_obj.last_obj_state_uri)
             
         return ret_obj
 
 class UWObject:
-    def __init__(self, u_obj, right_way = False):
-        if not right_way:
-            raise Exception("use UWObjectFactory to create UWObject")
+    def __init__(self, u_obj):
+        if isinstance(u_obj, UWObject):
+            raise Exception("attempt to create UWObject with u_obj of type UWObject")
         self.u_obj = u_obj
 
         self.uuid = uuid.uuid4()
@@ -79,6 +75,8 @@ class UWObject:
         self.last_obj_state_uri = None
         self.obj_chain = None
 
+        uw_object_factory.objs[id(u_obj)] = self
+        
     def incr_version(self):
         ret = self.last_version_num
         self.last_version_num += 1
@@ -89,7 +87,15 @@ class UWObject:
         method_name = attr
         bound_method = getattr(u_obj, method_name)
         return UWMethodCall(self, method_name, bound_method)
-    
+
+    def pin(self, chain):
+        self.obj_chain = chain
+        if 0: # create obj chain assignment
+            chain_uri = None
+            obj_uri = None
+            obj_chain_assignment_uri = None
+        return self
+            
     def continue_to(self, method_call_chain):
         self.obj_chain = method_call_chain
         return self
@@ -105,14 +111,9 @@ class UWObjectFactory:
     def __init__(self):
         self.objs = {} # id(obj.u_obj) -> obj
 
-    def create_obj(self, u_obj):
-        ret = UWObject(u_obj, True)
-        self.objs[id(u_obj)] = ret
-        return ret
-
     def get_obj(self, wrapped_obj):
         ret0 = self.objs.get(id(wrapped_obj), None)
-        return (ret0, True) if ret0 else (self.create_obj(wrapped_obj), False)
+        return (ret0, True) if ret0 else (UWObject(wrapped_obj), False)
     
     
 uw_object_factory = UWObjectFactory()

@@ -25,10 +25,10 @@ if __name__ == "__main__":
 
     #ipdb.set_trace()
     with pyjviz.Chain("c") as c:
-        df = c.pin(pd.DataFrame({'a': range(10)}))
+        df = pyjviz.UWObject(pd.DataFrame({'a': range(10)}))
         df1 = df.a0()
-        #df2 = c.pin(df).a0()
-        df2 = df.a0()
+        df2 = df.pin(c).a0()
+        #df2 = df.a0()
         res1 = df2.a0()
         res2 = df2.a0()
 

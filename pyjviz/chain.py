@@ -23,12 +23,7 @@ class Chain:
 
     def __del__(self):
         print(f"deleting chain {self.chain_name} {id(self)}")
-        
-    def pin(self, orig_obj):
-        rdfl = rdflogging.rdflogger
-        
-        obj, _ = uw.uw_object_factory.get_obj(orig_obj)
-        obj.obj_chain = self
-        obj.last_obj_state_uri = rdfl.dump_obj_state(obj)
 
-        return obj
+    def pin(self, orig_obj):
+        obj = uw.UWObject(orig_obj)
+        return obj.pin(self)

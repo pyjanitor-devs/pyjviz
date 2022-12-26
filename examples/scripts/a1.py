@@ -29,8 +29,7 @@ if __name__ == "__main__":
 
     #ipdb.set_trace()
     with pyjviz.Chain("c") as c:
-        s_df = pd.DataFrame({'a': range(10)})
-        df = c.pin(s_df)
+        df = pyjviz.UWObject(pd.DataFrame({'a': range(10)})).pin(c)
         df1 = df.a0()
     print(df1.describe())
         

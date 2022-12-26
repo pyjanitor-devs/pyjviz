@@ -30,17 +30,17 @@ def m(df, l_df, r_df):
     print("df:", df.shape)
     print("l_df:", l_df.shape)
     print("r_df:", r_df.shape)
-    return df
+    return pd.DataFrame(df)
 
 @pf.register_dataframe_method
 def x(df):
     print("x:", df.shape)
-    return df
+    return pd.DataFrame(df)
 
 @pf.register_dataframe_method
 def y(df, int_arg):
     print("y:", df.shape, int_arg)
-    return df
+    return pd.DataFrame(df)
 
 if __name__ == "__main__":
     # configure pyjviz

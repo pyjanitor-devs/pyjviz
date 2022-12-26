@@ -65,8 +65,8 @@ class RDFLogger:
             chain_uri = self.known_chains[chain_id] = f"<Chain#{chain_id}>"
             self.dump_triple__(chain_uri, "rdf:type", "<Chain>")
             #ipdb.set_trace()
-            self.dump_triple__(chain_uri, "rdf:label", f'"{chain.chain_name}"')
-            if chain.parent_chain:
+            self.dump_triple__(chain_uri, "rdf:label", f'"{chain.chain_name}"' if chain else "rdf:nil")
+            if chain and chain.parent_chain:
                 parent_chain_uri = self.register_chain(chain.parent_chain)
                 self.dump_triple__(chain_uri, "<parent-chain>", parent_chain_uri)
         else:
