@@ -19,13 +19,13 @@ def uri_to_dot_id(uri):
 
 def dump_dot_code(g):
     #ipdb.set_trace()
-    chains = [r for r in g.query("select ?pp ?pl { ?pp rdf:type <pyjviz:Chain>; rdf:label ?pl }")]
+    chains = [r for r in g.query("select ?pp ?pl { ?pp rdf:type <Chain>; rdf:label ?pl }", base = rdflogging.base_uri)]
 
     out_fd = StringIO()
     
     print("""
     digraph G {
-    rankdir = "LR"
+    rankdir = "TB"
     fontname="Helvetica,Arial,sans-serif"
     node [ 
       style=filled
@@ -38,43 +38,58 @@ def dump_dot_code(g):
     """, file = out_fd)
     #print('rankdir = "TB"', file = out_fd)
 
-    #ipdb.set_trace()
+    #ipdb.set_trace()    
+    if 1:
+        rq = """
+        select ?obj ?obj_type ?obj_uuid { ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid }
+        """
+        for obj, obj_type, obj_uuid in g.query(rq, base = rdflogging.base_uri):
+            print(f"""
+            node_{uri_to_dot_id(obj)} [
+            color="#88000022"
+            shape = rect
+            label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
+            <tr> <td> <b>{obj_type}</b><br/>{obj_uuid}</td> </tr>
+            </table>>
+            ];
+            """, file = out_fd)
+
     for chain, chain_label in chains:
         print(f"""
         subgraph cluster_{uri_to_dot_id(chain)} {{
           label = "{chain_label}";
         """, file = out_fd)
 
+
+        
         if 0:
-            test_rq = """
-            select ?pinned_obj ?obj ?orig_chain ?chain_decision ?chain { 
-            ?pinned_obj rdf:type <pyjviz:ObjOnChain>; <pyjviz:pinned_obj> ?obj .
-            ?pinned_obj <pyjviz:chain> ?orig_chain .
-            optional { ?pinned_obj <pyjviz:chain-replacement> ?repl_chain }
-            bind(if(bound(?repl_chain), ?repl_chain, ?orig_chain) as ?chain_decision)
-            filter( ?chain_decision = ?chain ) .
+            rq = """
+            select ?obj_state ?df_shape ?df_cols { 
+            ?obj_state rdf:type <ObjState>; <obj> ?obj .
+            ?obj_state <chain> ?orig_chain .
+            optional { obj_state <chain-replacement> ?repl_chain }
+            filter(if(bound(?repl_chain), ?repl_chain, ?orig_chain) = ?chain ) .
+            ?obj_state <df-shape> ?df_shape; <df-columns> ?df_cols .
             }
             """
-            for l in g.query(test_rq, initBindings = {'chain': chain}):
-                print(l)        
-        
+            
         rq = """
-        select ?pinned_obj ?obj ?df_shape ?df_cols { 
-          ?pinned_obj rdf:type <pyjviz:ObjOnChain>; <pyjviz:pinned_obj> ?obj .
-          ?pinned_obj <pyjviz:chain> ?orig_chain .
-          optional { ?pinned_obj <pyjviz:chain-replacement> ?repl_chain }
-          filter(if(bound(?repl_chain), ?repl_chain, ?orig_chain) = ?chain ) .
-          ?obj <pyjviz:df-shape> ?df_shape; <pyjviz:df-columns> ?df_cols .
+        select ?obj_state ?df_shape { 
+          ?obj_state rdf:type <ObjState>; <obj> ?obj .
+          ?obj_state <chain> ?chain .
+          ?obj_state <df-shape> ?df_shape .
         }
         """
-        for pinned_obj, obj, df_shape, df_cols in g.query(rq, initBindings = {'chain': chain}):
-            cols = "\n".join(['<tr><td align="left"><FONT POINT-SIZE="8px">' + html.escape(x) + "</FONT></td></tr>" for x in df_cols.toPython().split(",")])
+
+        for obj_state, df_shape in g.query(rq, base = rdflogging.base_uri, initBindings = {'chain': chain}):
+            #cols = "\n".join(['<tr><td align="left"><FONT POINT-SIZE="8px">' + html.escape(x) + "</FONT></td></tr>" for x in df_cols.toPython().split(",")])
+            cols = "TBC"
             print(f"""
-            node_{uri_to_dot_id(pinned_obj)} [
+            node_{uri_to_dot_id(obj_state)} [
                 color="#88000022"
                 shape = rect
                 label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
-                         <tr> <td> <b>{obj}</b><br/>{df_shape}</td> </tr>
+                         <tr> <td> <b>{obj_state}</b><br/>{df_shape}</td> </tr>
                          <tr> <td align="left"><i>columns:</i><br align="left"/></td></tr>
                 {cols}
                          </table>>
@@ -84,13 +99,13 @@ def dump_dot_code(g):
 
         rq = """
         select ?method_call_obj ?method_name ?method_count ?chain { 
-          ?method_call_obj rdf:type <pyjviz:MethodCall>; 
+          ?method_call_obj rdf:type <MethodCall>; 
                            rdf:label ?method_name; 
-                           <pyjviz:method-counter> ?method_count;
-                           <pyjviz:method-call-chain> ?chain .
+                           <method-counter> ?method_count;
+                           <method-call-chain> ?chain .
         }
         """
-        for method_call_obj, method_name, method_count, chain in g.query(rq, initBindings = {'chain': chain}):
+        for method_call_obj, method_name, method_count, chain in g.query(rq, base = rdflogging.base_uri, initBindings = {'chain': chain}):
             print(f"""
             node_{uri_to_dot_id(method_call_obj)} [ label = "{method_name}#{method_count}" ];
             """, file = out_fd)
@@ -102,14 +117,14 @@ def dump_dot_code(g):
         #ipdb.set_trace()
         rq = """
         select ?method_call_obj ?caller_obj ?ret_obj ?arg1_obj ?arg2_obj { 
-          ?method_call_obj rdf:type <pyjviz:MethodCall>; <pyjviz:method-call-chain> ?chain;
-                           <pyjviz:method-call-arg0> ?caller_obj;
-                           <pyjviz:method-call-return> ?ret_obj .
-          optional { ?method_call_obj <pyjviz:method-call-arg1> ?arg1_obj }
-          optional { ?method_call_obj <pyjviz:method-call-arg2> ?arg2_obj }
+          ?method_call_obj rdf:type <MethodCall>; <method-call-chain> ?chain;
+                           <method-call-arg0> ?caller_obj;
+                           <method-call-return> ?ret_obj .
+          optional { ?method_call_obj <method-call-arg1> ?arg1_obj }
+          optional { ?method_call_obj <method-call-arg2> ?arg2_obj }
         }
         """
-        for method_call_obj, caller_obj, ret_obj, arg1_obj, arg2_obj in g.query(rq, initBindings = {'chain': chain}):
+        for method_call_obj, caller_obj, ret_obj, arg1_obj, arg2_obj in g.query(rq, base = rdflogging.base_uri, initBindings = {'chain': chain}):
             print(f"""
             node_{uri_to_dot_id(caller_obj)} -> node_{uri_to_dot_id(method_call_obj)};
             node_{uri_to_dot_id(method_call_obj)} -> node_{uri_to_dot_id(ret_obj)};
@@ -124,12 +139,22 @@ def dump_dot_code(g):
                 print(f"""
                 node_{uri_to_dot_id(arg2_obj)} -> node_{uri_to_dot_id(method_call_obj)};
                 """, file = out_fd)
+
+    rq = """
+    select ?obj ?obj_state { ?obj_state <obj> ?obj }
+    """
+    for obj, obj_state in g.query(rq, base = rdflogging.base_uri):
+        print(f"""
+        node_{uri_to_dot_id(obj)} -> node_{uri_to_dot_id(obj_state)};
+        """, file = out_fd)
+        
             
     print("}", file = out_fd)
     return out_fd.getvalue()
 
 def render_rdflog(rdflog_ttl_fn, verbose = True):
     rdflogging.rdflogger.flush__()
+
     g = rdflib.Graph()
     g.parse(rdflog_ttl_fn)
 

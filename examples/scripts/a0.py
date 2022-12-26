@@ -23,10 +23,11 @@ if __name__ == "__main__":
     print(TestDF, TestDF.__name__, TestDF.__supertype__)
     print(TestDF.columns)
 
-    ipdb.set_trace()
+    #ipdb.set_trace()
     with pyjviz.Chain("c") as c:
         df = pd.DataFrame({'a': range(10)})
         df1 = c.pin(df).a0()
+        df2 = c.pin(df).a0()
 
     print(df1.describe())
 

@@ -3,7 +3,6 @@ import uuid
 import pandas as pd
 from . import uw
 #from . import obj_tracking
-from . import rdflogging
 
 class Chain:
     def __init__(self, chain_name, parent_chain = None):
@@ -25,6 +24,7 @@ class Chain:
         print(f"deleting chain {self.chain_name} {id(self)}")
         
     def pin(self, orig_obj):
-        obj = uw.uw_object_factory.create_obj(orig_obj)
-        rdflogging.rdflogger.register_osca(obj, self)
+        obj, _ = uw.uw_object_factory.get_obj(orig_obj)
+        obj.obj_chain = self
+
         return obj
