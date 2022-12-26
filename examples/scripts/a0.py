@@ -13,7 +13,8 @@ TestDF.columns = ['a']
 @pf.register_dataframe_method
 def a0(df: pd.DataFrame) -> TestDF:
     print("a0")
-    return df
+    return pd.DataFrame(df)
+    #return df
 
 if __name__ == "__main__":
     # configure pyjviz
@@ -25,9 +26,9 @@ if __name__ == "__main__":
 
     #ipdb.set_trace()
     with pyjviz.Chain("c") as c:
-        df = pd.DataFrame({'a': range(10)})
-        df1 = c.pin(df).a0()
-        df2 = c.pin(df).a0()
+        df = c.pin(pd.DataFrame({'a': range(10)}))
+        df1 = df.a0().a0()
+        df2 = df.a0()
 
     print(df1.describe())
 

@@ -29,26 +29,26 @@ if __name__ == "__main__":
 
     #ipdb.set_trace()
     with pyjviz.Chain("c") as c:
-        df = pd.DataFrame({'a': range(10)})
-        df1 = c.pin(df).a0()
+        s_df = pd.DataFrame({'a': range(10)})
+        df = c.pin(s_df)
+        df1 = df.a0()
     print(df1.describe())
         
     with c:
-        df2 = c.pin(df).a0()
+        df2 = df.a0()
     print(df2.describe())
         
     with c, pyjviz.Chain("c1") as c1:
-        df3 = c.pin(df).continue_to(c1).a0()
+        df3 = df.continue_to(c1).a0()
         #df3 = df.pin(c).continue_to(c1).a0()
     print(df3.describe())
 
     with c, pyjviz.Chain("cc", c) as cc:
-        df4 = c.pin(df).continue_to(cc).a0().a0().a2()
+        df4 = df.continue_to(cc).a0().a0().a2()
     print(df4.describe())
 
     with c, pyjviz.Chain("cc1") as cc:
-        df5 = c.pin(df).continue_to(cc).a0().a0().a2().return_to(c)
+        df5 = df.continue_to(cc).a0().a0().a2().return_to(c)
     print(df5.describe())
-
     
     pyjviz.render_rdflog(rdflog_fn)

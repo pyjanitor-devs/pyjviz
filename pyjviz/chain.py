@@ -3,6 +3,7 @@ import uuid
 import pandas as pd
 from . import uw
 #from . import obj_tracking
+from . import rdflogging
 
 class Chain:
     def __init__(self, chain_name, parent_chain = None):
@@ -24,7 +25,10 @@ class Chain:
         print(f"deleting chain {self.chain_name} {id(self)}")
         
     def pin(self, orig_obj):
+        rdfl = rdflogging.rdflogger
+        
         obj, _ = uw.uw_object_factory.get_obj(orig_obj)
         obj.obj_chain = self
+        obj.last_obj_state_uri = rdfl.dump_obj_state(obj)
 
         return obj
