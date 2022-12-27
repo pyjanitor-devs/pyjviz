@@ -24,11 +24,11 @@ print(pd.DataFrame.from_dict(company_sales))
 #  2        Mar     300.0       NaN     600.0
 #  3      April     400.0     500.0     675.0
 
-with pyjviz.Chain("c") as c, \
-     pyjviz.Chain("cleaning") as cleaning:
+with pyjviz.MethodsChain("c") as c, \
+     pyjviz.MethodsChain("cleaning") as cleaning:
 
     df = (
-        c.pin(pd.DataFrame.from_dict(company_sales))
+        pyjviz.UWObject(pd.DataFrame.from_dict(company_sales))
         .continue_to(cleaning)
         .remove_columns(["Company1"])
         .dropna(subset=["Company2", "Company3"])

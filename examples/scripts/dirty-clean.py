@@ -20,8 +20,9 @@ if __name__ == "__main__":
         
     print(dirty)
 
-    with pyjviz.Chain("from_dirty_to_clean") as c:
-        clean = (c.pin(dirty)
+    dirty = pyjviz.UWObject(dirty)
+    with pyjviz.MethodsChain("from_dirty_to_clean") as c:
+        clean = (dirty
                  .clean_names()
                  .dropna(axis='columns', how='all')
                  .dropna(axis='rows', how='all')

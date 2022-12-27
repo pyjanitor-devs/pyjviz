@@ -49,18 +49,17 @@ if __name__ == "__main__":
     
     print("Main Thread Here!!")
 
-    df = pd.DataFrame({'a': range(10)})
+    df = pyjviz.UWObject(pd.DataFrame({'a': range(10)}))
     
-    with pyjviz.Chain("c") as c:
-        s_df = c.pin(df)
-        r1 = s_df.x()
+    with pyjviz.MethodsChain("c") as c:
+        r1 = df.x()
         if 1:
-            r20 = prun(lambda: s_df.y(0))
-            r21 = prun(lambda: s_df.y(1))
+            r20 = prun(lambda: df.y(0))
+            r21 = prun(lambda: df.y(1))
             res = r1.m(pwait(r20), pwait(r21))
         else:
-            r20 = s_df.y(0)
-            r21 = s_df.y(1)
+            r20 = df.y(0)
+            r21 = df.y(1)
             res = r1.m(r20, r21)
     
     pyjviz.render_rdflog(rdflog_fn)

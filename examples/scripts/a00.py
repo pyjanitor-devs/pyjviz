@@ -24,10 +24,10 @@ if __name__ == "__main__":
     print(TestDF.columns)
 
     #ipdb.set_trace()
-    with pyjviz.Chain("c") as c:
+    with pyjviz.MethodsChain("c") as c:
         df = pyjviz.UWObject(pd.DataFrame({'a': range(10)}))
         df1 = df.a0()
-        df2 = df.pin(c).a0()
+        df2 = df.a0()
         #df2 = df.a0()
         res1 = df2.a0()
         res2 = df2.a0()

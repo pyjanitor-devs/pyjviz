@@ -19,5 +19,5 @@ Obj is representation of pyjanitor object like pandas DataFrame. However input a
 
 pyjviz also introduce MethodCall RDF class. It represents pyjanitor method call. MethodCall object has incoming links from input objects and outgoing link an object representing retirn object.
 
-Aslo pyjviz introduces python class Chain. Chain is set of sequences of pyjanitor method calls grouped together. pyjantitor method calls are represented by RDF class MethodCall. Each MethodCall has one or more input objects and one return object. In pyjviz input args and return are presented by RDF class ObjState. Each ObjState has reference to RDF class Obj.
+Aslo pyjviz introduces python class MethodsChain. MethodsChain is set of sequences of pyjanitor method calls grouped together. pyjantitor method calls are represented by RDF class MethodCall. Each MethodCall has one or more input objects and one return object. In pyjviz input args and return are presented by RDF class ObjState. Each ObjState has reference to RDF class Obj.
 

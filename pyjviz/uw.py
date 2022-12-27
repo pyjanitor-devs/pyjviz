@@ -3,6 +3,7 @@ import threading
 import uuid
 #from . import obj_tracking
 from . import rdflogging
+from . import methods_chain
 
 method_counter = 0
 
@@ -17,9 +18,10 @@ class UWMethodCall:
 
         print("__call__", self.method_name)
         #ipdb.set_trace()
+        self.obj.obj_chain = methods_chain.curr_methods_chain
         obj_chain_uri = rdfl.register_chain(self.obj.obj_chain)
 
-        if 1: # self.obj.obj_chain.is_active:
+        if self.obj.obj_chain:
             thread_id = threading.get_native_id()
             thread_uri = rdfl.register_thread(thread_id)
             method_call_id = rdfl.random_id; rdfl.random_id += 1
@@ -57,7 +59,7 @@ class UWMethodCall:
             else:
                 ret_obj.obj_chain = self.obj.obj_chain
                 
-        if 1: # self.obj.obj_chain.is_active:
+        if self.obj.obj_chain:
             ret_obj.last_obj_state_uri = rdfl.dump_obj_state(ret_obj)
             rdfl.dump_triple__(method_call_uri, "<method-call-return>", ret_obj.last_obj_state_uri)
             
@@ -88,7 +90,7 @@ class UWObject:
         bound_method = getattr(u_obj, method_name)
         return UWMethodCall(self, method_name, bound_method)
 
-    def pin(self, chain):
+    def continue_to(self, chain):
         self.obj_chain = chain
 
         if 1: # dump initial state to current chain
@@ -96,10 +98,6 @@ class UWObject:
             if not uw_object_factory.find_obj(self.u_obj):
                 self.last_obj_state_uri = rdfl.dump_obj_state(self)            
             
-        return self
-            
-    def continue_to(self, method_call_chain):
-        self.obj_chain = method_call_chain
         return self
 
     def return_to(self, method_call_return_chain):
