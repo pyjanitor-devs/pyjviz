@@ -90,9 +90,12 @@ class UWObject:
 
     def pin(self, chain):
         self.obj_chain = chain
-        if 1: # create obj chain assignment
+
+        if 1: # dump initial state to current chain
             rdfl = rdflogging.rdflogger
-            rdfl.dump_obj_chain_assignment(self, chain)
+            if not uw_object_factory.find_obj(self.u_obj):
+                self.last_obj_state_uri = rdfl.dump_obj_state(self)            
+            
         return self
             
     def continue_to(self, method_call_chain):
@@ -113,6 +116,8 @@ class UWObjectFactory:
     def get_obj(self, wrapped_obj):
         ret0 = self.objs.get(id(wrapped_obj), None)
         return (ret0, True) if ret0 else (UWObject(wrapped_obj), False)
-    
+
+    def find_obj(self, wrapper_obj):
+        return id(wrapper_obj) in self.objs
     
 uw_object_factory = UWObjectFactory()

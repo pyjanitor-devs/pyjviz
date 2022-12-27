@@ -39,7 +39,6 @@ class RDFLogger:
         self.known_threads = {}
         self.known_chains = {}
         self.known_objs = {}
-        self.known_obj_chain_assignments = {}        
         self.random_id = 0 # should be better way
 
     def flush__(self):
@@ -82,21 +81,6 @@ class RDFLogger:
         else:
             thread_uri = self.known_threads[thread_id]
         return thread_uri
-
-    def dump_obj_chain_assignment(self, obj, chain):
-        chain_uri = self.register_chain(chain)
-        obj_uri = self.register_obj(obj)
-        k = (chain_uri, obj_uri)
-        if not k in self.known_obj_chain_assignments:
-            res_uuid = uuid.uuid4()
-            res_uri = self.known_obj_chain_assignments[k] = f"<ObjChainAssignment#{str(res_uuid)}>"
-            self.dump_triple__(res_uri, "rdf:type", "<ObjChainAssignment>")
-            self.dump_triple__(res_uri, "<obj>", obj_uri)
-            self.dump_triple__(res_uri, "<chain>", chain_uri)
-        else:
-            res_uri = self.known_obj_chain_assignments[k]
-
-        return res_uri
             
     def dump_obj_state(self, obj):
         obj_uri = self.register_obj(obj)

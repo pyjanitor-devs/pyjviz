@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     #ipdb.set_trace()
     with pyjviz.Chain("c") as c:
-        df0 = df.pin(c).a0()
+        df0 = df.pin(None).a0()
         df1 = df.pin(c).a0().a0()
         df2 = df.pin(c).a0()
 
