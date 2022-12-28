@@ -5,8 +5,6 @@ import uuid
 from . import rdflogging
 from . import methods_chain
 
-method_counter = 0
-
 class UWMethodCall:
     def __init__(self, obj, method_name, bound_method):
         self.obj = obj
@@ -18,48 +16,24 @@ class UWMethodCall:
 
         print("__call__", self.method_name)
         #ipdb.set_trace()
-        self.obj.obj_chain = methods_chain.curr_methods_chain
-        obj_chain_uri = rdfl.register_chain(self.obj.obj_chain)
 
-        if self.obj.obj_chain:
+        if methods_chain.curr_methods_chain:
             thread_id = threading.get_native_id()
-            thread_uri = rdfl.register_thread(thread_id)
-            method_call_id = rdfl.random_id; rdfl.random_id += 1
-            method_call_uri = f"<MethodCall#{method_call_id}>"
-
-            rdfl.dump_triple__(method_call_uri, "rdf:type", "<MethodCall>")
-            rdfl.dump_triple__(method_call_uri, "rdf:label", '"' + self.method_name + '"')
-            rdfl.dump_triple__(method_call_uri, "<method-thread>", thread_uri)
-            global method_counter
-            rdfl.dump_triple__(method_call_uri, "<method-counter>", method_counter); method_counter += 1
-            rdfl.dump_triple__(method_call_uri, "<method-call-chain>", obj_chain_uri)
-
-            if self.obj.last_obj_state_uri is None:
-                self.obj.last_obj_state_uri = rdfl.dump_obj_state(self.obj)
-            rdfl.dump_triple__(method_call_uri, "<method-call-arg0>", self.obj.last_obj_state_uri)
-
-            c = 1
-            for arg_obj in method_args:
-                if isinstance(arg_obj, UWObject):
-                    if arg_obj.last_obj_state_uri is None:
-                        arg_obj.last_obj_state_uri = rdfl.dump_obj_state(arg_obj)
-                    rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.last_obj_state_uri)
-                c += 1
-                
+            self.obj.obj_chain = methods_chain.curr_methods_chain
+            method_call_uri = rdfl.dump_method_call_in(thread_id, self.obj, self.method_name, method_args, method_kwargs)
+            
         real_method_args = [x.u_obj if isinstance(x, UWObject) else x for x in method_args]
         ret = self.bound_method(*real_method_args, **method_kwargs)
 
-        if ret is None:
-            ret_obj = self.obj
-            ret_obj.incr_version()
+        if not methods_chain.curr_methods_chain:
+            ret_obj = ret
         else:
             ret_obj, obj_found = uw_object_factory.get_obj(ret)
             if obj_found:
                 ret_obj.incr_version()
             else:
                 ret_obj.obj_chain = self.obj.obj_chain
-                
-        if self.obj.obj_chain:
+
             ret_obj.last_obj_state_uri = rdfl.dump_obj_state(ret_obj)
             rdfl.dump_triple__(method_call_uri, "<method-call-return>", ret_obj.last_obj_state_uri)
             
@@ -91,13 +65,7 @@ class UWObject:
         return UWMethodCall(self, method_name, bound_method)
 
     def continue_to(self, chain):
-        self.obj_chain = chain
-
-        if 1: # dump initial state to current chain
-            rdfl = rdflogging.rdflogger
-            if not uw_object_factory.find_obj(self.u_obj):
-                self.last_obj_state_uri = rdfl.dump_obj_state(self)            
-            
+        self.obj_chain = chain            
         return self
 
     def return_to(self, method_call_return_chain):
