@@ -124,6 +124,8 @@ class RDFLogger:
         c = 1
         for arg_obj in method_args:
             if isinstance(arg_obj, uw.UWObject):
+                arg_obj = arg_obj.u_obj
+            if isinstance(arg_obj, pd.DataFrame):
                 arg_t_obj = obj_tracking.tracking_store.get_tracking_obj(arg_obj)
                 if arg_t_obj.last_obj_state_uri is None:
                     arg_t_obj.last_obj_state_uri = rdfl.dump_obj_state(arg_obj, arg_t_obj)
