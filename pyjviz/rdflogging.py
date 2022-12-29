@@ -7,7 +7,6 @@ import pandas as pd
 import uuid
 
 from . import uw
-from . import pf_pandas
 from . import obj_tracking
 
 base_uri = 'https://github.com/pyjanitor-devs/pyjviz/rdflog.shacl.ttl/'
@@ -38,7 +37,6 @@ class RDFLogger:
     def init(out_filename): 
         global rdflogger
         rdflogger = RDFLogger(out_filename)
-        #pf_pandas.enable_pf_pandas()
     
     def __init__(self, out_filename):        
         self.out_fd = open_pyjrdf_output__(out_filename)
@@ -89,9 +87,12 @@ class RDFLogger:
         obj_uri = self.register_obj(obj, t_obj)
         obj_state_uri = f"<ObjState#{self.random_id}>"; self.random_id += 1
         chain_uri = self.register_chain(t_obj.obj_chain_path)
+
+        if isinstance(obj, uw.UWObject):
+            obj = obj.u_obj
         
-        if isinstance(obj.u_obj, pd.DataFrame):
-            df = obj.u_obj
+        if isinstance(obj, pd.DataFrame):
+            df = obj
             #ipdb.set_trace()
             self.dump_triple__(obj_state_uri, "rdf:type", "<ObjState>")
             self.dump_triple__(obj_state_uri, "<obj>", obj_uri)
