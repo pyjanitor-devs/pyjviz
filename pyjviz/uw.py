@@ -1,7 +1,7 @@
 import ipdb
 import threading
 import uuid
-#from . import obj_tracking
+from . import obj_tracking
 from . import rdflogging
 from . import methods_chain
 
@@ -17,27 +17,36 @@ class UWMethodCall:
         print("__call__", self.method_name)
         #ipdb.set_trace()
 
+        t_obj = obj_tracking.tracking_store.get_tracking_obj(self.obj)
         if methods_chain.curr_methods_chain_path:
-            self.obj.obj_chain_path = methods_chain.curr_methods_chain_path if self.obj.obj_chain_path is None else self.obj.obj_chain_path
+            #self.obj.obj_chain_path = methods_chain.curr_methods_chain_path if self.obj.obj_chain_path is None else self.obj.obj_chain_path
+            t_obj.obj_chain_path = methods_chain.curr_methods_chain_path if t_obj.obj_chain_path is None else t_obj.obj_chain_path
 
-        if self.obj.obj_chain_path:
+        #if self.obj.obj_chain_path:
+        if t_obj.obj_chain_path:
             thread_id = threading.get_native_id()
-            method_call_uri = rdfl.dump_method_call_in(thread_id, self.obj, self.method_name, method_args, method_kwargs)
+            #method_call_uri = rdfl.dump_method_call_in(thread_id, self.obj, self.method_name, method_args, method_kwargs)
+            method_call_uri = rdfl.dump_method_call_in(thread_id, self.obj, t_obj, self.method_name, method_args, method_kwargs)
             
         real_method_args = [x.u_obj if isinstance(x, UWObject) else x for x in method_args]
         ret = self.bound_method(*real_method_args, **method_kwargs)
 
-        if self.obj.obj_chain_path is None:
+        if ret is None:
+            ret = self.obj.u_obj
+        
+        #if self.obj.obj_chain_path is None:
+        if t_obj.obj_chain_path is None:
             ret_obj = ret
         else:
             ret_obj, obj_found = uw_object_factory.get_obj(ret)
+            ret_t_obj = obj_tracking.tracking_store.get_tracking_obj(ret_obj)
             if obj_found:
-                ret_obj.incr_version()
+                ret_t_obj.incr_version()
             else:
-                ret_obj.obj_chain_path = self.obj.obj_chain_path
+                ret_t_obj.obj_chain_path = t_obj.obj_chain_path
 
-            ret_obj.last_obj_state_uri = rdfl.dump_obj_state(ret_obj)
-            rdfl.dump_triple__(method_call_uri, "<method-call-return>", ret_obj.last_obj_state_uri)
+            ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(ret_obj, ret_t_obj)
+            rdfl.dump_triple__(method_call_uri, "<method-call-return>", ret_t_obj.last_obj_state_uri)
             
         return ret_obj
 
@@ -47,19 +56,22 @@ class UWObject:
             raise Exception("attempt to create UWObject with u_obj of type UWObject")
         self.u_obj = u_obj
 
-        self.uuid = uuid.uuid4()
-        self.pyid = id(self)
-        self.last_version_num = 0
-        self.last_obj_state_uri = None
-        self.obj_chain_path = None
+        if 0: # all atributes are kept in tracking object
+            self.uuid = uuid.uuid4()
+            self.pyid = id(self)
+            self.last_version_num = 0
+            self.last_obj_state_uri = None
+            self.obj_chain_path = None
 
         uw_object_factory.objs[id(u_obj)] = self
-        
+
+    """
     def incr_version(self):
         ret = self.last_version_num
         self.last_version_num += 1
         return ret
-        
+    """
+    
     def __getattr__(self, attr):
         u_obj = self.__getattribute__('u_obj')
         method_name = attr
@@ -67,14 +79,16 @@ class UWObject:
         return UWMethodCall(self, method_name, bound_method)
 
     def continue_to(self, chain_path):
-        self.obj_chain_path = chain_path
+        t_self = obj_tracking.tracking_store.get_tracking_obj(self)
+        t_self.obj_chain_path = chain_path
         return self
 
     def return_to(self, method_call_return_chain_path):
+        t_self = obj_tracking.tracking_store.get_tracking_obj(self)
         rdfl = rdflogging.rdflogger
         method_call_return_chain_uri = rdfl.register_chain(method_call_return_chain_path)
-        self.obj_chain_path = method_call_return_chain_path
-        rdfl.dump_triple__(self.last_obj_state_uri, "<chain-replacement>", method_call_return_chain_uri)
+        t_self.obj_chain_path = method_call_return_chain_path
+        rdfl.dump_triple__(t_self.last_obj_state_uri, "<chain-replacement>", method_call_return_chain_uri)
         return self
 
 class UWObjectFactory:

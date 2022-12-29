@@ -25,7 +25,7 @@ def dump_dot_code(g):
     
     print("""
     digraph G {
-    rankdir = "LR"
+    rankdir = "TB"
     fontname="Helvetica,Arial,sans-serif"
     node [ 
       style=filled

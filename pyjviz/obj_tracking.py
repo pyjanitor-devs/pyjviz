@@ -9,16 +9,18 @@ class TrackingObj:
         self.obj_wref = weakref.ref(obj, obj_del_cb)
         self.uuid = uuid.uuid4()
         self.pyid = id(obj)
-        self.version = 0
+        self.last_version_num = 0
+        self.last_obj_state_uri = None
+        self.obj_chain_path = None
 
     def is_alive(self):
         return not self.obj_wref() is None
 
     def incr_version(self):
-        ret = self.version
-        self.version += 1
-        return ret
-
+        ret = self.last_version_num
+        self.last_version_num += 1
+        return ret    
+    
 class TrackingStore:
     def __init__(self):
         self.tracking_objs = {} # id(obj) -> TrackingObj
@@ -34,11 +36,6 @@ class TrackingStore:
         if tracking_obj is None:
             tracking_obj = self.tracking_objs[obj_pyid] = TrackingObj(obj)
 
-        return tracking_obj
-
-    def set_tracking_obj_attr(self, obj, attr_name, attr_value):
-        tracking_obj = self.get_tracking_obj(obj)
-        setattr(tracking_obj, attr_name, attr_value)
         return tracking_obj
 
 tracking_store = TrackingStore()

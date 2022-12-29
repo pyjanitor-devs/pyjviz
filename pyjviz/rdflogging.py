@@ -7,6 +7,7 @@ import pandas as pd
 import uuid
 
 from . import uw
+from . import pf_pandas
 
 base_uri = 'https://github.com/pyjanitor-devs/pyjviz/rdflog.shacl.ttl/'
 method_counter = 0
@@ -36,6 +37,7 @@ class RDFLogger:
     def init(out_filename): 
         global rdflogger
         rdflogger = RDFLogger(out_filename)
+        #pf_pandas.enable_pf_pandas()
     
     def __init__(self, out_filename):        
         self.out_fd = open_pyjrdf_output__(out_filename)
@@ -50,8 +52,8 @@ class RDFLogger:
     def dump_triple__(self, subj, pred, obj):
         print(subj, pred, obj, ".", file = self.out_fd)
 
-    def register_obj(self, tracking_obj):
-        obj_uuid = str(tracking_obj.uuid)
+    def register_obj(self, obj, t_obj):
+        obj_uuid = str(t_obj.uuid)
         if obj_uuid in self.known_objs:
             ret_uri = self.known_objs[obj_uuid]
         else:
@@ -82,26 +84,26 @@ class RDFLogger:
             thread_uri = self.known_threads[thread_id]
         return thread_uri
             
-    def dump_obj_state(self, obj):
-        obj_uri = self.register_obj(obj)
+    def dump_obj_state(self, obj, t_obj):
+        obj_uri = self.register_obj(obj, t_obj)
         obj_state_uri = f"<ObjState#{self.random_id}>"; self.random_id += 1
-        chain_uri = self.register_chain(obj.obj_chain_path)
+        chain_uri = self.register_chain(t_obj.obj_chain_path)
         
         if isinstance(obj.u_obj, pd.DataFrame):
             df = obj.u_obj
             #ipdb.set_trace()
             self.dump_triple__(obj_state_uri, "rdf:type", "<ObjState>")
             self.dump_triple__(obj_state_uri, "<obj>", obj_uri)
-            self.dump_triple__(obj_state_uri, "<version>", f'"{obj.last_version_num}"')
+            self.dump_triple__(obj_state_uri, "<version>", f'"{t_obj.last_version_num}"')
             self.dump_triple__(obj_state_uri, "<chain>", chain_uri)
             self.dump_triple__(obj_state_uri, "<df-shape>", f'"{df.shape}"')
             #self.dump_triple__(obj_state_uri, "<df-columns>", f'"{df.columns}"')
         return obj_state_uri
 
-    def dump_method_call_in(self, thread_id, obj, method_name, method_args, method_kwargs):
+    def dump_method_call_in(self, thread_id, obj, t_obj, method_name, method_args, method_kwargs):
         rdfl = self
         
-        obj_chain_uri = rdfl.register_chain(obj.obj_chain_path)
+        obj_chain_uri = rdfl.register_chain(t_obj.obj_chain_path)
         thread_uri = rdfl.register_thread(thread_id)
         method_call_id = rdfl.random_id; rdfl.random_id += 1
         method_call_uri = f"<MethodCall#{method_call_id}>"
@@ -113,16 +115,17 @@ class RDFLogger:
         rdfl.dump_triple__(method_call_uri, "<method-counter>", method_counter); method_counter += 1
         rdfl.dump_triple__(method_call_uri, "<method-call-chain>", obj_chain_uri)
 
-        if obj.last_obj_state_uri is None:
-            obj.last_obj_state_uri = rdfl.dump_obj_state(obj)
-        rdfl.dump_triple__(method_call_uri, "<method-call-arg0>", obj.last_obj_state_uri)
+        if t_obj.last_obj_state_uri is None:
+            t_obj.last_obj_state_uri = rdfl.dump_obj_state(obj, t_obj)
+        rdfl.dump_triple__(method_call_uri, "<method-call-arg0>", t_obj.last_obj_state_uri)
 
         c = 1
         for arg_obj in method_args:
             if isinstance(arg_obj, uw.UWObject):
-                if arg_obj.last_obj_state_uri is None:
-                    arg_obj.last_obj_state_uri = rdfl.dump_obj_state(arg_obj)
-                rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.last_obj_state_uri)
+                arg_t_obj = obj_tracking.tracking_store.get_tracking_obj(arg_obj)
+                if arg_t_obj.last_obj_state_uri is None:
+                    arg_t_obj.last_obj_state_uri = rdfl.dump_obj_state(arg_obj, arg_t_obj)
+                rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_t_obj.last_obj_state_uri)
             c += 1
 
         return method_call_uri
