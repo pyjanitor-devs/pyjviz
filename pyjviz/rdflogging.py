@@ -8,6 +8,7 @@ import uuid
 
 from . import uw
 from . import pf_pandas
+from . import obj_tracking
 
 base_uri = 'https://github.com/pyjanitor-devs/pyjviz/rdflog.shacl.ttl/'
 method_counter = 0
