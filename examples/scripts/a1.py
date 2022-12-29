@@ -37,16 +37,16 @@ if __name__ == "__main__":
         df2 = df.a0()
     print(df2.describe())
 
-    with pyjviz.MethodsChain("c") as c1:
-        df3 = df.continue_to(c1).a0()
+    with pyjviz.MethodsChain("/c"):
+        df3 = df.a0().continue_to("/c1").a0()
     print(df3.describe())
 
-    with pyjviz.MethodsChain("cc") as cc:
-        df4 = df.continue_to(cc).a0().a0().a2()
+    with pyjviz.MethodsChain("/cc") as cc:
+        df4 = df.continue_to("/cc2").a0().a0().a2()
     print(df4.describe())
 
     with cc:
-        df5 = df.continue_to(cc).a0().a0().a2().return_to(c)
+        df5 = df.a0().continue_to("/ucc").a0().a0().a2().return_to("/c")
     print(df5.describe())
     
     pyjviz.render_rdflog(rdflog_fn)

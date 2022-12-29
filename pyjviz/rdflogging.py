@@ -62,17 +62,14 @@ class RDFLogger:
 
         return ret_uri
         
-    def register_chain(self, chain):
-        chain_id = id(chain)
+    def register_chain(self, chain_path):
+        chain_id = chain_path
         chain_uri = None
         if not chain_id in self.known_chains:
             chain_uri = self.known_chains[chain_id] = f"<Chain#{chain_id}>"
             self.dump_triple__(chain_uri, "rdf:type", "<Chain>")
             #ipdb.set_trace()
-            self.dump_triple__(chain_uri, "rdf:label", f'"{chain.chain_name}"' if chain else "rdf:nil")
-            if chain and chain.parent_chain:
-                parent_chain_uri = self.register_chain(chain.parent_chain)
-                self.dump_triple__(chain_uri, "<parent-chain>", parent_chain_uri)
+            self.dump_triple__(chain_uri, "rdf:label", f'"{chain_path}"' if chain_path else "rdf:nil")
         else:
             chain_uri = self.known_chains[chain_id]
         return chain_uri
@@ -88,7 +85,7 @@ class RDFLogger:
     def dump_obj_state(self, obj):
         obj_uri = self.register_obj(obj)
         obj_state_uri = f"<ObjState#{self.random_id}>"; self.random_id += 1
-        chain_uri = self.register_chain(obj.obj_chain)
+        chain_uri = self.register_chain(obj.obj_chain_path)
         
         if isinstance(obj.u_obj, pd.DataFrame):
             df = obj.u_obj
@@ -104,7 +101,7 @@ class RDFLogger:
     def dump_method_call_in(self, thread_id, obj, method_name, method_args, method_kwargs):
         rdfl = self
         
-        obj_chain_uri = rdfl.register_chain(obj.obj_chain)
+        obj_chain_uri = rdfl.register_chain(obj.obj_chain_path)
         thread_uri = rdfl.register_thread(thread_id)
         method_call_id = rdfl.random_id; rdfl.random_id += 1
         method_call_uri = f"<MethodCall#{method_call_id}>"

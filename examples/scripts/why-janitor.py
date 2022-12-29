@@ -29,12 +29,12 @@ with pyjviz.MethodsChain("c") as c, \
 
     df = (
         pyjviz.UWObject(pd.DataFrame.from_dict(company_sales))
-        .continue_to(cleaning)
+        .continue_to("cleaning")
         .remove_columns(["Company1"])
         .dropna(subset=["Company2", "Company3"])
         .rename_column("Company2", "Amazon")
         .rename_column("Company3", "Facebook")
-        .return_to(c)
+        .return_to("c")
         .add_column("Google", [450.0, 550.0, 800.0])
     )
 

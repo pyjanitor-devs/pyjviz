@@ -27,11 +27,15 @@ if __name__ == "__main__":
     df = pyjviz.UWObject(pd.DataFrame({'a': range(10)}))
 
     #ipdb.set_trace()
-    with pyjviz.MethodsChain("/c"):
-        df0 = df.a0()
-        df1 = df.a0().a0()
-        df2 = df.a0()
-
+    df.obj_chain_path = "c"
+    #pyjviz.curr_methods_chain_path = "c"
+    df0 = df.a0()
+    df1 = df.a0().a0()
+    df2 = df.a0()
+    #df.obj_chain_path = None
+    print(df.describe())
+    
+    #df1.obj_chain_path = None
     print(df1.describe())
 
     pyjviz.render_rdflog(rdflog_fn)

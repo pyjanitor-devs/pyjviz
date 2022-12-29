@@ -29,10 +29,10 @@ if __name__ == "__main__":
     res1.describe()
 
     with c1:
-        with pyjviz.MethodsChain("c2", c1) as c2:
+        with pyjviz.MethodsChain("c2"):
             #ipdb.set_trace()
             res2 = df1.select_columns('value_1').conditional_join(
-                df2.continue_to(c2).select_columns('val*'),
+                df2.continue_to("c22").select_columns('val*'),
                 ('value_1', 'value_2A', '>'),
                 ('value_1', 'value_2B', '<'),
             )
