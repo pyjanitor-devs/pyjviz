@@ -10,13 +10,14 @@ if __name__ == "__main__":
     # configure pyjviz
     rdflog_fn = pyjviz.get_rdflog_filename(sys.argv[0])
     pyjviz.RDFLogger.init(rdflog_fn)
+    pyjviz.enable_pf_pandas()
 
-    df1 = pyjviz.UWObject(pd.DataFrame({'id': [1,1,1,2,2,3],
-                                        'value_1': [2,5,7,1,3,4]}))
+    df1 = pd.DataFrame({'id': [1,1,1,2,2,3],
+                        'value_1': [2,5,7,1,3,4]})
     
-    df2 = pyjviz.UWObject(pd.DataFrame({'id': [1,1,1,1,2,2,2,3],
-                                        'value_2A': [0,3,7,12,0,2,3,1],
-                                        'value_2B': [1,5,9,15,1,4,6,3]}))
+    df2 = pd.DataFrame({'id': [1,1,1,1,2,2,2,3],
+                        'value_2A': [0,3,7,12,0,2,3,1],
+                        'value_2B': [1,5,9,15,1,4,6,3]})
                       
     with pyjviz.MethodsChain("c1") as c1:
         res1 = df1.conditional_join(df2,
@@ -32,7 +33,7 @@ if __name__ == "__main__":
         with pyjviz.MethodsChain("c2"):
             #ipdb.set_trace()
             res2 = df1.select_columns('value_1').conditional_join(
-                df2.continue_to("c22").select_columns('val*'),
+                df2.select_columns('val*'),
                 ('value_1', 'value_2A', '>'),
                 ('value_1', 'value_2B', '<'),
             )
@@ -40,4 +41,4 @@ if __name__ == "__main__":
     print(res2)
     res2.describe()
 
-    pyjviz.render_rdflog(rdflog_fn)
+    pyjviz.render_rdflog(rdflog_fn, vertical = False)

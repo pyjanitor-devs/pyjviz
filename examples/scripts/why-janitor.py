@@ -8,6 +8,7 @@ import pyjviz, sys
 # configure pyjviz
 rdflog_fn = pyjviz.get_rdflog_filename(sys.argv[0])
 pyjviz.RDFLogger.init(rdflog_fn)
+pyjviz.enable_pf_pandas()
 
 # Sample Data curated for this example
 company_sales = {
@@ -24,20 +25,18 @@ print(pd.DataFrame.from_dict(company_sales))
 #  2        Mar     300.0       NaN     600.0
 #  3      April     400.0     500.0     675.0
 
-with pyjviz.MethodsChain("c") as c, \
-     pyjviz.MethodsChain("cleaning") as cleaning:
-
+with pyjviz.MethodsChain():
     df = (
-        pyjviz.UWObject(pd.DataFrame.from_dict(company_sales))
-        .continue_to("cleaning")
+        pd.DataFrame.from_dict(company_sales)
         .remove_columns(["Company1"])
+        .set_chain("most-cleaning")
         .dropna(subset=["Company2", "Company3"])
         .rename_column("Company2", "Amazon")
         .rename_column("Company3", "Facebook")
-        .return_to("c")
+        .reset_chain()
         .add_column("Google", [450.0, 550.0, 800.0])
     )
-
+    
     # Output looks like this:
     # Out[15]:
     #   SalesMonth  Amazon  Facebook  Google

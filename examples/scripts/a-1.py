@@ -20,18 +20,22 @@ if __name__ == "__main__":
     # configure pyjviz
     rdflog_fn = pyjviz.get_rdflog_filename(sys.argv[0])
     pyjviz.RDFLogger.init(rdflog_fn)
+    pyjviz.enable_pf_pandas()
 
     print(TestDF, TestDF.__name__, TestDF.__supertype__)
     print(TestDF.columns)
 
-    df = pyjviz.UWObject(pd.DataFrame({'a': range(10)}))
+    df = pd.DataFrame({'a': range(10)})
 
-    #ipdb.set_trace()
-    df.obj_chain_path = "c"
+    ipdb.set_trace()
+
+    #df.obj_chain_path = "c"
     #pyjviz.curr_methods_chain_path = "c"
-    df0 = df.a0()
-    df1 = df.a0().a0()
-    df2 = df.a0()
+    with pyjviz.MethodsChain("c"):
+        df0 = df.a0()
+        df1 = df.a0().a0()
+        df2 = df.a0()
+        
     #df.obj_chain_path = None
     print(df.describe())
     

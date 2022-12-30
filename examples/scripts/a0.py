@@ -32,7 +32,7 @@ if __name__ == "__main__":
         pyjviz.enable_pf_pandas()
 
     #ipdb.set_trace()
-    with pyjviz.MethodsChain("/c"):
+    with pyjviz.MethodsChain("c"):
         df0 = df.a0()
         df1 = df.a0().a0()
         df2 = df.a0()
