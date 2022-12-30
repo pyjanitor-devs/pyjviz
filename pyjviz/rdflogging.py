@@ -83,10 +83,10 @@ class RDFLogger:
             thread_uri = self.known_threads[thread_id]
         return thread_uri
             
-    def dump_obj_state(self, obj, t_obj):
+    def dump_obj_state(self, chain_path, obj, t_obj):
         obj_uri = self.register_obj(obj, t_obj)
         obj_state_uri = f"<ObjState#{self.random_id}>"; self.random_id += 1
-        chain_uri = self.register_chain(t_obj.obj_chain_path)
+        chain_uri = self.register_chain(chain_path)
 
         if isinstance(obj, uw.UWObject):
             obj = obj.u_obj
@@ -102,10 +102,10 @@ class RDFLogger:
             #self.dump_triple__(obj_state_uri, "<df-columns>", f'"{df.columns}"')
         return obj_state_uri
 
-    def dump_method_call_in(self, thread_id, obj, t_obj, method_name, method_args, method_kwargs):
+    def dump_method_call_in(self, chain_path, thread_id, obj, t_obj, method_name, method_args, method_kwargs):
         rdfl = self
         
-        obj_chain_uri = rdfl.register_chain(t_obj.obj_chain_path)
+        obj_chain_uri = rdfl.register_chain(chain_path)
         thread_uri = rdfl.register_thread(thread_id)
         method_call_id = rdfl.random_id; rdfl.random_id += 1
         method_call_uri = f"<MethodCall#{method_call_id}>"
@@ -118,7 +118,7 @@ class RDFLogger:
         rdfl.dump_triple__(method_call_uri, "<method-call-chain>", obj_chain_uri)
 
         if t_obj.last_obj_state_uri is None:
-            t_obj.last_obj_state_uri = rdfl.dump_obj_state(obj, t_obj)
+            t_obj.last_obj_state_uri = rdfl.dump_obj_state(chain_path, obj, t_obj)
         rdfl.dump_triple__(method_call_uri, "<method-call-arg0>", t_obj.last_obj_state_uri)
 
         c = 1
@@ -128,7 +128,7 @@ class RDFLogger:
             if isinstance(arg_obj, pd.DataFrame):
                 arg_t_obj = obj_tracking.tracking_store.get_tracking_obj(arg_obj)
                 if arg_t_obj.last_obj_state_uri is None:
-                    arg_t_obj.last_obj_state_uri = rdfl.dump_obj_state(arg_obj, arg_t_obj)
+                    arg_t_obj.last_obj_state_uri = rdfl.dump_obj_state(chain_path, arg_obj, arg_t_obj)
                 rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_t_obj.last_obj_state_uri)
             c += 1
 

@@ -17,7 +17,7 @@ from . import rdflogging
 def uri_to_dot_id(uri):
     return str(hash(uri)).replace("-", "d")
 
-def dump_dot_code(g, vertical):
+def dump_dot_code(g, vertical, show_objects):
     #ipdb.set_trace()
     chains = [r for r in g.query("select ?pp ?pl { ?pp rdf:type <Chain>; rdf:label ?pl }", base = rdflogging.base_uri)]
 
@@ -153,7 +153,7 @@ def dump_dot_code(g, vertical):
     for obj, obj_state in g.query(rq, base = rdflogging.base_uri):
         print(f"node_{uri_to_dot_id(obj)} -> node_{uri_to_dot_id(obj_state)}", file = out_fd)
                 
-    if 0: # show transient objects
+    if show_objects: # show transient objects
         rq = """
         select ?obj ?obj_type ?obj_uuid { ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid }
         """
@@ -180,13 +180,13 @@ def dump_dot_code(g, vertical):
     print("}", file = out_fd)
     return out_fd.getvalue()
 
-def render_rdflog(rdflog_ttl_fn, verbose = True, vertical = True):
+def render_rdflog(rdflog_ttl_fn, verbose = True, vertical = True, show_objects = False):
     rdflogging.rdflogger.flush__()
 
     g = rdflib.Graph()
     g.parse(rdflog_ttl_fn)
 
-    dot_code = dump_dot_code(g, vertical)
+    dot_code = dump_dot_code(g, vertical, show_objects)
     gv_src = gv.Source(dot_code)
     gv_src.render(rdflog_ttl_fn + '.dot', format = 'png', engine = 'dot')
 
