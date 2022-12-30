@@ -25,7 +25,7 @@ if __name__ == "__main__":
                                     df_columns = {'id':'df_id'},
                                     right_columns = {'id':'right_id'}
                                     )
-        res2 = df1.describe()
+    res2 = df1.describe()
     print(res1)
     res1.describe()
 

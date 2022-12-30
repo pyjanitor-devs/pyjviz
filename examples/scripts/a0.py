@@ -40,4 +40,4 @@ if __name__ == "__main__":
     #ipdb.set_trace()
     print(df1.describe())
 
-    pyjviz.render_rdflog(rdflog_fn)
+    pyjviz.render_rdflog(rdflog_fn, show_objects = True)
