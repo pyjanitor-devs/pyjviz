@@ -6,10 +6,6 @@ import pandas_flavor as pf
 from . import rdflogging
 from . import obj_tracking
 from . import methods_chain
-from . import uw
-
-def pf_pandas_can_handle_the_obj(obj):
-    return isinstance(obj, pd.DataFrame)
 
 def enable_pf_pandas__():
     print("pf_pandas.py: register handle_pandas_method_call")

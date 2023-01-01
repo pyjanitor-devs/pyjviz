@@ -6,7 +6,6 @@ import os.path
 import pandas as pd
 import uuid
 
-from . import uw
 from . import obj_tracking
 
 base_uri = 'https://github.com/pyjanitor-devs/pyjviz/rdflog.shacl.ttl#'
@@ -33,12 +32,7 @@ def open_pyjrdf_output__(out_fn):
 rdflogger = None
 
 def get_obj_type(o):
-    if isinstance(o, uw.UWObject):
-        if isinstance(o.u_obj, pd.DataFrame):
-            ret = "UW DataFrame"
-        else:
-            raise Exception(f"unknown type of o.u_obj: {str(type(o.u_obj))}")
-    elif isinstance(o, pd.DataFrame):
+    if isinstance(o, pd.DataFrame):
         ret = "DataFrame"
     else:
         raise Exception(f"unknown type of o: {str(type(o))}")
@@ -109,9 +103,7 @@ class RDFLogger:
             self.dump_triple__(obj_state_uri, "<version>", f'"{t_obj.last_version_num}"')
             self.dump_triple__(obj_state_uri, "<chain>", chain_uri)
 
-            if isinstance(obj, uw.UWObject) and isinstance(obj.u_obj, pd.DataFrame):
-                self.dump_DataFrame_obj_state(obj_state_uri, obj.u_obj)
-            elif isinstance(obj, pd.DataFrame):
+            if isinstance(obj, pd.DataFrame):
                 self.dump_DataFrame_obj_state(obj_state_uri, obj)
             else:
                 pass
@@ -145,7 +137,7 @@ class RDFLogger:
 
         c = 1
         for arg_obj in method_args:
-            if isinstance(arg_obj, pd.DataFrame) or isinstance(arg_obj, uw.UWObject):
+            if isinstance(arg_obj, pd.DataFrame):
                 arg_t_obj = obj_tracking.tracking_store.get_tracking_obj(arg_obj)
                 if arg_t_obj.last_obj_state_uri is None:
                     arg_t_obj.last_obj_state_uri = rdfl.dump_obj_state(chain_path, arg_obj, arg_t_obj)
