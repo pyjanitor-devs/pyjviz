@@ -8,7 +8,6 @@ import pyjviz, sys
 # configure pyjviz
 rdflog_fn = pyjviz.get_rdflog_filename(sys.argv[0])
 pyjviz.RDFLogger.init(rdflog_fn)
-pyjviz.enable_pf_pandas()
 
 # Sample Data curated for this example
 company_sales = {

@@ -5,6 +5,8 @@ from . import obj_tracking
 from . import rdflogging
 from . import methods_chain
 
+from pandas import DataFrame
+
 class UWMethodCall:
     def __init__(self, obj, method_name, bound_method):
         self.obj = obj
@@ -15,7 +17,7 @@ class UWMethodCall:
         rdfl = rdflogging.rdflogger
 
         print("__call__", self.method_name)
-        #ipdb.set_trace()
+        ipdb.set_trace()
 
         if methods_chain.curr_methods_chain_path:
             t_obj = obj_tracking.tracking_store.get_tracking_obj(self.obj)
@@ -47,6 +49,10 @@ class UWObject:
     def __init__(self, u_obj):
         if isinstance(u_obj, UWObject):
             raise Exception("attempt to create UWObject with u_obj of type UWObject")
+
+        if isinstance(u_obj, DataFrame):
+            raise Exception("can't create wrapped DataFrame")
+
         self.u_obj = u_obj
 
         if 0: # all atributes are kept in tracking object

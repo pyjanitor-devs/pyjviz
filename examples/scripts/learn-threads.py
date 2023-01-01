@@ -49,7 +49,7 @@ if __name__ == "__main__":
     
     print("Main Thread Here!!")
 
-    df = pyjviz.UWObject(pd.DataFrame({'a': range(10)}))
+    df = pd.DataFrame({'a': range(10)})
     
     with pyjviz.MethodsChain("c") as c:
         r1 = df.x()

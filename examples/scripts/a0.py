@@ -10,7 +10,6 @@ import pandas as pd
 TestDF = typing.NewType('TestDF', pd.DataFrame)
 TestDF.columns = ['a']
 
-
 @pf.register_dataframe_method
 def a0(df: pd.DataFrame) -> TestDF:
     print("a0")
@@ -21,15 +20,11 @@ if __name__ == "__main__":
     # configure pyjviz
     rdflog_fn = pyjviz.get_rdflog_filename(sys.argv[0])
     pyjviz.RDFLogger.init(rdflog_fn)
-
+        
     print(TestDF, TestDF.__name__, TestDF.__supertype__)
     print(TestDF.columns)
 
     df = pd.DataFrame({'a': range(10)})
-    if 0:
-        df = pyjviz.UWObject(df)
-    else:
-        pyjviz.enable_pf_pandas()
 
     #ipdb.set_trace()
     with pyjviz.MethodsChain("c"):
@@ -40,4 +35,4 @@ if __name__ == "__main__":
     #ipdb.set_trace()
     print(df1.describe())
 
-    pyjviz.render_rdflog(rdflog_fn, show_objects = True)
+    pyjviz.render_rdflog(rdflog_fn)

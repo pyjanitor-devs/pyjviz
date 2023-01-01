@@ -77,14 +77,15 @@ def dump_dot_code(g, vertical, show_objects):
             """
             
         rq = """
-        select ?obj_state ?df_shape { 
-          ?obj_state rdf:type <ObjState>; <obj> ?obj .
+        select ?obj_state ?obj_type ?df_shape { 
+          ?obj_state rdf:type <ObjState>; <obj> ?obj.
+          ?obj rdf:type <Obj>; <obj-type> ?obj_type.
           ?obj_state <chain> ?chain .
           ?obj_state <df-shape> ?df_shape .
         }
         """
 
-        for obj_state, df_shape in g.query(rq, base = rdflogging.base_uri, initBindings = {'chain': chain}):
+        for obj_state, obj_type, df_shape in g.query(rq, base = rdflogging.base_uri, initBindings = {'chain': chain}):
             #cols = "\n".join(['<tr><td align="left"><FONT POINT-SIZE="8px">' + html.escape(x) + "</FONT></td></tr>" for x in df_cols.toPython().split(",")])
             cols = "TBC"
             print(f"""
@@ -92,7 +93,7 @@ def dump_dot_code(g, vertical, show_objects):
                 color="#88000022"
                 shape = rect
                 label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
-                         <tr> <td> <b>{obj_state}</b><br/>{df_shape}</td> </tr>
+                         <tr> <td> <b>{obj_state}</b><br/>{obj_type}<br/>{df_shape}</td> </tr>
                          <tr> <td align="left"><i>columns:</i><br align="left"/></td></tr>
                 {cols}
                          </table>>

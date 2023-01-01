@@ -8,7 +8,11 @@ from . import obj_tracking
 from . import methods_chain
 from . import uw
 
-def enable_pf_pandas():
+def pf_pandas_can_handle_the_obj(obj):
+    return isinstance(obj, pd.DataFrame)
+
+def enable_pf_pandas__():
+    print("pf_pandas.py: register handle_pandas_method_call")
     pf.register.handle_pandas_method_call = handle_pandas_method_call
 
     old_describe = pd.DataFrame.describe

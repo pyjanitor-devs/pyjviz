@@ -21,7 +21,6 @@ if __name__ == "__main__":
         
     print(dirty)
 
-    dirty = pyjviz.UWObject(dirty)
     with pyjviz.MethodsChain("from_dirty_to_clean") as c:
         clean = (dirty
                  .clean_names()
