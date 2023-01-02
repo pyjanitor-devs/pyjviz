@@ -26,7 +26,7 @@ def enable_pf_pandas__():
 
     @pf.register_dataframe_method
     def dropna(df: pd.DataFrame, **kwargs) -> pd.DataFrame:
-        print("call dropna, current chain:", methods_chain.curr_methods_chain_path)
+        print("call dropna")
         ret = old_dropna(df, **kwargs)
         #print("my dropna", id(df), id(ret))
         return ret
@@ -48,12 +48,14 @@ def enable_pf_pandas__():
         ret = old_assign(df, **kw)
         #print("my assign", id(df), id(ret))
         return ret
-               
+
+"""
 @pf.register_dataframe_method
 def set_chain(df: pd.DataFrame, chain_path: str) -> pd.DataFrame:
     #ipdb.set_trace()
-    #global curr_methods_chain_path
-
+    global curr_methods_chain
+    curr_methods_chain_path.set_savepoint(...)
+    
     if methods_chain.curr_methods_chain_path is None:
         methods_chain.curr_methods_chain_path = []
     methods_chain.curr_methods_chain_path.append(chain_path)
@@ -69,7 +71,8 @@ def reset_chain(df: pd.DataFrame) -> pd.DataFrame:
         methods_chain.curr_methods_chain_path = None
 
     return df
-    
+"""   
+
 def handle_pandas_method_call(obj, method_name, method_args, method_kwargs, ret):
     print("handle_pandas_method_call", id(obj))
 
@@ -82,8 +85,8 @@ def handle_pandas_method_call(obj, method_name, method_args, method_kwargs, ret)
     #ipdb.set_trace()
 
     t_obj = obj_tracking.tracking_store.get_tracking_obj(obj)
-    if methods_chain.curr_methods_chain_path:
-        chain_path = "/" + "/".join(methods_chain.curr_methods_chain_path)
+    if methods_chain.curr_methods_chain:
+        chain_path = methods_chain.curr_methods_chain.get_path()
         thread_id = threading.get_native_id()
         method_call_uri = rdfl.dump_method_call_in(chain_path, thread_id, obj, t_obj, method_name, method_args, method_kwargs)
 

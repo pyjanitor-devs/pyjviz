@@ -38,15 +38,15 @@ if __name__ == "__main__":
     print(df2.describe())
 
     with pyjviz.MethodsChain("/c"):
-        df3 = df.a0().set_chain("/c1").a0()
+        df3 = df.a0().a0()
     print(df3.describe())
 
     with pyjviz.MethodsChain("/cc") as cc:
-        df4 = df.set_chain("/cc2").a0().a0().a2()
+        df4 = df.a0().a0().a2()
     print(df4.describe())
 
     with cc:
-        df5 = df.a0().set_chain("/ucc").a0().a0().a2()
+        df5 = df.a0().a0().a0().a2()
     print(df5.describe())
     
     pyjviz.render_rdflog(rdflog_fn)
