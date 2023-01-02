@@ -44,7 +44,12 @@ class RDFLogger:
     def init(out_filename): 
         global rdflogger
         rdflogger = RDFLogger(out_filename)
-    
+
+    @staticmethod
+    def flush():
+        global rdflogger
+        rdflogger.flush__()
+        
     def __init__(self, out_filename):        
         self.out_fd = open_pyjrdf_output__(out_filename)
         self.known_threads = {}

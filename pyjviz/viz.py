@@ -37,7 +37,7 @@ def dump_dot_code(g, vertical, show_objects):
       shape=plaintext
     ]
     edge [fontname="Helvetica,Arial,sans-serif"]    
-    """, file = out_fd)
+    """.replace("{rankdir}", rankdir), file = out_fd)
     #print('rankdir = "TB"', file = out_fd)
 
     #ipdb.set_trace()    
@@ -187,10 +187,10 @@ def render_rdflog(rdflog_ttl_fn, verbose = True, vertical = True, show_objects =
     g = rdflib.Graph()
     g.parse(rdflog_ttl_fn)
 
+    #ipdb.set_trace()
     if len(g) == 0:
         print(f"render_rdflog: empty graph found in {rdflog_ttl_fn}, no viz output will be produced")
-        return
-    
+        
     dot_code = dump_dot_code(g, vertical, show_objects)
     gv_src = gv.Source(dot_code)
     gv_src.render(rdflog_ttl_fn + '.dot', format = 'png', engine = 'dot')
