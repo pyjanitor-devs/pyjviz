@@ -7,10 +7,23 @@ from . import rdflogging
 from . import obj_tracking
 from . import methods_chain
 
+class DataFrameAttr:
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, *x, **y):
+        ipdb.set_trace()
+        print("Caller __call__", x, y)
+        return self.func(*x, **y)
+
 def enable_pf_pandas__():
     print("pf_pandas.py: register handle_pandas_method_call")
     pf.register.handle_pandas_method_call = handle_pandas_method_call
 
+    if 0: # TBC
+        old_getattr = pd.DataFrame.__getattr__
+        pd.DataFrame.__getattr__ = lambda *x, **y: DataFrameAttr(old_getattr)(*x, *y)
+    
     old_describe = pd.DataFrame.describe
     #del pd.DataFrame.describe
 
@@ -24,6 +37,8 @@ def enable_pf_pandas__():
     old_rename = pd.DataFrame.rename; del pd.DataFrame.rename
     old_assign = pd.DataFrame.assign; del pd.DataFrame.assign
 
+    old_combine_first = pd.Series.combine_first
+    
     @pf.register_dataframe_method
     def dropna(df: pd.DataFrame, **kwargs) -> pd.DataFrame:
         print("call dropna")
@@ -49,29 +64,11 @@ def enable_pf_pandas__():
         #print("my assign", id(df), id(ret))
         return ret
 
-"""
-@pf.register_dataframe_method
-def set_chain(df: pd.DataFrame, chain_path: str) -> pd.DataFrame:
-    #ipdb.set_trace()
-    global curr_methods_chain
-    curr_methods_chain_path.set_savepoint(...)
+    @pf.register_series_method
+    def combine_first(s: pd.Series, *args, **kw) -> pd.Series:
+        ret = old_combine_first(s, *args, **kw)
+        return ret
     
-    if methods_chain.curr_methods_chain_path is None:
-        methods_chain.curr_methods_chain_path = []
-    methods_chain.curr_methods_chain_path.append(chain_path)
-
-    return df
-
-@pf.register_dataframe_method
-def reset_chain(df: pd.DataFrame) -> pd.DataFrame:
-    #global curr_methods_chain_path
-
-    methods_chain.curr_methods_chain_path.pop()
-    if len(methods_chain.curr_methods_chain_path) == 0:
-        methods_chain.curr_methods_chain_path = None
-
-    return df
-"""   
 
 def handle_pandas_method_call(obj, method_name, method_args, method_kwargs, ret):
     print("handle_pandas_method_call", id(obj))
@@ -91,6 +88,7 @@ def handle_pandas_method_call(obj, method_name, method_args, method_kwargs, ret)
         method_call_uri = rdfl.dump_method_call_in(chain_path, thread_id, obj, t_obj, method_name, method_args, method_kwargs)
 
         ret_obj = ret if not ret is None else obj
+
         ret_t_obj = obj_tracking.tracking_store.get_tracking_obj(ret_obj)
 
         ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(chain_path, ret_obj, ret_t_obj)

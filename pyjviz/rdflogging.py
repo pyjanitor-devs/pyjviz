@@ -6,6 +6,8 @@ import os.path
 import pandas as pd
 import uuid
 
+import pandas_flavor as pf
+
 from . import obj_tracking
 
 base_uri = 'https://github.com/pyjanitor-devs/pyjviz/rdflog.shacl.ttl#'
@@ -34,6 +36,8 @@ rdflogger = None
 def get_obj_type(o):
     if isinstance(o, pd.DataFrame):
         ret = "DataFrame"
+    elif isinstance(o, pd.Series):
+        ret = "Series"
     else:
         raise Exception(f"unknown type of o: {str(type(o))}")
 
@@ -110,6 +114,8 @@ class RDFLogger:
 
             if isinstance(obj, pd.DataFrame):
                 self.dump_DataFrame_obj_state(obj_state_uri, obj)
+            elif isinstance(obj, pd.Series):
+                self.dump_Series_obj_state(obj_state_uri, obj)
             else:
                 pass
 
@@ -118,7 +124,9 @@ class RDFLogger:
     def dump_DataFrame_obj_state(self, obj_state_uri, df):
         self.dump_triple__(obj_state_uri, "<df-shape>", f'"{df.shape}"')
         #self.dump_triple__(obj_state_uri, "<df-columns>", f'"{df.columns}"')
-        
+
+    def dump_Series_obj_state(self, obj_state_uri, s):
+        self.dump_triple__(obj_state_uri, "<df-shape>", f'"{s.shape}"')        
     
     def dump_method_call_in(self, chain_path, thread_id, obj, t_obj, method_name, method_args, method_kwargs):
         #ipdb.set_trace()
@@ -141,12 +149,19 @@ class RDFLogger:
         rdfl.dump_triple__(method_call_uri, "<method-call-arg0>", t_obj.last_obj_state_uri)
 
         c = 1
-        for arg_obj in method_args:
-            if isinstance(arg_obj, pd.DataFrame):
+        all_args = list(method_args) + list(method_kwargs.values())
+        for arg_obj in all_args:
+            if isinstance(arg_obj, pf.register.LambdaCall):
+                #print("LambdaCall")
+                #ipdb.set_trace()
+                arg_obj = arg_obj.ret
+            
+            if isinstance(arg_obj, pd.DataFrame) or isinstance(arg_obj, pd.Series):
                 arg_t_obj = obj_tracking.tracking_store.get_tracking_obj(arg_obj)
                 if arg_t_obj.last_obj_state_uri is None:
                     arg_t_obj.last_obj_state_uri = rdfl.dump_obj_state(chain_path, arg_obj, arg_t_obj)
                 rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_t_obj.last_obj_state_uri)
+                
             c += 1
 
         return method_call_uri
