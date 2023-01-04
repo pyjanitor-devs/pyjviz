@@ -76,7 +76,24 @@ class RDFLogger:
             self.dump_triple__(ret_uri, "rdf:type", "<Obj>")
             self.dump_triple__(ret_uri, "<obj-type>", f'"{get_obj_type(obj)}"')
             self.dump_triple__(ret_uri, "<obj-uuid>", f'"{obj_uuid}"')
+            self.dump_triple__(ret_uri, "<obj-pyid>", f'{t_obj.pyid}')
 
+        parent_obj = t_obj.parent_obj
+        if not parent_obj is None:
+            ipdb.set_trace()
+            parent_t_obj = obj_tracking.tracking_store.get_tracking_obj(parent_obj)
+            parent_obj_uuid = str(parent_t_obj.uuid)
+            if parent_obj_uuid in self.known_objs:
+                parent_obj_uri = self.known_objs[parent_obj_uuid]
+            else:
+                parent_obj_uri = self.known_objs[parent_obj_uuid] = f"<Obj#{parent_obj_uuid}>"
+                self.dump_triple__(parent_obj_uri, "rdf:type", "<Obj>")
+                self.dump_triple__(parent_obj_uri, "<obj-type>", f'"{get_obj_type(parent_obj)}"')
+                self.dump_triple__(parent_obj_uri, "<obj-uuid>", f'"{parent_obj_uuid}"')
+                self.dump_triple__(parent_obj_uri, "<obj-pyid>", f'{parent_t_obj.pyid}')
+            
+            self.dump_triple__(ret_uri, "<parent-obj>", parent_obj_uri)
+            
         return ret_uri
         
     def register_chain(self, chain_path):

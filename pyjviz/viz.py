@@ -156,15 +156,15 @@ def dump_dot_code(g, vertical, show_objects):
                 
     if show_objects: # show transient objects
         rq = """
-        select ?obj ?obj_type ?obj_uuid { ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid }
+        select ?obj ?obj_type ?obj_uuid ?obj_pyid { ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid; <obj-pyid> ?obj_pyid }
         """
-        for obj, obj_type, obj_uuid in g.query(rq, base = rdflogging.base_uri):
+        for obj, obj_type, obj_uuid, obj_pyid in g.query(rq, base = rdflogging.base_uri):
             print(f"""
             node_{uri_to_dot_id(obj)} [
             color="#88000022"
             shape = rect
             label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
-            <tr> <td> <b>{obj_type}</b><br/>{obj_uuid}</td> </tr>
+            <tr> <td> <b>{obj_type}</b><br/>{obj_uuid}<br/>{obj_pyid}</td> </tr>
             </table>>
             ];
             """, file = out_fd)
@@ -176,7 +176,15 @@ def dump_dot_code(g, vertical, show_objects):
             print(f"""
             node_{uri_to_dot_id(obj)} -> node_{uri_to_dot_id(obj_state)};
             """, file = out_fd)
-        
+
+        rq = """
+        select ?obj ?p_obj { ?p_obj <parent-obj> ?obj }
+        """
+        for obj, p_obj in g.query(rq, base = rdflogging.base_uri):
+            print(f"""
+            node_{uri_to_dot_id(p_obj)} -> node_{uri_to_dot_id(obj)};
+            """, file = out_fd)        
+            
             
     print("}", file = out_fd)
     return out_fd.getvalue()

@@ -12,17 +12,34 @@ class DataFrameAttr:
         self.func = func
 
     def __call__(self, *x, **y):
-        ipdb.set_trace()
-        print("Caller __call__", x, y)
-        return self.func(*x, **y)
+        #print("DataFrameAttr __call__", x[1])
+        #ipdb.set_trace()
+        ret_obj = self.func(*x, **y)
+        ret_t_obj = obj_tracking.tracking_store.get_tracking_obj(ret_obj)
+        parent_obj = x[0]
+        ret_t_obj.parent_obj = parent_obj
+        print("DataFrameAttr __call__", x[1], id(x[0]), id(ret_obj), y, type(ret_obj), ret_t_obj.uuid)
+        return ret_obj
 
+class Caller_to_datetime:
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, *x, **y):
+        print("Caller_to_datetime: __call__")
+        #ipdb.set_trace()
+        return self.func(*x, **y)
+    
 def enable_pf_pandas__():
     print("pf_pandas.py: register handle_pandas_method_call")
     pf.register.handle_pandas_method_call = handle_pandas_method_call
 
-    if 0: # TBC
-        old_getattr = pd.DataFrame.__getattr__
-        pd.DataFrame.__getattr__ = lambda *x, **y: DataFrameAttr(old_getattr)(*x, *y)
+    old_getattr = pd.DataFrame.__getattr__
+    pd.DataFrame.__getattr__ = lambda *x, **y: DataFrameAttr(old_getattr)(*x, *y)
+
+    if 1:
+        old_to_datetime = pd.to_datetime
+        pd.to_datetime = lambda *x, **y: Caller_to_datetime(old_to_datetime)(*x, **y)
     
     old_describe = pd.DataFrame.describe
     #del pd.DataFrame.describe
@@ -61,7 +78,7 @@ def enable_pf_pandas__():
     @pf.register_dataframe_method
     def assign(df: pd.DataFrame, **kw) -> pd.DataFrame:
         ret = old_assign(df, **kw)
-        #print("my assign", id(df), id(ret))
+        print("my assign", id(df), id(ret))
         return ret
 
     @pf.register_series_method

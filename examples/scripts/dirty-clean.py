@@ -21,16 +21,30 @@ if __name__ == "__main__":
         
     print(dirty)
 
-    with pyjviz.MethodsChain("from_dirty_to_clean") as c:
-        clean = (dirty
-                 .clean_names()
-                 .dropna(axis='columns', how='all')
-                 .dropna(axis='rows', how='all')
-                 .rename(columns={"%_allocated": "percent_allocated", "full_time_": "full_time"})
-                 .assign(certification = lambda df: df.certification.combine_first(df.certification_1))
-                 .drop(columns='certification_1')
-                 .assign(hire_date = lambda df: pd.to_datetime(df.hire_date, unit='D', origin='1899-12-30'))
-                 )
+    if 0:
+        with pyjviz.MethodsChain("from_dirty_to_clean") as c:
+            clean = (dirty
+                     .clean_names()
+                     .dropna(axis='columns', how='all')
+                     .dropna(axis='rows', how='all')
+                     .rename(columns={"%_allocated": "percent_allocated", "full_time_": "full_time"})
+                     .assign(certification = lambda df: df.certification.combine_first(df.certification_1))
+                     .drop(columns='certification_1')
+                     .assign(hire_date = lambda df: pd.to_datetime(df.hire_date, unit='D', origin='1899-12-30'))
+                     )
+    else:
+        with pyjviz.MethodsChain("from_dirty_to_clean") as c:
+            df = (dirty
+                  .clean_names()
+                  .dropna(axis='columns', how='all')
+                  .dropna(axis='rows', how='all')
+                  .rename(columns={"%_allocated": "percent_allocated", "full_time_": "full_time"})
+                  .assign(certification = lambda df: df.certification.combine_first(df.certification_1))
+                  .drop(columns='certification_1'))
+            print("df id:", id(df))
+            clean = df.assign(hire_date = pd.to_datetime(df.hire_date, unit='D', origin='1899-12-30'))
+            #clean = df.assign(hire_date = df.hire_date)
+                     
     print(clean)
-
-    pyjviz.render_rdflog(rdflog_fn, vertical = True)
+        
+    pyjviz.render_rdflog(rdflog_fn, vertical = True, show_objects = True)

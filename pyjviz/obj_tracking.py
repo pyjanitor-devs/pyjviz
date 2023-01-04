@@ -11,7 +11,8 @@ class TrackingObj:
         self.pyid = id(obj)
         self.last_version_num = 0
         self.last_obj_state_uri = None
-
+        self.parent_obj = None
+        
     def is_alive(self):
         return not self.obj_wref() is None
 
