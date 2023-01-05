@@ -47,8 +47,9 @@ def enable_pf_pandas__():
         return ret
 
     @pf.register_dataframe_method
-    def drop(df: pd.DataFrame, columns) -> pd.DataFrame:
-        ret = old_drop(df, columns = columns)
+    def drop(df: pd.DataFrame, *x, **y) -> pd.DataFrame:
+        ipdb.set_trace()
+        ret = old_drop(df, *x, **y)
         #print("my drop", id(df), id(ret))
         return ret
 

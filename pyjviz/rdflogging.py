@@ -5,6 +5,7 @@ import sys
 import os.path
 import pandas as pd
 import uuid
+import base64
 
 import pandas_flavor as pf
 
@@ -69,6 +70,7 @@ class RDFLogger:
 
     def register_obj(self, obj, t_obj):
         obj_uuid = str(t_obj.uuid)
+        obj_pyid = t_obj.pyid
         if obj_uuid in self.known_objs:
             ret_uri = self.known_objs[obj_uuid]
         else:
@@ -76,6 +78,7 @@ class RDFLogger:
             self.dump_triple__(ret_uri, "rdf:type", "<Obj>")
             self.dump_triple__(ret_uri, "<obj-type>", f'"{get_obj_type(obj)}"')
             self.dump_triple__(ret_uri, "<obj-uuid>", f'"{obj_uuid}"')
+            self.dump_triple__(ret_uri, "<obj-pyid>", f'{obj_pyid}')
 
         return ret_uri
         
@@ -121,8 +124,13 @@ class RDFLogger:
 
         return obj_state_uri
 
-    def dump_DataFrame_obj_state(self, obj_state_uri, df):
+    def dump_DataFrame_obj_state(self, obj_state_uri, df, kwargs = {'show-head': True}):
         self.dump_triple__(obj_state_uri, "<df-shape>", f'"{df.shape}"')
+        if kwargs.get('show-head', False) == True:
+            #df_head_html = df.head().to_html()
+            #ipdb.set_trace()
+            df_head_html = base64.b64encode(df.head(5).to_string(index = False, justify = 'start').encode('ascii')).decode('ascii')
+            self.dump_triple__(obj_state_uri, "<df-head>", '"' + df_head_html + '"')
         #self.dump_triple__(obj_state_uri, "<df-columns>", f'"{df.columns}"')
 
     def dump_Series_obj_state(self, obj_state_uri, s):

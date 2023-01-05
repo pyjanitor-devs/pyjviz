@@ -5,7 +5,7 @@ import ipdb
 import os.path
 import collections
 import html
-import sys
+import sys, base64
 
 import rdflib
 from io import StringIO
@@ -38,7 +38,6 @@ def dump_dot_code(g, vertical, show_objects):
     ]
     edge [fontname="Helvetica,Arial,sans-serif"]    
     """.replace("{rankdir}", rankdir), file = out_fd)
-    #print('rankdir = "TB"', file = out_fd)
 
     #ipdb.set_trace()    
     for chain, chain_label in chains:
@@ -46,56 +45,28 @@ def dump_dot_code(g, vertical, show_objects):
         subgraph cluster_{uri_to_dot_id(chain)} {{
           label = "{chain_label}";
         """, file = out_fd)
-        
-        rq = """
-        select ?obj ?obj_type ?obj_uuid { 
-          [] rdf:type <ObjChainAssignment>; <obj> ?obj; <chain> ?chain.
-          ?chain rdf:type <Chain>.
-          ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid.
-        }
-        """
-        for obj, obj_type, obj_uuid in g.query(rq, base = rdflogging.base_uri, initBindings = {'chain': chain}):
-            print(f"""
-            node_{uri_to_dot_id(obj)} [
-            color="#88000022"
-            shape = rect
-            label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
-            <tr> <td> <b>{obj_type}</b><br/>{obj_uuid}</td> </tr>
-            </table>>
-            ];
-            """, file = out_fd)
-        
-        if 0:
-            rq = """
-            select ?obj_state ?df_shape ?df_cols { 
-            ?obj_state rdf:type <ObjState>; <obj> ?obj .
-            ?obj_state <chain> ?orig_chain .
-            optional { obj_state <chain-replacement> ?repl_chain }
-            filter(if(bound(?repl_chain), ?repl_chain, ?orig_chain) = ?chain ) .
-            ?obj_state <df-shape> ?df_shape; <df-columns> ?df_cols .
-            }
-            """
             
         rq = """
-        select ?obj_state ?obj_type ?df_shape { 
+        select ?obj_state ?obj_type ?df_shape ?df_head { 
           ?obj_state rdf:type <ObjState>; <obj> ?obj.
           ?obj rdf:type <Obj>; <obj-type> ?obj_type.
           ?obj_state <chain> ?chain .
           ?obj_state <df-shape> ?df_shape .
+          optional {?obj_state <df-head> ?df_head} .
         }
         """
 
-        for obj_state, obj_type, df_shape in g.query(rq, base = rdflogging.base_uri, initBindings = {'chain': chain}):
+        for obj_state, obj_type, df_shape, df_head in g.query(rq, base = rdflogging.base_uri, initBindings = {'chain': chain}):
             #cols = "\n".join(['<tr><td align="left"><FONT POINT-SIZE="8px">' + html.escape(x) + "</FONT></td></tr>" for x in df_cols.toPython().split(",")])
-            cols = "TBC"
+            df_head = base64.b64decode(df_head.encode('ascii')).decode('ascii') if df_head else ""
+            df_head = df_head.replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br/>")
             print(f"""
             node_{uri_to_dot_id(obj_state)} [
                 color="#88000022"
                 shape = rect
                 label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
                          <tr> <td> <b>{obj_state}</b><br/>{obj_type}<br/>{df_shape}</td> </tr>
-                         <tr> <td align="left"><i>columns:</i><br align="left"/></td></tr>
-                {cols}
+            <tr><td align="left">{df_head}</td></tr>
                          </table>>
                 ];
 
@@ -156,15 +127,15 @@ def dump_dot_code(g, vertical, show_objects):
                 
     if show_objects: # show transient objects
         rq = """
-        select ?obj ?obj_type ?obj_uuid { ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid }
+        select ?obj ?obj_type ?obj_uuid ?obj_pyid { ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid; <obj-pyid> ?obj_pyid }
         """
-        for obj, obj_type, obj_uuid in g.query(rq, base = rdflogging.base_uri):
+        for obj, obj_type, obj_uuid, obj_pyid in g.query(rq, base = rdflogging.base_uri):
             print(f"""
             node_{uri_to_dot_id(obj)} [
             color="#88000022"
             shape = rect
             label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
-            <tr> <td> <b>{obj_type}</b><br/>{obj_uuid}</td> </tr>
+            <tr> <td> <b>{obj_type}</b><br/>{obj_uuid}<br/>{obj_pyid}</td> </tr>
             </table>>
             ];
             """, file = out_fd)
