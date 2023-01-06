@@ -10,6 +10,7 @@ import base64
 import pandas_flavor as pf
 
 from . import obj_tracking
+from . import pf_pandas
 
 base_uri = 'https://github.com/pyjanitor-devs/pyjviz/rdflog.shacl.ttl#'
 method_counter = 0
@@ -159,16 +160,19 @@ class RDFLogger:
         c = 1
         all_args = list(method_args) + list(method_kwargs.values())
         for arg_obj in all_args:
-            if isinstance(arg_obj, pf.register.LambdaCall):
-                #print("LambdaCall")
-                #ipdb.set_trace()
-                arg_obj = arg_obj.ret
-            
-            if isinstance(arg_obj, pd.DataFrame) or isinstance(arg_obj, pd.Series):
+            if isinstance(arg_obj, pf_pandas.CallbackObj):
+                arg_obj.uri = f"<CallbackObj#{self.random_id}>"; self.random_id += 1
+                rdfl.dump_triple__(arg_obj.uri, "rdf:type", "<CallbackObj>")
+                rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.uri)
+            elif isinstance(arg_obj, pd.DataFrame) or isinstance(arg_obj, pd.Series):
                 arg_t_obj = obj_tracking.tracking_store.get_tracking_obj(arg_obj)
                 if arg_t_obj.last_obj_state_uri is None:
                     arg_t_obj.last_obj_state_uri = rdfl.dump_obj_state(chain_path, arg_obj, arg_t_obj)
-                rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_t_obj.last_obj_state_uri)
+                arg_uri = arg_t_obj.last_obj_state_uri
+                rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_uri)
+                #arg_cc = call_context_dict.get(id(arg), None)
+                #if arg_cc:
+                #    rdfl.dump_method_call_arg_call_contexts(arg_uri, arg_cc)
                 
             c += 1
 

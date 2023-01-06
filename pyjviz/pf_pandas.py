@@ -2,25 +2,49 @@ import ipdb
 import threading
 import pandas as pd
 import pandas_flavor as pf
+import inspect
 
 from . import rdflogging
 from . import obj_tracking
 from . import methods_chain
 
+class CallbackObj:
+    def __init__(self, func):
+        self.func = func
+        self.ret = None
+        self.uri = None
+        
+    def __call__(self, *args, **kwargs):
+        self.ret = self.func(*args, **kwargs)
+        return self.ret
+
+"""
 class DataFrameAttr:
     def __init__(self, func):
         self.func = func
 
     def __call__(self, *x, **y):
-        ipdb.set_trace()
         print("Caller __call__", x, y)
-        return self.func(*x, **y)
+        if not method_chain.curr_methods_chain:
+            ret = self.func(*x, **y)
+        else:
+            with CallContext(...) as cc:
+                cc.call_context_type = 'DataFrameAttr'
+                cc.attr = x[1]
+                cc.obj = x[0]
+                ret = self.func(*x, **y)
+                cc.ret = ret
+                call_context_dict[id(ret)] = cc
+                return ret
+
+        return ret
+"""
 
 def enable_pf_pandas__():
-    print("pf_pandas.py: register handle_pandas_method_call")
-    pf.register.handle_pandas_method_call = handle_pandas_method_call
+    print("pf_pandas.py: register start_method_call")
+    pf.register.start_method_call = start_method_call
 
-    if 0: # TBC
+    if 0:
         old_getattr = pd.DataFrame.__getattr__
         pd.DataFrame.__getattr__ = lambda *x, **y: DataFrameAttr(old_getattr)(*x, *y)
     
@@ -71,27 +95,59 @@ def enable_pf_pandas__():
         return ret
     
 
-def handle_pandas_method_call(obj, method_name, method_args, method_kwargs, ret):
-    print("handle_pandas_method_call", id(obj))
-
-    if method_name in ['set_chain', 'reset_chain']:
-        return
+# pandas_flavor register.py callback
     
-    rdfl = rdflogging.rdflogger
+class MethodCall:
+    def __init__(self, obj, method_name, method_args, method_kwargs):
+        self.obj = obj
+        self.method_name = method_name
+        self.method_args = method_args
+        self.method_kwargs = method_kwargs
+        self.chain_path = None
+        self.method_call_uri = None
+        
+    def handle_start_method_call(self):
+        rdfl = rdflogging.rdflogger
 
-    print("__call__", method_name)
-    #ipdb.set_trace()
+        #ipdb.set_trace()
+        for k, arg in self.method_kwargs.items():
+            if inspect.isfunction(arg):
+                #print('got got that')
+                #ipdb.set_trace()
+                self.method_kwargs[k] = CallbackObj(arg)
+            else:
+                self.method_kwargs[k] = arg
 
-    t_obj = obj_tracking.tracking_store.get_tracking_obj(obj)
-    if methods_chain.curr_methods_chain:
-        chain_path = methods_chain.curr_methods_chain.get_path()
+        t_obj = obj_tracking.tracking_store.get_tracking_obj(self.obj)
+        self.chain_path = methods_chain.curr_methods_chain.get_path()
         thread_id = threading.get_native_id()
-        method_call_uri = rdfl.dump_method_call_in(chain_path, thread_id, obj, t_obj, method_name, method_args, method_kwargs)
+        self.method_call_uri = rdfl.dump_method_call_in(self.chain_path, thread_id, self.obj, t_obj, self.method_name, self.method_args, self.method_kwargs)                
+        #curr_call_contexts.clear()
 
+    def handle_end_method_call(self, ret):
+        rdfl = rdflogging.rdflogger
         ret_obj = ret if not ret is None else obj
 
         ret_t_obj = obj_tracking.tracking_store.get_tracking_obj(ret_obj)
 
-        ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(chain_path, ret_obj, ret_t_obj)
-        rdfl.dump_triple__(method_call_uri, "<method-call-return>", ret_t_obj.last_obj_state_uri)
-    
+        ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(self.chain_path, ret_obj, ret_t_obj)
+        rdfl.dump_triple__(self.method_call_uri, "<method-call-return>", ret_t_obj.last_obj_state_uri)
+
+        # catching lambda call arg values returned after method call
+        all_args = list(self.method_args) + list(self.method_kwargs.values())
+        for arg_obj in all_args:
+            if isinstance(arg_obj, CallbackObj):
+                arg_t_obj = obj_tracking.tracking_store.get_tracking_obj(arg_obj.ret)
+                if arg_t_obj.last_obj_state_uri is None:
+                    arg_t_obj.last_obj_state_uri = rdfl.dump_obj_state(self.chain_path, arg_obj.ret, arg_t_obj)
+                rdfl.dump_triple__(arg_obj.uri, "<ret-val>", arg_t_obj.last_obj_state_uri)
+
+   
+def start_method_call(obj, method_name, method_args, method_kwargs):
+    print("start_method_call", id(obj))
+
+    result = None
+    if methods_chain.curr_methods_chain:
+        result = MethodCall(obj, method_name, method_args, method_kwargs)
+        result.handle_start_method_call()
+    return result

@@ -127,7 +127,11 @@ def dump_dot_code(g, vertical, show_objects):
                 
     if show_objects: # show transient objects
         rq = """
-        select ?obj ?obj_type ?obj_uuid ?obj_pyid { ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid; <obj-pyid> ?obj_pyid }
+        select ?obj ?obj_type ?obj_uuid ?obj_pyid { 
+         {?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid; <obj-pyid> ?obj_pyid }
+         union
+         { ?obj rdf:type <CallbackObj> bind("CallbackObj" as ?obj_type) }
+        }
         """
         for obj, obj_type, obj_uuid, obj_pyid in g.query(rq, base = rdflogging.base_uri):
             print(f"""
@@ -141,7 +145,7 @@ def dump_dot_code(g, vertical, show_objects):
             """, file = out_fd)
                 
         rq = """
-        select ?obj ?obj_state { ?obj_state <obj> ?obj }
+        select ?obj ?obj_state { {?obj_state <obj> ?obj } union { ?obj_state <ret-val> ?obj } }
         """
         for obj, obj_state in g.query(rq, base = rdflogging.base_uri):
             print(f"""
