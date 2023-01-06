@@ -151,7 +151,23 @@ def dump_dot_code(g, vertical, show_objects):
             print(f"""
             node_{uri_to_dot_id(obj)} -> node_{uri_to_dot_id(obj_state)};
             """, file = out_fd)
-        
+
+        rq = """
+        select ?from_obj ?to_obj { ?from_obj <df-projection> ?to_obj }
+        """
+        for from_obj, to_obj in g.query(rq, base = rdflogging.base_uri):
+            print(f"""
+            node_{uri_to_dot_id(to_obj)} -> node_{uri_to_dot_id(from_obj)} [label="projection"];
+            """, file = out_fd)
+
+        rq = """
+        select ?from_obj ?to_obj { ?from_obj <to_datetime> ?to_obj }
+        """
+        for from_obj, to_obj in g.query(rq, base = rdflogging.base_uri):
+            print(f"""
+            node_{uri_to_dot_id(to_obj)} -> node_{uri_to_dot_id(from_obj)} [label="to_datetime"];
+            """, file = out_fd)
+            
             
     print("}", file = out_fd)
     return out_fd.getvalue()

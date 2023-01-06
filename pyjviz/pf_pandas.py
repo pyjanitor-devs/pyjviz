@@ -18,36 +18,54 @@ class CallbackObj:
         self.ret = self.func(*args, **kwargs)
         return self.ret
 
-"""
 class DataFrameAttr:
     def __init__(self, func):
         self.func = func
 
     def __call__(self, *x, **y):
-        print("Caller __call__", x, y)
-        if not method_chain.curr_methods_chain:
-            ret = self.func(*x, **y)
-        else:
-            with CallContext(...) as cc:
-                cc.call_context_type = 'DataFrameAttr'
-                cc.attr = x[1]
-                cc.obj = x[0]
-                ret = self.func(*x, **y)
-                cc.ret = ret
-                call_context_dict[id(ret)] = cc
-                return ret
+        print("DataFrameAttr __call__", x, y)
+        #ipdb.set_trace()
+        ret = self.func(*x, **y)
 
+        rdfl = rdflogging.rdflogger
+        x0_t_obj = obj_tracking.tracking_store.get_tracking_obj(x[0])
+        x0_uri = rdfl.register_obj(x[0], x0_t_obj)
+        t_ret = obj_tracking.tracking_store.get_tracking_obj(ret)
+        ret_uri = rdfl.register_obj(ret, t_ret)
+        rdfl.dump_triple__(ret_uri, "<df-projection>", x0_uri)
+        
         return ret
-"""
 
+class Caller_to_datetime:
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, *x, **y):
+        print("Caller_to_datetime __call__", x, y)
+        #ipdb.set_trace()
+        ret = self.func(*x, **y)
+
+        rdfl = rdflogging.rdflogger
+        x0_t_obj = obj_tracking.tracking_store.get_tracking_obj(x[0])
+        x0_uri = rdfl.register_obj(x[0], x0_t_obj)
+        t_ret = obj_tracking.tracking_store.get_tracking_obj(ret)
+        ret_uri = rdfl.register_obj(ret, t_ret)
+        rdfl.dump_triple__(ret_uri, "<to_datetime>", x0_uri)
+        
+        return ret
+    
 def enable_pf_pandas__():
     print("pf_pandas.py: register start_method_call")
     pf.register.start_method_call = start_method_call
 
-    if 0:
+    if 1:
         old_getattr = pd.DataFrame.__getattr__
         pd.DataFrame.__getattr__ = lambda *x, **y: DataFrameAttr(old_getattr)(*x, *y)
-    
+   
+    if 1:
+        old_to_datetime = pd.to_datetime
+        pd.to_datetime = lambda *x, **y: Caller_to_datetime(old_to_datetime)(*x, **y)
+        
     old_describe = pd.DataFrame.describe
     #del pd.DataFrame.describe
 
@@ -112,9 +130,7 @@ class MethodCall:
         #ipdb.set_trace()
         for k, arg in self.method_kwargs.items():
             if inspect.isfunction(arg):
-                #print('got got that')
-                #ipdb.set_trace()
-                self.method_kwargs[k] = CallbackObj(arg)
+                self.method_kwargs[k] = CallbackObj(arg) # create empty callback obj as placeholder for future results
             else:
                 self.method_kwargs[k] = arg
 
@@ -133,7 +149,7 @@ class MethodCall:
         ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(self.chain_path, ret_obj, ret_t_obj)
         rdfl.dump_triple__(self.method_call_uri, "<method-call-return>", ret_t_obj.last_obj_state_uri)
 
-        # catching lambda call arg values returned after method call
+        # catching arg callback values returned after method call executed all callbacks
         all_args = list(self.method_args) + list(self.method_kwargs.values())
         for arg_obj in all_args:
             if isinstance(arg_obj, CallbackObj):
