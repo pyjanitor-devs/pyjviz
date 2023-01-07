@@ -103,7 +103,21 @@ def enable_pf_pandas__():
 
     @pf.register_dataframe_method
     def assign(df: pd.DataFrame, **kw) -> pd.DataFrame:
-        ret = old_assign(df, **kw)
+        if 1:
+            #ret = old_assign(df, **kw).copy(False)
+            ret = old_assign(df, **kw)
+        else:
+            print("df:", id(df))
+            ret = df.copy()
+            print("ret:", id(ret))
+            
+            for col, v in kw.items():
+                orig_ret_id = id(ret)
+                ret[col] = v(ret) if callable(v) else v
+                print("ret ids:", orig_ret_id, id(ret))
+                
+            ret = ret.copy(False)
+            
         #print("my assign", id(df), id(ret))
         return ret
 
@@ -115,7 +129,7 @@ def enable_pf_pandas__():
 
 # pandas_flavor register.py callback
     
-class MethodCall:
+class MethodCallHandler:
     def __init__(self, obj, method_name, method_args, method_kwargs):
         self.obj = obj
         self.method_name = method_name
@@ -164,6 +178,6 @@ def start_method_call(obj, method_name, method_args, method_kwargs):
 
     result = None
     if methods_chain.curr_methods_chain:
-        result = MethodCall(obj, method_name, method_args, method_kwargs)
+        result = MethodCallHandler(obj, method_name, method_args, method_kwargs)
         result.handle_start_method_call()
     return result
