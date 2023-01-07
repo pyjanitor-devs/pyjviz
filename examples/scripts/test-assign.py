@@ -21,13 +21,19 @@ if __name__ == "__main__":
     df = pd.DataFrame({'a': range(10)})
 
     #ipdb.set_trace()
-    with pyjviz.MethodsChain("c"):
-        df0 = df.a0()
-        df1 = df.assign(b = df.a)
-        
+    if 0:
+        with pyjviz.MethodsChain("c"):
+            df0 = df.a0()
+            df1 = df.assign(b = df.a)
+
+    def test_func(x):
+        #ipdb.set_trace()
+        return x.c
+    
     with pyjviz.MethodsChain("cc"):
-        #df2 = df.assign(c = df.a, b = lambda x: x.c)
-        df2 = df.assign(b = lambda x: x.a)
+        df2 = df.assign(c = df.a, b = lambda x: x.c, d = lambda x: x.a)
+        #df2 = df.assign(c = df.a, b = test_func)
+        #df2 = df.assign(b = lambda x: x.a, c = lambda x: x.b)
 
     #ipdb.set_trace()
     print(df.describe())
