@@ -91,15 +91,16 @@ def dump_dot_code(g, vertical, show_objects):
     for chain, chain_label in chains:
         #ipdb.set_trace()
         rq = """
-        select ?method_call_obj ?caller_obj ?ret_obj ?arg1_obj ?arg2_obj { 
+        select ?method_call_obj ?caller_obj ?ret_obj ?arg1_obj ?arg2_obj ?arg3_obj { 
           ?method_call_obj rdf:type <MethodCall>; <method-call-chain> ?chain;
                            <method-call-arg0> ?caller_obj;
                            <method-call-return> ?ret_obj .
           optional { ?method_call_obj <method-call-arg1> ?arg1_obj }
           optional { ?method_call_obj <method-call-arg2> ?arg2_obj }
+          optional { ?method_call_obj <method-call-arg3> ?arg3_obj }
         }
         """
-        for method_call_obj, caller_obj, ret_obj, arg1_obj, arg2_obj in g.query(rq, base = rdflogging.base_uri, initBindings = {'chain': chain}):
+        for method_call_obj, caller_obj, ret_obj, arg1_obj, arg2_obj, arg3_obj in g.query(rq, base = rdflogging.base_uri, initBindings = {'chain': chain}):
             print(f"""
             node_{uri_to_dot_id(caller_obj)} -> node_{uri_to_dot_id(method_call_obj)};
             node_{uri_to_dot_id(method_call_obj)} -> node_{uri_to_dot_id(ret_obj)};
@@ -113,6 +114,10 @@ def dump_dot_code(g, vertical, show_objects):
             if arg2_obj:
                 print(f"""
                 node_{uri_to_dot_id(arg2_obj)} -> node_{uri_to_dot_id(method_call_obj)};
+                """, file = out_fd)
+            if arg3_obj:
+                print(f"""
+                node_{uri_to_dot_id(arg3_obj)} -> node_{uri_to_dot_id(method_call_obj)};
                 """, file = out_fd)
 
     rq = """
