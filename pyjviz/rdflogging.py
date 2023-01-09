@@ -163,6 +163,8 @@ class RDFLogger:
             if isinstance(arg_obj, pf_pandas.CallbackObj):
                 arg_obj.uri = f"<CallbackObj#{self.random_id}>"; self.random_id += 1
                 rdfl.dump_triple__(arg_obj.uri, "rdf:type", "<CallbackObj>")
+                arg_obj_chain_uri = rdfl.register_chain(arg_obj.chain_path)
+                rdfl.dump_triple__(arg_obj.uri, "<chain>", arg_obj_chain_uri)
                 rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.uri)
             elif isinstance(arg_obj, pd.DataFrame) or isinstance(arg_obj, pd.Series):
                 arg_t_obj = obj_tracking.tracking_store.get_tracking_obj(arg_obj)
@@ -170,9 +172,6 @@ class RDFLogger:
                     arg_t_obj.last_obj_state_uri = rdfl.dump_obj_state(chain_path, arg_obj, arg_t_obj)
                 arg_uri = arg_t_obj.last_obj_state_uri
                 rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_uri)
-                #arg_cc = call_context_dict.get(id(arg), None)
-                #if arg_cc:
-                #    rdfl.dump_method_call_arg_call_contexts(arg_uri, arg_cc)
                 
             c += 1
 
