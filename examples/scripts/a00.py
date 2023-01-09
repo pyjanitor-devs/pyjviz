@@ -32,4 +32,4 @@ if __name__ == "__main__":
 
     print(df1.describe())
 
-    pyjviz.render_rdflog(rdflog_fn)
+    pyjviz.render_rdflog(rdflog_fn, show_objects = False)

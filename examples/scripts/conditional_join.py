@@ -40,4 +40,4 @@ if __name__ == "__main__":
         print(res2)
         res2.describe()
 
-    pyjviz.render_rdflog(rdflog_fn, vertical = False, show_objects = False)
+    pyjviz.render_rdflog(rdflog_fn, vertical = False, show_objects = True)
