@@ -69,7 +69,7 @@ class RDFLogger:
     def dump_triple__(self, subj, pred, obj):
         print(subj, pred, obj, ".", file = self.out_fd)
 
-    def register_obj(self, obj, t_obj):
+    def register_obj__(self, obj, t_obj):
         obj_uuid = str(t_obj.uuid)
         obj_pyid = t_obj.pyid
         if obj_uuid in self.known_objs:
@@ -104,7 +104,7 @@ class RDFLogger:
         return thread_uri
             
     def dump_obj_state(self, chain_path, obj, t_obj):
-        obj_uri = self.register_obj(obj, t_obj)
+        obj_uri = self.register_obj__(obj, t_obj)
         obj_state_uri = f"<ObjState#{self.random_id}>"; self.random_id += 1
         chain_uri = self.register_chain(chain_path)
 
