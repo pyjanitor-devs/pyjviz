@@ -54,16 +54,26 @@ class Caller_to_datetime:
     def __call__(self, *x, **y):
         print("Caller_to_datetime __call__", x, y)
         #ipdb.set_trace()
-        ret = self.func(*x, **y)
-
         rdfl = rdflogging.rdflogger
-        x0_t_obj = obj_tracking.tracking_store.get_tracking_obj(x[0])
-        x0_uri = rdfl.register_obj(x[0], x0_t_obj)
-        t_ret = obj_tracking.tracking_store.get_tracking_obj(ret)
-        ret_uri = rdfl.register_obj(ret, t_ret)
-        rdfl.dump_triple__(ret_uri, "<to_datetime>", x0_uri)
+        if methods_chain.curr_methods_chain is None:
+            ret_obj = self.func(*x, **y)
+        else:
+            chain_path = methods_chain.curr_methods_chain.get_path()
         
-        return ret
+            x0_obj = x[0]
+            ret_obj = self.func(*x, **y)
+
+            x0_t_obj = obj_tracking.tracking_store.get_tracking_obj(x0_obj)
+            if x0_t_obj.last_obj_state_uri is None:
+                x0_t_obj.last_obj_state_uri = rdfl.dump_obj_state(chain_path, x0_obj, x0_t_obj)
+
+            ret_t_obj = obj_tracking.tracking_store.get_tracking_obj(ret_obj)
+            if ret_t_obj.last_obj_state_uri is None:
+                ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(chain_path, ret_obj, ret_t_obj)
+
+            rdfl.dump_triple__(ret_t_obj.last_obj_state_uri, "<to_datetime>", x0_t_obj.last_obj_state_uri)
+        
+        return ret_obj
     
 def enable_pf_pandas__():
     print("pf_pandas.py: register start_method_call")
