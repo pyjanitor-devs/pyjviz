@@ -164,27 +164,15 @@ def dump_dot_code(g, vertical, show_objects):
             """, file = out_fd)
 
         rq = """
-        select ?from_obj ?to_obj { ?from_obj <df-projection> ?to_obj }
+        select ?from_obj ?to_obj ?pred { 
+          ?from_obj <df-projection>|<to_datetime> ?to_obj;
+                    ?pred ?to_obj 
+        }
         """
-        for from_obj, to_obj in g.query(rq, base = rdflogging.base_uri):
+        for from_obj, to_obj, pred in g.query(rq, base = rdflogging.base_uri):
+            pred_s = pred.toPython().split('/')[-1]
             print(f"""
-            node_{uri_to_dot_id(to_obj)} -> node_{uri_to_dot_id(from_obj)} [label="projection"];
-            """, file = out_fd)
-
-        rq = """
-        select ?from_obj ?to_obj { ?from_obj <to_datetime> ?to_obj }
-        """
-        for from_obj, to_obj in g.query(rq, base = rdflogging.base_uri):
-            print(f"""
-            node_{uri_to_dot_id(to_obj)} -> node_{uri_to_dot_id(from_obj)} [label="to_datetime"];
-            """, file = out_fd)
-
-        rq = """
-        select ?from_obj ?to_obj { ?from_obj <df-copy> ?to_obj }
-        """
-        for from_obj, to_obj in g.query(rq, base = rdflogging.base_uri):
-            print(f"""
-            node_{uri_to_dot_id(from_obj)} -> node_{uri_to_dot_id(to_obj)} [label="copy"];
+            node_{uri_to_dot_id(to_obj)} -> node_{uri_to_dot_id(from_obj)} [label="{pred_s}"];
             """, file = out_fd)
             
     print("}", file = out_fd)
