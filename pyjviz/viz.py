@@ -73,16 +73,17 @@ def dump_dot_code(g, vertical, show_objects):
             """, file = out_fd)
 
         rq = """
-        select ?method_call_obj ?method_name ?method_count ?chain { 
+        select ?method_call_obj ?method_name ?method_count ?method_stack_depth ?chain { 
           ?method_call_obj rdf:type <MethodCall>; 
                            rdf:label ?method_name; 
                            <method-counter> ?method_count;
+                           <method-stack-depth> ?method_stack_depth;
                            <method-call-chain> ?chain .
         }
         """
-        for method_call_obj, method_name, method_count, chain in g.query(rq, base = rdflogging.base_uri, initBindings = {'chain': chain}):
+        for method_call_obj, method_name, method_count, method_stack_depth, chain in g.query(rq, base = rdflogging.base_uri, initBindings = {'chain': chain}):
             print(f"""
-            node_{uri_to_dot_id(method_call_obj)} [ label = "{method_name}#{method_count}" ];
+            node_{uri_to_dot_id(method_call_obj)} [ label = "{method_name}#{method_count}({method_stack_depth})" ];
             """, file = out_fd)
 
         rq = """

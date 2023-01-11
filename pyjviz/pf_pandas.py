@@ -154,13 +154,14 @@ def enable_pf_pandas__():
 # pandas_flavor register.py callback
     
 class MethodCallHandler:
-    def __init__(self, obj, method_name, method_args, method_kwargs):
+    def __init__(self, obj, method_name, method_args, method_kwargs, stack_depth):
         self.obj = obj
         self.method_name = method_name
         self.method_args = method_args
         self.method_kwargs = method_kwargs
         self.chain_path = None
         self.method_call_uri = None
+        self.stack_depth = stack_depth
         
     def handle_start_method_call(self):
         rdfl = rdflogging.rdflogger
@@ -175,7 +176,7 @@ class MethodCallHandler:
         t_obj = obj_tracking.tracking_store.get_tracking_obj(self.obj)
         self.chain_path = methods_chain.curr_methods_chain.get_path()
         thread_id = threading.get_native_id()
-        self.method_call_uri = rdfl.dump_method_call_in(self.chain_path, thread_id, self.obj, t_obj, self.method_name, self.method_args, self.method_kwargs)                
+        self.method_call_uri = rdfl.dump_method_call_in(self.chain_path, thread_id, self.obj, t_obj, self.method_name, self.method_args, self.method_kwargs, self.stack_depth)
         #curr_call_contexts.clear()
 
     def handle_end_method_call(self, ret):
@@ -196,11 +197,11 @@ class MethodCallHandler:
                     arg_t_obj.last_obj_state_uri = rdfl.dump_obj_state(self.chain_path, arg_obj.ret, arg_t_obj)
                 rdfl.dump_triple__(arg_obj.uri, "<ret-val>", arg_t_obj.last_obj_state_uri)
    
-def start_method_call(obj, method_name, method_args, method_kwargs):
+def start_method_call(obj, method_name, method_args, method_kwargs, stack_depth):
     print("start_method_call", id(obj))
 
     result = None
     if methods_chain.curr_methods_chain:
-        result = MethodCallHandler(obj, method_name, method_args, method_kwargs)
+        result = MethodCallHandler(obj, method_name, method_args, method_kwargs, stack_depth)
         result.handle_start_method_call()
     return result

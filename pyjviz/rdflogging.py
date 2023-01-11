@@ -137,7 +137,7 @@ class RDFLogger:
     def dump_Series_obj_state(self, obj_state_uri, s):
         self.dump_triple__(obj_state_uri, "<df-shape>", f'"{s.shape}"')        
     
-    def dump_method_call_in(self, chain_path, thread_id, obj, t_obj, method_name, method_args, method_kwargs):
+    def dump_method_call_in(self, chain_path, thread_id, obj, t_obj, method_name, method_args, method_kwargs, stack_depth):
         #ipdb.set_trace()
         rdfl = self
         
@@ -151,6 +151,7 @@ class RDFLogger:
         rdfl.dump_triple__(method_call_uri, "<method-thread>", thread_uri)
         global method_counter
         rdfl.dump_triple__(method_call_uri, "<method-counter>", method_counter); method_counter += 1
+        rdfl.dump_triple__(method_call_uri, "<method-stack-depth>", stack_depth)
         rdfl.dump_triple__(method_call_uri, "<method-call-chain>", obj_chain_uri)
 
         if t_obj.last_obj_state_uri is None:
