@@ -33,4 +33,4 @@ if __name__ == "__main__":
                  )
     print(clean)
 
-    pyjviz.render_rdflog(rdflog_fn, vertical = True, show_objects = True)
+    pyjviz.render_rdflog(rdflog_fn, vertical = True, show_objects = False)

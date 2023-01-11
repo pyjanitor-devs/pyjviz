@@ -108,20 +108,20 @@ class RDFLogger:
         obj_state_uri = f"<ObjState#{self.random_id}>"; self.random_id += 1
         chain_uri = self.register_chain(chain_path)
 
-        if 1:
-            df = obj
-            #ipdb.set_trace()
-            self.dump_triple__(obj_state_uri, "rdf:type", "<ObjState>")
-            self.dump_triple__(obj_state_uri, "<obj>", obj_uri)
-            self.dump_triple__(obj_state_uri, "<version>", f'"{t_obj.last_version_num}"')
-            self.dump_triple__(obj_state_uri, "<chain>", chain_uri)
+        df = obj
+        #ipdb.set_trace()
+        self.dump_triple__(obj_state_uri, "rdf:type", "<ObjState>")
+        self.dump_triple__(obj_state_uri, "<obj>", obj_uri)
+        self.dump_triple__(obj_state_uri, "<version>", f'"{t_obj.last_version_num}"')
+        t_obj.last_version_num += 1
+        self.dump_triple__(obj_state_uri, "<chain>", chain_uri)
 
-            if isinstance(obj, pd.DataFrame):
-                self.dump_DataFrame_obj_state(obj_state_uri, obj)
-            elif isinstance(obj, pd.Series):
-                self.dump_Series_obj_state(obj_state_uri, obj)
-            else:
-                pass
+        if isinstance(obj, pd.DataFrame):
+            self.dump_DataFrame_obj_state(obj_state_uri, obj)
+        elif isinstance(obj, pd.Series):
+            self.dump_Series_obj_state(obj_state_uri, obj)
+        else:
+            raise Exception(f"unknown obj type at {obj_state_uri}")
 
         return obj_state_uri
 

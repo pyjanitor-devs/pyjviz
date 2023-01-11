@@ -47,16 +47,16 @@ def dump_dot_code(g, vertical, show_objects):
         """, file = out_fd)
             
         rq = """
-        select ?obj_state ?version ?obj_type ?df_shape ?df_head { 
+        select ?obj_state ?version ?obj_type ?obj_uuid ?df_shape ?df_head { 
           ?obj_state rdf:type <ObjState>; <obj> ?obj.
-          ?obj rdf:type <Obj>; <obj-type> ?obj_type.
+          ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid.
           ?obj_state <chain> ?chain; <version> ?version .
           ?obj_state <df-shape> ?df_shape .
           optional {?obj_state <df-head> ?df_head} .
         }
         """
 
-        for obj_state, version, obj_type, df_shape, df_head in g.query(rq, base = rdflogging.base_uri, initBindings = {'chain': chain}):
+        for obj_state, version, obj_type, obj_uudi, df_shape, df_head in g.query(rq, base = rdflogging.base_uri, initBindings = {'chain': chain}):
             #cols = "\n".join(['<tr><td align="left"><FONT POINT-SIZE="8px">' + html.escape(x) + "</FONT></td></tr>" for x in df_cols.toPython().split(",")])
             df_head = base64.b64decode(df_head.encode('ascii')).decode('ascii') if df_head else ""
             df_head = df_head.replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br/>")
@@ -65,7 +65,7 @@ def dump_dot_code(g, vertical, show_objects):
                 color="#88000022"
                 shape = rect
                 label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
-                         <tr> <td> <b>{obj_state}</b><br/>{obj_type} {version}<br/>{df_shape}</td> </tr>
+                         <tr> <td> <b>{obj_state}</b><br/>{obj_type} {version} {obj_uudi}<br/>{df_shape}</td> </tr>
             <tr><td align="left">{df_head}</td></tr>
                          </table>>
                 ];
