@@ -6,6 +6,7 @@ import os.path
 import pandas as pd
 import uuid
 import base64
+import inspect
 
 import pandas_flavor as pf
 
@@ -136,8 +137,31 @@ class RDFLogger:
 
     def dump_Series_obj_state(self, obj_state_uri, s):
         self.dump_triple__(obj_state_uri, "<df-shape>", f'"{s.shape}"')        
-    
-    def dump_method_call_in(self, chain_path, thread_id, obj, t_obj, method_name, method_args, method_kwargs, stack_depth):
+
+    def dump_method_call_arg__(self, method_call_uri, c, arg_name, arg_obj, chain_path):
+        rdfl = self
+        if isinstance(arg_obj, pf_pandas.CallbackObj):
+            arg_obj.uri = f"<CallbackObj#{self.random_id}>"; self.random_id += 1
+            rdfl.dump_triple__(arg_obj.uri, "rdf:type", "<CallbackObj>")
+            arg_obj_chain_uri = rdfl.register_chain(arg_obj.chain_path)
+            rdfl.dump_triple__(arg_obj.uri, "<chain>", arg_obj_chain_uri)
+            rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.uri)
+            rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.uri)
+            rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}-name>", '"' + (arg_name if arg_name else '') + '"')
+        elif isinstance(arg_obj, pd.DataFrame) or isinstance(arg_obj, pd.Series):
+            arg_t_obj = obj_tracking.tracking_store.get_tracking_obj(arg_obj)
+            if arg_t_obj.last_obj_state_uri is None:
+                arg_t_obj.last_obj_state_uri = rdfl.dump_obj_state(chain_path, arg_obj, arg_t_obj)
+            arg_uri = arg_t_obj.last_obj_state_uri
+            #ipdb.set_trace()
+            rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_uri)
+            rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}-name>", '"' + (arg_name if arg_name else '') + '"')
+        else:
+            pass
+        
+    def dump_method_call_in(self, chain_path, thread_id, obj, t_obj,
+                            method_name, method_signature, method_bound_args,
+                            stack_depth):
         #ipdb.set_trace()
         rdfl = self
         
@@ -154,27 +178,22 @@ class RDFLogger:
         rdfl.dump_triple__(method_call_uri, "<method-stack-depth>", stack_depth)
         rdfl.dump_triple__(method_call_uri, "<method-call-chain>", obj_chain_uri)
 
-        if t_obj.last_obj_state_uri is None:
-            t_obj.last_obj_state_uri = rdfl.dump_obj_state(chain_path, obj, t_obj)
-        rdfl.dump_triple__(method_call_uri, "<method-call-arg0>", t_obj.last_obj_state_uri)
+        c = 0
+        for arg_name, arg_obj in method_bound_args.arguments.items():
+            arg_kind = method_signature.parameters.get(arg_name).kind
+            if arg_kind == inspect.Parameter.VAR_KEYWORD:
+                for kwarg_name, kwarg_obj in arg_obj.items():
+                    self.dump_method_call_arg__(method_call_uri, c, kwarg_name, kwarg_obj, chain_path)
+            elif arg_kind == inspect.Parameter.VAR_POSITIONAL:
+                #ipdb.set_trace()
+                for p_arg_obj in arg_obj:
+                    self.dump_method_call_arg__(method_call_uri, c, None, p_arg_obj, chain_path)                    
+            else:
+                self.dump_method_call_arg__(method_call_uri, c, arg_name, arg_obj, chain_path)
 
-        c = 1
-        all_args = list(method_args) + list(method_kwargs.values())
-        for arg_obj in all_args:
-            if isinstance(arg_obj, pf_pandas.CallbackObj):
-                arg_obj.uri = f"<CallbackObj#{self.random_id}>"; self.random_id += 1
-                rdfl.dump_triple__(arg_obj.uri, "rdf:type", "<CallbackObj>")
-                arg_obj_chain_uri = rdfl.register_chain(arg_obj.chain_path)
-                rdfl.dump_triple__(arg_obj.uri, "<chain>", arg_obj_chain_uri)
-                rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.uri)
-            elif isinstance(arg_obj, pd.DataFrame) or isinstance(arg_obj, pd.Series):
-                arg_t_obj = obj_tracking.tracking_store.get_tracking_obj(arg_obj)
-                if arg_t_obj.last_obj_state_uri is None:
-                    arg_t_obj.last_obj_state_uri = rdfl.dump_obj_state(chain_path, arg_obj, arg_t_obj)
-                arg_uri = arg_t_obj.last_obj_state_uri
-                rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_uri)
-                
             c += 1
 
+                
+                
         return method_call_uri
     

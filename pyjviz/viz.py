@@ -27,6 +27,7 @@ def dump_dot_code(g, vertical, show_objects):
     
     print("""
     digraph G {
+    splines=false;
     rankdir = "{rankdir}"
     fontname="Helvetica,Arial,sans-serif"
     node [ 
@@ -101,25 +102,25 @@ def dump_dot_code(g, vertical, show_objects):
     for chain, chain_label in chains:
         #ipdb.set_trace()
         rq = """
-        select ?method_call_obj ?caller_obj ?ret_obj ?arg1_obj ?arg2_obj ?arg3_obj { 
+        select ?method_call_obj ?caller_obj ?ret_obj ?arg1_name ?arg1_obj ?arg2_name ?arg2_obj ?arg3_name ?arg3_obj { 
           ?method_call_obj rdf:type <MethodCall>; <method-call-chain> ?chain;
                            <method-call-arg0> ?caller_obj;
                            <method-call-return> ?ret_obj .
-          optional { ?method_call_obj <method-call-arg1> ?arg1_obj }
-          optional { ?method_call_obj <method-call-arg2> ?arg2_obj }
-          optional { ?method_call_obj <method-call-arg3> ?arg3_obj }
+          optional { ?method_call_obj <method-call-arg1> ?arg1_obj; <method-call-arg1-name> ?arg1_name }
+          optional { ?method_call_obj <method-call-arg2> ?arg2_obj; <method-call-arg2-name> ?arg2_name }
+          optional { ?method_call_obj <method-call-arg3> ?arg3_obj; <method-call-arg3-name> ?arg3_name }
         }
         """
-        for method_call_obj, caller_obj, ret_obj, arg1_obj, arg2_obj, arg3_obj in g.query(rq, base = rdflogging.base_uri, initBindings = {'chain': chain}):
+        for method_call_obj, caller_obj, ret_obj, arg1_name, arg1_obj, arg2_name, arg2_obj, arg3_name, arg3_obj in g.query(rq, base = rdflogging.base_uri, initBindings = {'chain': chain}):
             print(f"""
-            node_{uri_to_dot_id(caller_obj)} -> node_{uri_to_dot_id(method_call_obj)};
-            node_{uri_to_dot_id(method_call_obj)} -> node_{uri_to_dot_id(ret_obj)};
+            node_{uri_to_dot_id(caller_obj)} -> node_{uri_to_dot_id(method_call_obj)} [penwidth = 3];
+            node_{uri_to_dot_id(method_call_obj)} -> node_{uri_to_dot_id(ret_obj)} [penwidth = 3];
             """, file = out_fd)
 
             # NB: copy-paste is bad
             if arg1_obj:
                 print(f"""
-                node_{uri_to_dot_id(arg1_obj)} -> node_{uri_to_dot_id(method_call_obj)};
+                node_{uri_to_dot_id(arg1_obj)} -> node_{uri_to_dot_id(method_call_obj)} [label="{arg1_name}"];
                 """, file = out_fd)
             if arg2_obj:
                 print(f"""
@@ -173,7 +174,7 @@ def dump_dot_code(g, vertical, show_objects):
         for from_obj, to_obj, pred in g.query(rq, base = rdflogging.base_uri):
             pred_s = pred.toPython().split('/')[-1]
             print(f"""
-            node_{uri_to_dot_id(to_obj)} -> node_{uri_to_dot_id(from_obj)} [label="{pred_s}"];
+            node_{uri_to_dot_id(to_obj)} -> node_{uri_to_dot_id(from_obj)} [label="{pred_s}", penwidth=2.5];
             """, file = out_fd)
             
     print("}", file = out_fd)
