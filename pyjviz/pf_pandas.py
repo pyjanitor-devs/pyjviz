@@ -7,7 +7,7 @@ import inspect
 from . import rdflogging
 from . import obj_tracking
 from . import methods_chain
-from . import stack_counter
+from . import call_stack
 
 class CallbackObj:
     def __init__(self, chain_path, func):
@@ -80,7 +80,7 @@ class Caller_to_datetime:
 def enable_pf_pandas__():
     pf.register.cb_notify_dataframe_method_call = cb_notify_dataframe_method_call
     pf.register.cb_notify_series_method_call = cb_notify_series_method_call
-    pf.register.stack_counter_context = stack_counter.global_scf
+    pf.register.cb_create_call_stack_context_manager = call_stack.create_call_stack_context_manager
     
     old_DataFrame_init = pd.DataFrame.__init__
     def aux_init(func, *x, **y):
@@ -157,7 +157,7 @@ def enable_pf_pandas__():
 # pandas_flavor register.py callback
     
 class MethodCallHandler:
-    def __init__(self, obj, method_name, method_signature, method_args, method_kwargs, stack_depth):
+    def __init__(self, obj, method_name, method_signature, method_args, method_kwargs):
         self.obj = obj
         self.method_name = method_name
         self.method_signature = method_signature
@@ -166,7 +166,6 @@ class MethodCallHandler:
         self.method_bound_args = None
         self.chain_path = None
         self.method_call_uri = None
-        self.stack_depth = stack_depth
         
     def handle_start_method_call(self):
         rdfl = rdflogging.rdflogger
@@ -194,7 +193,7 @@ class MethodCallHandler:
         thread_id = threading.get_native_id()
         self.method_call_uri = rdfl.dump_method_call_in(self.chain_path, thread_id, self.obj, t_obj,
                                                         self.method_name, self.method_signature, self.method_bound_args,
-                                                        self.stack_depth)
+                                                        call_stack.call_stack.size())
 
         return new_args, new_kwargs
 
@@ -220,17 +219,19 @@ class MethodCallHandler:
                         rdfl.dump_triple__(arg_obj.uri, "<ret-val>", arg_t_obj.last_obj_state_uri)
 
                     
-def cb_notify_dataframe_method_call(obj, method_name, method_signature, method_args, method_kwargs, stack_depth):
+def cb_notify_dataframe_method_call(obj, method_name, method_signature, method_args, method_kwargs):
     result = None
-    if stack_depth == 1 or (stack_depth == 2 and method_name == 'copy'):
+    print("pyjviz call stack:", call_stack.call_stack.to_string())
+    if 1: # if stack_depth == 1 or (stack_depth == 2 and method_name == 'copy'):
         if methods_chain.curr_methods_chain:
-            result = MethodCallHandler(obj, method_name, method_signature, method_args, method_kwargs, stack_depth)
+            result = MethodCallHandler(obj, method_name, method_signature, method_args, method_kwargs)
     return result
 
-def cb_notify_series_method_call(obj, method_name, method_signature, method_args, method_kwargs, stack_depth):
+def cb_notify_series_method_call(obj, method_name, method_signature, method_args, method_kwargs):
     result = None
-    if stack_depth <= 2:
+    print("pyjviz call stack:", call_stack.call_stack.to_string())
+    if 1: # if stack_depth <= 2:
         if methods_chain.curr_methods_chain:
-            result = MethodCallHandler(obj, method_name, method_signature, method_args, method_kwargs, stack_depth)
+            result = MethodCallHandler(obj, method_name, method_signature, method_args, method_kwargs)
     return result
         
