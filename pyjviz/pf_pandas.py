@@ -7,6 +7,7 @@ import inspect
 from . import rdflogging
 from . import obj_tracking
 from . import methods_chain
+from . import stack_counter
 
 class CallbackObj:
     def __init__(self, chain_path, func):
@@ -77,9 +78,10 @@ class Caller_to_datetime:
         return ret_obj
     
 def enable_pf_pandas__():
-    print("pf_pandas.py: register start_method_call")
-    pf.register.start_method_call = start_method_call
-
+    pf.register.cb_notify_dataframe_method_call = cb_notify_dataframe_method_call
+    pf.register.cb_notify_series_method_call = cb_notify_series_method_call
+    pf.register.stack_counter_context = stack_counter.global_scf
+    
     old_DataFrame_init = pd.DataFrame.__init__
     def aux_init(func, *x, **y):
         #print("aux init")
@@ -218,10 +220,17 @@ class MethodCallHandler:
                         rdfl.dump_triple__(arg_obj.uri, "<ret-val>", arg_t_obj.last_obj_state_uri)
 
                     
-def start_method_call(obj, method_name, method_signature, method_args, method_kwargs, stack_depth):
-    print("start_method_call", id(obj))
-
+def cb_notify_dataframe_method_call(obj, method_name, method_signature, method_args, method_kwargs, stack_depth):
     result = None
-    if methods_chain.curr_methods_chain:
-        result = MethodCallHandler(obj, method_name, method_signature, method_args, method_kwargs, stack_depth)
+    if stack_depth == 1 or (stack_depth == 2 and method_name == 'copy'):
+        if methods_chain.curr_methods_chain:
+            result = MethodCallHandler(obj, method_name, method_signature, method_args, method_kwargs, stack_depth)
     return result
+
+def cb_notify_series_method_call(obj, method_name, method_signature, method_args, method_kwargs, stack_depth):
+    result = None
+    if stack_depth <= 2:
+        if methods_chain.curr_methods_chain:
+            result = MethodCallHandler(obj, method_name, method_signature, method_args, method_kwargs, stack_depth)
+    return result
+        
