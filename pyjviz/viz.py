@@ -27,7 +27,7 @@ def dump_dot_code(g, vertical, show_objects):
     
     print("""
     digraph G {
-    splines=false;
+    #splines=false;
     rankdir = "{rankdir}"
     fontname="Helvetica,Arial,sans-serif"
     node [ 
