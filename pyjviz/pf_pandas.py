@@ -80,7 +80,6 @@ class Caller_to_datetime:
 def enable_pf_pandas__():
     pf.register.cb_notify_dataframe_method_call = cb_notify_dataframe_method_call
     pf.register.cb_notify_series_method_call = cb_notify_series_method_call
-    pf.register.cb_create_call_stack_context_manager = call_stack.create_call_stack_context_manager
     
     old_DataFrame_init = pd.DataFrame.__init__
     def aux_init(func, *x, **y):
@@ -220,18 +219,20 @@ class MethodCallHandler:
 
                     
 def cb_notify_dataframe_method_call(obj, method_name, method_signature, method_args, method_kwargs):
-    result = None
-    print("pyjviz call stack:", call_stack.call_stack.to_string())
-    if 1: # if stack_depth == 1 or (stack_depth == 2 and method_name == 'copy'):
-        if methods_chain.curr_methods_chain:
-            result = MethodCallHandler(obj, method_name, method_signature, method_args, method_kwargs)
+    with call_stack.create_call_stack_context_manager(method_name) as cm:
+        result = None
+        print("pyjviz call stack:", call_stack.call_stack.to_string())
+        if 1: # if stack_depth == 1 or (stack_depth == 2 and method_name == 'copy'):
+            if methods_chain.curr_methods_chain:
+                result = MethodCallHandler(obj, method_name, method_signature, method_args, method_kwargs)
     return result
 
 def cb_notify_series_method_call(obj, method_name, method_signature, method_args, method_kwargs):
-    result = None
-    print("pyjviz call stack:", call_stack.call_stack.to_string())
-    if 1: # if stack_depth <= 2:
-        if methods_chain.curr_methods_chain:
-            result = MethodCallHandler(obj, method_name, method_signature, method_args, method_kwargs)
+    with call_stack.create_call_stack_context_manager(method_name) as cm:
+        result = None
+        print("pyjviz call stack:", call_stack.call_stack.to_string())
+        if 1: # if stack_depth <= 2:
+            if methods_chain.curr_methods_chain:
+                result = MethodCallHandler(obj, method_name, method_signature, method_args, method_kwargs)
     return result
         
