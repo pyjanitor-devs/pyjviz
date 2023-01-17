@@ -1,7 +1,7 @@
 # pyjrdf to keep all rdf logging functionality
 #
 import ipdb
-import sys
+import sys, tempfile
 import os.path
 import pandas as pd
 import uuid
@@ -48,8 +48,15 @@ def get_obj_type(o):
     
 class RDFLogger:
     @staticmethod
-    def init(out_filename): 
+    def init(out_filename = None): 
         global rdflogger
+        if out_filename is None:
+            dest_dir = os.path.expanduser(os.path.join("~/.pyjviz/rdflog", os.path.basename(sys.argv[0])))
+            if not os.path.exists(dest_dir):
+                os.makedirs(dest_dir)
+            out_f = tempfile.NamedTemporaryFile(dir = dest_dir, delete = False)
+            print("tempfile:", out_f, out_f.name)
+            out_filename = out_f.name
         rdflogger = RDFLogger(out_filename)
 
     @staticmethod
@@ -57,8 +64,9 @@ class RDFLogger:
         global rdflogger
         rdflogger.flush__()
         
-    def __init__(self, out_filename):        
-        self.out_fd = open_pyjrdf_output__(out_filename)
+    def __init__(self, out_filename):
+        self.out_filename = out_filename
+        self.out_fd = open_pyjrdf_output__(self.out_filename)
         self.known_threads = {}
         self.known_chains = {}
         self.known_objs = {}
