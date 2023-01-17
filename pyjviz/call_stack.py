@@ -24,17 +24,3 @@ class CallStackContextManager:
 
 def create_call_stack_context_manager(method_name):
     return CallStackContextManager(method_name)
-        
-class MethodChain:
-    def __init__(self, method_chain_name):
-        self.method_chain_name = method_chain_name
-        
-    def __enter__(self):
-        global call_stack
-        call_stack.calls.append(self.method_chain_name)
-        return self
-
-    def __exit__(self, type, value, traceback):
-        global call_stack
-        call_stack.calls.pop()
-        

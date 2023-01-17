@@ -181,8 +181,6 @@ def dump_dot_code(g, vertical, show_objects):
     return out_fd.getvalue()
 
 def render_rdflog(rdflog_ttl_fn, verbose = True, vertical = True, show_objects = False):
-    rdflogging.rdflogger.flush__()
-
     g = rdflib.Graph()
     g.parse(rdflog_ttl_fn)
 

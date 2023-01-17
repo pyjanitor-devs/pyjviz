@@ -3,7 +3,7 @@ import uuid
 import pandas as pd
 
 from . import rdflogging
-from . import viz
+from . import nb_utils
 
 class MethodsChainPath:
     def __init__(self):
@@ -36,6 +36,8 @@ class MethodsChain:
         return self
 
     def __exit__(self, type, value, traceback):
+        rdflogging.rdflogger.flush__()
+
         print(f"exit chain {self.chain_path}")
         global curr_methods_chain
         
@@ -44,17 +46,5 @@ class MethodsChain:
             curr_methods_chain = None
 
     def show(self, vertical = False):
-        import graphviz
-        from IPython.display import display
-        import rdflib
-
-        rdflogging.RDFLogger.flush()
-        g = rdflib.Graph()
-        print("LOGGER:", rdflogging.rdflogger.out_filename)
-        g.parse(rdflogging.rdflogger.out_filename)
-        dot_code = viz.dump_dot_code(g, vertical, show_objects = False)
-
-        source = dot_code
-        #print(source)
-        gvz = graphviz.Source(source)
-        display(gvz)
+        nb_utils.show_method_chain(self, vertical)
+        
