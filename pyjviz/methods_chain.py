@@ -47,27 +47,31 @@ class MethodsChain:
         if len(curr_methods_chain.path) == 0:
             curr_methods_chain = None
 
-    def print_dot(self, **kw):
+    def print_dot(self, vertical = False, show_objects = False):
         #ipdb.set_trace()
         g = rdflogging.rdflogger.triples_sink.get_graph()
-        print(viz.dump_dot_code(g, vertical = True, show_objects = False))
+        print(viz.dump_dot_code(g, vertical = vertical, show_objects = show_objects))
 
     def save_dot(self, dot_output_fn = None, vertical = False, show_objects = False):
-        g = rdflogging.rdflogger.triples_sink.get_graph()
+        ts = rdflogging.rdflogger.triples_sink
         if dot_output_fn is None:
-            ts = rdflogging.rdflogger.triples_sink
-            if True: #isinstance(ts, FSTripleOutputOneShot):
+            if hasattr(ts, 'output_fn') and ts.output_fn is not None:
                 ttl_output_fn = ts.output_fn
                 dot_output_fn = ttl_output_fn + ".dot"
             else:
                 raise Exception("can't guess dot_output_fn")
             
+        g = ts.get_graph()
         dot_code = viz.dump_dot_code(g, vertical = vertical, show_objects = show_objects)
         gvz = graphviz.Source(dot_code)
         gvz.render(dot_output_fn, format = 'png', engine = 'dot')
 
     def show(self, vertical = False, show_objects = False):
-        g = rdflogging.rdflogger.triples_sink.get_graph()
+        ts = rdflogging.rdflogger.triples_sink
+        if not (hasattr(ts, 'output_fn') and ts.output_fn is None):
+            raise Exception("triple sink is not in-memory file")
+        
+        g = ts.get_graph()
         dot_code = viz.dump_dot_code(g, vertical = vertical, show_objects = show_objects)
         nb_utils.show_method_chain(dot_code)
         

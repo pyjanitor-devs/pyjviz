@@ -22,6 +22,7 @@ class FSTripleOutput:
 
 class FSTripleOutputOneShot(FSTripleOutput):
     def __init__(self, base_uri, output_dir, output_filename):
+        self.output_fn = None
         if output_dir is None:
             out_fd = io.StringIO()
         else:
