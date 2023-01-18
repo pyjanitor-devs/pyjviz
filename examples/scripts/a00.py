@@ -16,10 +16,6 @@ def a0(df: pd.DataFrame) -> TestDF:
     return pd.DataFrame(df)
 
 if __name__ == "__main__":
-    # configure pyjviz
-    rdflog_fn = pyjviz.get_rdflog_filename(sys.argv[0])
-    pyjviz.RDFLogger.init(rdflog_fn)
-
     print(TestDF, TestDF.__name__, TestDF.__supertype__)
     print(TestDF.columns)
 
@@ -32,4 +28,4 @@ if __name__ == "__main__":
 
     print(df1.describe())
 
-    pyjviz.render_rdflog(rdflog_fn, show_objects = False)
+    c.render_rdflog(show_objects = False)

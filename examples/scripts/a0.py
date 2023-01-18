@@ -16,23 +16,19 @@ def a0(df: pd.DataFrame) -> TestDF:
     return pd.DataFrame(df)
     #return df
 
-if __name__ == "__main__":
-    # configure pyjviz
-    rdflog_fn = pyjviz.get_rdflog_filename(sys.argv[0])
-    pyjviz.RDFLogger.init(rdflog_fn)
-        
+if __name__ == "__main__":        
     print(TestDF, TestDF.__name__, TestDF.__supertype__)
     print(TestDF.columns)
 
     df = pd.DataFrame({'a': range(10)})
 
     #ipdb.set_trace()
-    with pyjviz.MethodsChain("c"):
+    with pyjviz.MethodsChain("c") as C:
         df0 = df.a0()
         df1 = df.a0().a0()
         df2 = df.a0()
 
-    #ipdb.set_trace()
     print(df1.describe())
 
-    pyjviz.render_rdflog(rdflog_fn, vertical = False, show_objects = True)
+    C.save_dot()
+    

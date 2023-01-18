@@ -5,11 +5,7 @@ import rdflib
 from . import rdflogging
 from . import viz
 
-def show_method_chain(method_chain_obj, vertical):
-    g = rdflib.Graph()
-    print("LOGGER:", rdflogging.rdflogger.out_filename)
-    g.parse(rdflogging.rdflogger.out_filename)
-    dot_code = viz.dump_dot_code(g, vertical, show_objects = False)
+def show_method_chain(dot_code):
     gvz = graphviz.Source(dot_code)
 
     # NB: I don't understand how code below works in jupyter notebook
@@ -29,5 +25,3 @@ def show_method_chain(method_chain_obj, vertical):
         #scale = 0.3
         #image = image.resize(( int(image.width * scale), int(image.height * scale)))
         IPython.display.display_png(image)
-
-    

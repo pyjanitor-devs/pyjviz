@@ -16,26 +16,6 @@ from . import pf_pandas
 base_uri = 'https://github.com/pyjanitor-devs/pyjviz/rdflog.shacl.ttl#'
 method_counter = 0
 
-def get_rdflog_filename(argv0):
-    rdflog_fn = os.path.basename(argv0).replace(".py", ".ttl")
-    return os.path.expanduser(os.path.join("~/.pyjviz/rdflog", rdflog_fn))
-
-def open_pyjrdf_output__(out_fn):
-    out_dir = os.path.dirname(out_fn)    
-    if out_dir != "" and not os.path.exists(out_dir):
-        print("setup_pyjrdf_output:", out_dir)
-        os.makedirs(out_dir)
-    out_fd = open(out_fn, "wt")
-
-    # rdf prefixes used by PYJRDFLogger
-    print(f"@base <{base_uri}> .", file = out_fd)
-    print("@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .", file = out_fd)
-    print("@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .", file = out_fd)
-    
-    return out_fd
-
-rdflogger = None
-
 def get_obj_type(o):
     if isinstance(o, pd.DataFrame):
         ret = "DataFrame"
@@ -46,37 +26,21 @@ def get_obj_type(o):
 
     return ret
     
-class RDFLogger:
-    @staticmethod
-    def init(out_filename = None): 
-        global rdflogger
-        if out_filename is None:
-            dest_dir = os.path.expanduser(os.path.join("~/.pyjviz/rdflog", os.path.basename(sys.argv[0])))
-            if not os.path.exists(dest_dir):
-                os.makedirs(dest_dir)
-            out_f = tempfile.NamedTemporaryFile(dir = dest_dir, delete = False)
-            print("tempfile:", out_f, out_f.name)
-            out_filename = out_f.name
-        rdflogger = RDFLogger(out_filename)
-
-    @staticmethod
-    def flush():
-        global rdflogger
-        rdflogger.flush__()
-        
-    def __init__(self, out_filename):
-        self.out_filename = out_filename
-        self.out_fd = open_pyjrdf_output__(self.out_filename)
+class RDFLogger:        
+    def __init__(self, triples_sink):
+        self.triples_sink = triples_sink
         self.known_threads = {}
         self.known_chains = {}
         self.known_objs = {}
         self.random_id = 0 # should be better way
 
     def flush__(self):
-        self.out_fd.flush()
+        self.triples_sink.flush()
+        #self.out_fd.flush()
         
     def dump_triple__(self, subj, pred, obj):
-        print(subj, pred, obj, ".", file = self.out_fd)
+        self.triples_sink.dump_triple(subj, pred, obj)
+        #print(subj, pred, obj, ".", file = self.out_fd)
 
     def register_obj__(self, obj, t_obj):
         obj_uuid = str(t_obj.uuid)
@@ -93,7 +57,8 @@ class RDFLogger:
         return ret_uri
         
     def register_chain(self, chain_path):
-        chain_id = chain_path
+        # NB: chain should be object not path
+        chain_id = str(uuid.uuid4())
         chain_uri = None
         if not chain_id in self.known_chains:
             chain_uri = self.known_chains[chain_id] = f"<Chain#{chain_id}>"
@@ -204,4 +169,9 @@ class RDFLogger:
                 
                 
         return method_call_uri
-    
+
+rdflogger = None
+def set_rdflogger__(o):
+    global rdflogger
+    rdflogger = o
+

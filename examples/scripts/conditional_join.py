@@ -7,10 +7,6 @@ import pandas as pd
 import janitor, pyjviz
 
 if __name__ == "__main__":
-    # configure pyjviz
-    rdflog_fn = pyjviz.get_rdflog_filename(sys.argv[0])
-    pyjviz.RDFLogger.init(rdflog_fn)
-
     df1 = pd.DataFrame({'id': [1,1,1,2,2,3],
                         'value_1': [2,5,7,1,3,4]})
     df2 = pd.DataFrame({'id': [1,1,1,1,2,2,2,3],
@@ -40,4 +36,4 @@ if __name__ == "__main__":
         print(res2)
         res2.describe()
 
-    pyjviz.render_rdflog(rdflog_fn, vertical = False, show_objects = True)
+    c1.save_dot(vertical = False, show_objects = True)

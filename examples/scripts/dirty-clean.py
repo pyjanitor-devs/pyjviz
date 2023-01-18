@@ -8,10 +8,6 @@ import janitor
 import pyjviz
 
 if __name__ == "__main__":
-    # configure pyjrdf
-    rdflog_fn = pyjviz.get_rdflog_filename(sys.argv[0])
-    pyjviz.RDFLogger.init(rdflog_fn)
-    #pyjviz.enable_pf_pandas()
 
     if 1:
         url = "https://github.com/pyjanitor-devs/pyjanitor/blob/dev/examples/notebooks/dirty_data.xlsx?raw=true"
@@ -33,4 +29,4 @@ if __name__ == "__main__":
                  )
     print(clean)
 
-    pyjviz.render_rdflog(rdflog_fn, vertical = True, show_objects = False)
+    c.render_rdflog(vertical = True, show_objects = False)

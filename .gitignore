@@ -2,3 +2,4 @@
 build/
 pyjviz.egg-info/
 pyjviz/__pycache__/
+pyjviz-test-output/
