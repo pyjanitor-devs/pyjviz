@@ -3,11 +3,7 @@
 import numpy as np
 import pandas as pd
 import janitor
-import pyjviz, sys
-
-# configure pyjviz
-rdflog_fn = pyjviz.get_rdflog_filename(sys.argv[0])
-pyjviz.RDFLogger.init(rdflog_fn)
+import pyjviz
 
 # Sample Data curated for this example
 company_sales = {
@@ -24,7 +20,7 @@ print(pd.DataFrame.from_dict(company_sales))
 #  2        Mar     300.0       NaN     600.0
 #  3      April     400.0     500.0     675.0
 
-with pyjviz.MethodsChain():
+with pyjviz.SubGraph("why-janitor") as sg:
     df = (
         pd.DataFrame.from_dict(company_sales)
         .remove_columns(["Company1"])
@@ -45,4 +41,4 @@ with pyjviz.MethodsChain():
 
     print(df)
 
-pyjviz.render_rdflog(rdflog_fn)
+sg.save_dot(vertical = True)

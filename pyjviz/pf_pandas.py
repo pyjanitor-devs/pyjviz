@@ -3,6 +3,8 @@ import threading
 import pandas as pd
 import pandas_flavor as pf
 import inspect
+import uuid
+from contextlib import nullcontext
 
 from . import rdflogging
 from . import obj_tracking
@@ -29,10 +31,10 @@ class DataFrameAttr:
     def __call__(self, *x, **y):
         print("DataFrameAttr __call__", x[1], y)
         rdfl = rdflogging.rdflogger
-        if methods_chain.curr_methods_chain is None:
+        if call_stack.stack.size() == 0:
             ret_obj = self.func(*x, **y)
         else:
-            chain_path = methods_chain.curr_methods_chain.get_path()
+            chain_path = call_stack.stack.to_string()
         
             x0_obj = x[0]
             ret_obj = self.func(*x, **y)
@@ -57,10 +59,10 @@ class Caller_to_datetime:
         print("Caller_to_datetime __call__", x, y)
         #ipdb.set_trace()
         rdfl = rdflogging.rdflogger
-        if methods_chain.curr_methods_chain is None:
+        if call_stack.stack.size() == 0:
             ret_obj = self.func(*x, **y)
         else:
-            chain_path = methods_chain.curr_methods_chain.get_path()
+            chain_path = call_stack.stack.to_string()
         
             x0_obj = x[0]
             ret_obj = self.func(*x, **y)
@@ -78,9 +80,7 @@ class Caller_to_datetime:
         return ret_obj
     
 def enable_pf_pandas__():
-    pf.register.cb_create_call_stack_context_manager = call_stack.create_call_stack_context_manager
-    pf.register.cb_notify_dataframe_method_call = cb_notify_dataframe_method_call
-    pf.register.cb_notify_series_method_call = cb_notify_series_method_call
+    pf.register.cb_create_call_stack_context_manager = cb_create_method_call_context_manager
     
     old_DataFrame_init = pd.DataFrame.__init__
     def aux_init(func, *x, **y):
@@ -155,45 +155,53 @@ def enable_pf_pandas__():
     
 
 # pandas_flavor register.py callback
-    
-class MethodCallHandler:
-    def __init__(self, obj, method_name, method_signature, method_args, method_kwargs):
-        self.obj = obj
-        self.method_name = method_name
-        self.method_signature = method_signature
-        self.method_args = method_args        
-        self.method_kwargs = method_kwargs
+
+class MethodCall(call_stack.StackEntry):
+    def __init__(self, method_name):
+        super().__init__(rdf_type_uri = "<MethodCall>")
         self.method_bound_args = None
-        self.chain_path = None
-        self.method_call_uri = None
+        #ipdb.set_trace()
+        self.uri = f"<MethodCall#{str(uuid.uuid4())}>"
+        self.method_name = method_name
+        rdfl = rdflogging.rdflogger
+        rdfl.dump_triple__(self.uri, "rdf:type", self.rdf_type_uri)
+
+    def __enter__(self):
+        call_stack.stack.push(self)
+        return self
         
-    def handle_start_method_call(self):
+    def __exit__(self, type, value, traceback):
+        call_stack.stack.pop()
+        
+    def handle_start_method_call(self, obj, method_name, method_signature, method_args, method_kwargs):
         rdfl = rdflogging.rdflogger
         
-        all_args = tuple([self.obj] + list(self.method_args))            
-        self.method_bound_args = self.method_signature.bind(*all_args, **self.method_kwargs)
+        all_args = tuple([obj] + list(method_args))
+        self.method_signature = method_signature
+        self.method_bound_args = self.method_signature.bind(*all_args, **method_kwargs)
         self.method_bound_args.apply_defaults()
 
         updates_d = {}
         for arg_name, arg_value in self.method_bound_args.arguments.items():
-            arg_kind = self.method_signature.parameters.get(arg_name).kind
-            print(self.method_name, arg_name, arg_kind)
+            arg_kind = method_signature.parameters.get(arg_name).kind
+            print(method_name, arg_name, arg_kind)
             if arg_kind == inspect.Parameter.VAR_KEYWORD: # case for lambda args of assign
                 for kwarg_name, kwarg_value in arg_value.items():
                     if inspect.isfunction(kwarg_value):
-                        new_kwarg_value = CallbackObj(methods_chain.curr_methods_chain.get_path(), kwarg_value) # create empty callback obj as placeholder for future results
+                        new_kwarg_value = CallbackObj(call_stack.stack.to_string(), kwarg_value) # create empty callback obj as placeholder for future results
                         updates_d[kwarg_name] = new_kwarg_value                        
                 self.method_bound_args.arguments[arg_name].update(updates_d); updates_d = {}
 
         new_args = self.method_bound_args.args
         new_kwargs = self.method_bound_args.kwargs
-        
-        t_obj = obj_tracking.tracking_store.get_tracking_obj(self.obj)
-        self.chain_path = methods_chain.curr_methods_chain.get_path()
+
+        #ipdb.set_trace()
+        t_obj = obj_tracking.tracking_store.get_tracking_obj(obj)
         thread_id = threading.get_native_id()
-        self.method_call_uri = rdfl.dump_method_call_in(self.chain_path, thread_id, self.obj, t_obj,
-                                                        self.method_name, self.method_signature, self.method_bound_args,
-                                                        call_stack.call_stack.size())
+        caller_stack_entry = call_stack.stack.stack_entries[-2]
+        rdfl.dump_method_call_in(self, thread_id, obj, t_obj,
+                                 method_name, method_signature, self.method_bound_args,
+                                 caller_stack_entry)
 
         return new_args, new_kwargs
 
@@ -203,8 +211,9 @@ class MethodCallHandler:
 
         ret_t_obj = obj_tracking.tracking_store.get_tracking_obj(ret_obj)
 
-        ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(self.chain_path, ret_obj, ret_t_obj)
-        rdfl.dump_triple__(self.method_call_uri, "<method-call-return>", ret_t_obj.last_obj_state_uri)
+        caller_stack_entry = call_stack.stack.stack_entries[-2]
+        ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(ret_obj, ret_t_obj, caller_stack_entry)
+        rdfl.dump_triple__(self.uri, "<method-call-return>", ret_t_obj.last_obj_state_uri)
 
         # catching arg callback values returned after method call executed all callbacks
         for arg_name, arg_value in self.method_bound_args.arguments.items():
@@ -218,23 +227,28 @@ class MethodCallHandler:
                             arg_t_obj.last_obj_state_uri = rdfl.dump_obj_state(self.chain_path, arg_obj.ret, arg_t_obj)
                         rdfl.dump_triple__(arg_obj.uri, "<ret-val>", arg_t_obj.last_obj_state_uri)
 
-                    
+
+def cb_create_method_call_context_manager(method_name):
+    return MethodCall(method_name) if call_stack.stack.size() > 0 else nullcontext()
+    
+                        
+"""
 def cb_notify_dataframe_method_call(obj, method_name, method_signature, method_args, method_kwargs):
     result = None
-    print("pyjviz call stack:", call_stack.call_stack.to_string())
-    cond = call_stack.call_stack.size() == 1 or (call_stack.call_stack.size() == 2 and call_stack.call_stack.calls[-1] == "copy")
-    cond = cond and not (call_stack.call_stack.size() >= 2 and call_stack.call_stack.calls[-1] == "copy" and call_stack.call_stack.calls[-2] == "rename")
-    if cond:
-        if methods_chain.curr_methods_chain:
-            result = MethodCallHandler(obj, method_name, method_signature, method_args, method_kwargs)
+    print("pyjviz call stack:", call_stack.stack.to_string())
+    #cond = call_stack.call_stack.size() == 1 or (call_stack.call_stack.size() == 2 and call_stack.call_stack.calls[-1] == "copy")
+    #cond = cond and not (call_stack.call_stack.size() >= 2 and call_stack.call_stack.calls[-1] == "copy" and call_stack.call_stack.calls[-2] == "rename")
+    cond = True
+    if call_stack.stack.size() > 0 and cond:
+        result = MethodCallHandler(obj, method_name, method_signature, method_args, method_kwargs)
     return result
 
 def cb_notify_series_method_call(obj, method_name, method_signature, method_args, method_kwargs):
     result = None
-    print("pyjviz call stack:", call_stack.call_stack.to_string())
-    cond = call_stack.call_stack.size() <= 2
-    if cond:
-        if methods_chain.curr_methods_chain:
-            result = MethodCallHandler(obj, method_name, method_signature, method_args, method_kwargs)
+    print("pyjviz call stack:", call_stack.stack.to_string())
+    #cond = call_stack.stack.size() <= 2
+    cond = True
+    if call_stack.stack.size() > 0 and cond:
+        result = MethodCallHandler(obj, method_name, method_signature, method_args, method_kwargs)
     return result
-        
+"""     

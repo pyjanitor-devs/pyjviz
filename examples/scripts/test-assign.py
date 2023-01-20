@@ -14,10 +14,6 @@ def a0(df: pd.DataFrame) -> pd.DataFrame:
     #return df
 
 if __name__ == "__main__":
-    # configure pyjviz
-    rdflog_fn = pyjviz.get_rdflog_filename(sys.argv[0])
-    pyjviz.RDFLogger.init(rdflog_fn)
-        
     df = pd.DataFrame({'a': range(10)})
 
     #ipdb.set_trace()
@@ -31,7 +27,7 @@ if __name__ == "__main__":
         return x.a + x.a
 
     #A = df.a
-    with pyjviz.MethodsChain("cc"):
+    with pyjviz.SubGraph("cc") as cc:
         df2 = df.assign(c = lambda x: x.a)
         #df2 = df.assign(c = df.a)
         #df2 = df.assign(c = df.a, cc = lambda x: x.a)
@@ -42,4 +38,4 @@ if __name__ == "__main__":
     #ipdb.set_trace()
     print(df.describe())
 
-    pyjviz.render_rdflog(rdflog_fn, vertical = True, show_objects = True)
+    cc.save_dot(vertical = True, show_objects = True)

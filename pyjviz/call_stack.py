@@ -1,26 +1,28 @@
-class CallStack:
-    def __init__(self):
-        self.calls = []
+class StackEntry:
+    """
+    Base class for SubGraph and MethodCall. Each StackEntry obj has:
+      - uri - to identify itself in graph as node
+      - rdf_type_uri - to identify node type
+    """
+    def __init__(self, rdf_type_uri):
+        self.rdf_type_uri = rdf_type_uri
+        self.uri = None
 
-    def size(self):
-        return len(self.calls)
+class Stack:
+    def __init__(self):
+        self.stack_entries = []
 
     def to_string(self):
-        return ":".join(self.calls)
+        return ":".join([x.rdf_type_uri for x in self.stack_entries])
+
+    def size(self):
+        return len(self.stack_entries)
+
+    def push(self, e):
+        self.stack_entries.append(e)
+        
+    def pop(self):
+        return self.stack_entries.pop()
     
-call_stack = CallStack()
+stack = Stack()
 
-class CallStackContextManager:
-    def __init__(self, method_name):
-        self.method_name = method_name
-
-    def __enter__(self):
-        global call_stack
-        call_stack.calls.append(self.method_name)        
-
-    def __exit__(self, type, value, traceback):
-        global call_stack
-        call_stack.calls.pop()        
-
-def create_call_stack_context_manager(method_name):
-    return CallStackContextManager(method_name)

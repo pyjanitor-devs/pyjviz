@@ -22,12 +22,12 @@ if __name__ == "__main__":
 
     df = pd.DataFrame({'a': range(10)})
 
-    #ipdb.set_trace()
-    with pyjviz.MethodsChain("c") as C:
+    with pyjviz.SubGraph("c") as C:
         df0 = df.a0()
         df1 = df.a0().a0()
         df2 = df.a0()
 
+    ipdb.set_trace()
     print(df1.describe())
 
     C.save_dot()

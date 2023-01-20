@@ -30,7 +30,6 @@ class RDFLogger:
     def __init__(self, triples_sink):
         self.triples_sink = triples_sink
         self.known_threads = {}
-        self.known_chains = {}
         self.known_objs = {}
         self.random_id = 0 # should be better way
 
@@ -55,20 +54,6 @@ class RDFLogger:
             self.dump_triple__(ret_uri, "<obj-pyid>", f'{obj_pyid}')
 
         return ret_uri
-        
-    def register_chain(self, chain_path):
-        # NB: chain should be object not path
-        #chain_id = str(uuid.uuid4())
-        chain_id = chain_path
-        chain_uri = None
-        if not chain_id in self.known_chains:
-            chain_uri = self.known_chains[chain_id] = f"<Chain#{chain_id}>"
-            self.dump_triple__(chain_uri, "rdf:type", "<Chain>")
-            #ipdb.set_trace()
-            self.dump_triple__(chain_uri, "rdf:label", f'"{chain_path}"' if chain_path else "rdf:nil")
-        else:
-            chain_uri = self.known_chains[chain_id]
-        return chain_uri
 
     def register_thread(self, thread_id):
         if not thread_id in self.known_threads:            
@@ -78,10 +63,9 @@ class RDFLogger:
             thread_uri = self.known_threads[thread_id]
         return thread_uri
             
-    def dump_obj_state(self, chain_path, obj, t_obj):
+    def dump_obj_state(self, obj, t_obj, parent_obj):
         obj_uri = self.register_obj__(obj, t_obj)
         obj_state_uri = f"<ObjState#{self.random_id}>"; self.random_id += 1
-        chain_uri = self.register_chain(chain_path)
 
         df = obj
         #ipdb.set_trace()
@@ -89,7 +73,7 @@ class RDFLogger:
         self.dump_triple__(obj_state_uri, "<obj>", obj_uri)
         self.dump_triple__(obj_state_uri, "<version>", f'"{t_obj.last_version_num}"')
         t_obj.last_version_num += 1
-        self.dump_triple__(obj_state_uri, "<chain>", chain_uri)
+        self.dump_triple__(obj_state_uri, "<part-of>", parent_obj.uri)
 
         if isinstance(obj, pd.DataFrame):
             self.dump_DataFrame_obj_state(obj_state_uri, obj)
@@ -112,20 +96,21 @@ class RDFLogger:
     def dump_Series_obj_state(self, obj_state_uri, s):
         self.dump_triple__(obj_state_uri, "<df-shape>", f'"{s.shape}"')        
 
-    def dump_method_call_arg__(self, method_call_uri, c, arg_name, arg_obj, chain_path):
+    def dump_method_call_arg__(self, method_call_obj, c, arg_name, arg_obj, caller_stack_entry):
         rdfl = self
+        method_call_uri = method_call_obj.uri
         if isinstance(arg_obj, pf_pandas.CallbackObj):
             arg_obj.uri = f"<CallbackObj#{self.random_id}>"; self.random_id += 1
             rdfl.dump_triple__(arg_obj.uri, "rdf:type", "<CallbackObj>")
             arg_obj_chain_uri = rdfl.register_chain(arg_obj.chain_path)
-            rdfl.dump_triple__(arg_obj.uri, "<chain>", arg_obj_chain_uri)
+            rdfl.dump_triple__(arg_obj.uri, "<part-of>", arg_obj_chain_uri)
             rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.uri)
             rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.uri)
             rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}-name>", '"' + (arg_name if arg_name else '') + '"')
         elif isinstance(arg_obj, pd.DataFrame) or isinstance(arg_obj, pd.Series):
             arg_t_obj = obj_tracking.tracking_store.get_tracking_obj(arg_obj)
             if arg_t_obj.last_obj_state_uri is None:
-                arg_t_obj.last_obj_state_uri = rdfl.dump_obj_state(chain_path, arg_obj, arg_t_obj)
+                arg_t_obj.last_obj_state_uri = rdfl.dump_obj_state(arg_obj, arg_t_obj, caller_stack_entry)
             arg_uri = arg_t_obj.last_obj_state_uri
             #ipdb.set_trace()
             rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_uri)
@@ -133,37 +118,34 @@ class RDFLogger:
         else:
             pass
         
-    def dump_method_call_in(self, chain_path, thread_id, obj, t_obj,
+    def dump_method_call_in(self, method_call_obj, thread_id, obj, t_obj,
                             method_name, method_signature, method_bound_args,
-                            stack_depth):
+                            caller_stack_entry):
         #ipdb.set_trace()
         rdfl = self
         
-        obj_chain_uri = rdfl.register_chain(chain_path)
         thread_uri = rdfl.register_thread(thread_id)
-        method_call_id = rdfl.random_id; rdfl.random_id += 1
-        method_call_uri = f"<MethodCall#{method_call_id}>"
+        method_call_uri = method_call_obj.uri
 
-        rdfl.dump_triple__(method_call_uri, "rdf:type", "<MethodCall>")
         rdfl.dump_triple__(method_call_uri, "rdf:label", '"' + method_name + '"')
         rdfl.dump_triple__(method_call_uri, "<method-thread>", thread_uri)
         global method_counter
         rdfl.dump_triple__(method_call_uri, "<method-counter>", method_counter); method_counter += 1
-        rdfl.dump_triple__(method_call_uri, "<method-stack-depth>", stack_depth)
-        rdfl.dump_triple__(method_call_uri, "<method-call-chain>", obj_chain_uri)
+        rdfl.dump_triple__(method_call_uri, "<method-stack-depth>", "-1")
+        rdfl.dump_triple__(method_call_uri, "<part-of>", caller_stack_entry.uri)
 
         c = 0
         for arg_name, arg_obj in method_bound_args.arguments.items():
             arg_kind = method_signature.parameters.get(arg_name).kind
             if arg_kind == inspect.Parameter.VAR_KEYWORD:
                 for kwarg_name, kwarg_obj in arg_obj.items():
-                    self.dump_method_call_arg__(method_call_uri, c, kwarg_name, kwarg_obj, chain_path)
+                    self.dump_method_call_arg__(method_call_obj, c, kwarg_name, kwarg_obj, caller_stack_entry)
             elif arg_kind == inspect.Parameter.VAR_POSITIONAL:
                 #ipdb.set_trace()
                 for p_arg_obj in arg_obj:
-                    self.dump_method_call_arg__(method_call_uri, c, None, p_arg_obj, chain_path)                    
+                    self.dump_method_call_arg__(method_call_obj, c, None, p_arg_obj, caller_stack_entry)
             else:
-                self.dump_method_call_arg__(method_call_uri, c, arg_name, arg_obj, chain_path)
+                self.dump_method_call_arg__(method_call_obj, c, arg_name, arg_obj, caller_stack_entry)
 
             c += 1
 

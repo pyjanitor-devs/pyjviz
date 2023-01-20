@@ -17,7 +17,7 @@ if __name__ == "__main__":
         
     print(dirty)
 
-    with pyjviz.MethodsChain("from_dirty_to_clean") as c:
+    with pyjviz.SubGraph("from_dirty_to_clean") as c:
         clean = (dirty
                  .clean_names()
                  .dropna(axis='columns', how='all')
@@ -29,4 +29,4 @@ if __name__ == "__main__":
                  )
     print(clean)
 
-    c.render_rdflog(vertical = True, show_objects = False)
+    c.save_dot(vertical = True, show_objects = False)
