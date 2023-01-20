@@ -58,7 +58,8 @@ class RDFLogger:
         
     def register_chain(self, chain_path):
         # NB: chain should be object not path
-        chain_id = str(uuid.uuid4())
+        #chain_id = str(uuid.uuid4())
+        chain_id = chain_path
         chain_uri = None
         if not chain_id in self.known_chains:
             chain_uri = self.known_chains[chain_id] = f"<Chain#{chain_id}>"
