@@ -15,6 +15,13 @@ class Stack:
     def to_string(self):
         return ":".join([x.rdf_type_uri for x in self.stack_entries])
 
+    def to_methods_calls(self):
+        ret = [se.method_name for se in self.stack_entries if se.rdf_type_uri == "<MethodCall>"]
+        return ret
+
+    def to_methods_calls_string(self):
+        return ":".join(self.to_methods_calls())
+    
     def size(self):
         return len(self.stack_entries)
 

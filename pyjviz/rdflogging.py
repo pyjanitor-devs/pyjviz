@@ -12,6 +12,7 @@ import pandas_flavor as pf
 
 from . import obj_tracking
 from . import pf_pandas
+from . import call_stack
 
 base_uri = 'https://github.com/pyjanitor-devs/pyjviz/rdflog.shacl.ttl#'
 method_counter = 0
@@ -100,10 +101,10 @@ class RDFLogger:
         rdfl = self
         method_call_uri = method_call_obj.uri
         if isinstance(arg_obj, pf_pandas.CallbackObj):
+            #ipdb.set_trace()
             arg_obj.uri = f"<CallbackObj#{self.random_id}>"; self.random_id += 1
             rdfl.dump_triple__(arg_obj.uri, "rdf:type", "<CallbackObj>")
             rdfl.dump_triple__(arg_obj.uri, "<part-of>", caller_stack_entry.uri)
-            rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.uri)
             rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.uri)
             rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}-name>", '"' + (arg_name if arg_name else '') + '"')
         elif isinstance(arg_obj, pd.DataFrame) or isinstance(arg_obj, pd.Series):
@@ -130,7 +131,8 @@ class RDFLogger:
         rdfl.dump_triple__(method_call_uri, "<method-thread>", thread_uri)
         global method_counter
         rdfl.dump_triple__(method_call_uri, "<method-counter>", method_counter); method_counter += 1
-        rdfl.dump_triple__(method_call_uri, "<method-stack-depth>", "-1")
+        rdfl.dump_triple__(method_call_uri, "<method-stack-depth>", call_stack.stack.size())
+        rdfl.dump_triple__(method_call_uri, "<method-stack-trace>", '"' + call_stack.stack.to_methods_calls_string() + '"')
         rdfl.dump_triple__(method_call_uri, "<part-of>", caller_stack_entry.uri)
 
         c = 0
@@ -139,16 +141,15 @@ class RDFLogger:
             if arg_kind == inspect.Parameter.VAR_KEYWORD:
                 for kwarg_name, kwarg_obj in arg_obj.items():
                     self.dump_method_call_arg__(method_call_obj, c, kwarg_name, kwarg_obj, caller_stack_entry)
+                    c += 1
             elif arg_kind == inspect.Parameter.VAR_POSITIONAL:
                 #ipdb.set_trace()
                 for p_arg_obj in arg_obj:
                     self.dump_method_call_arg__(method_call_obj, c, None, p_arg_obj, caller_stack_entry)
+                    c += 1
             else:
                 self.dump_method_call_arg__(method_call_obj, c, arg_name, arg_obj, caller_stack_entry)
-
-            c += 1
-
-                
+                c += 1
                 
         return method_call_uri
 

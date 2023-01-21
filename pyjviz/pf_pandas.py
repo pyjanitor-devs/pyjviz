@@ -229,7 +229,19 @@ class MethodCall(call_stack.StackEntry):
 
 
 def cb_create_method_call_context_manager(method_name):
-    return MethodCall(method_name) if call_stack.stack.size() > 0 else nullcontext()
+    if call_stack.stack.size() == 0:
+        return nullcontext()
+
+    method_calls = call_stack.stack.to_methods_calls() + [method_name]
+    print("method_calls:", method_calls)
+    if len(method_calls) == 1:
+        ret = MethodCall(method_name)
+    elif len(method_calls) == 2 and method_calls[-2] == 'assign':
+        ret = MethodCall(method_name)
+    else:
+        ret = nullcontext()
+        
+    return ret
     
                         
 """

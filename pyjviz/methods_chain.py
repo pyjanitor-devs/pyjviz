@@ -8,7 +8,7 @@ from . import call_stack
 from . import rdflogging
 from . import nb_utils
 from . import viz
-        
+
 class SubGraph(call_stack.StackEntry):
     def __init__(self, subgraph_label = None):
         super().__init__(rdf_type_uri = "<SubGraph>")

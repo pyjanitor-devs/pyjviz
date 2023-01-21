@@ -43,17 +43,13 @@ def y(df, int_arg):
     return pd.DataFrame(df)
 
 if __name__ == "__main__":
-    # configure pyjviz
-    rdflog_fn = pyjviz.get_rdflog_filename(sys.argv[0])
-    pyjviz.RDFLogger.init(rdflog_fn)
-    
     print("Main Thread Here!!")
 
     df = pd.DataFrame({'a': range(10)})
     
-    with pyjviz.MethodsChain("c") as c:
+    with pyjviz.SubGraph("c") as c:
         r1 = df.x()
-        if 1:
+        if 0:
             r20 = prun(lambda: df.y(0))
             r21 = prun(lambda: df.y(1))
             res = r1.m(pwait(r20), pwait(r21))
@@ -62,4 +58,4 @@ if __name__ == "__main__":
             r21 = df.y(1)
             res = r1.m(r20, r21)
     
-    pyjviz.render_rdflog(rdflog_fn)
+    c.save_dot(show_objects = False)
