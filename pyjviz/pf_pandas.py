@@ -12,8 +12,8 @@ from . import methods_chain
 from . import call_stack
 
 class CallbackObj:
-    def __init__(self, chain_path, func):
-        self.chain_path = chain_path
+    def __init__(self, caller_stack_entry, func):
+        self.caller_stack_entry = caller_stack_entry
         self.func = func
         self.ret = None
         self.uri = None
@@ -34,18 +34,18 @@ class DataFrameAttr:
         if call_stack.stack.size() == 0:
             ret_obj = self.func(*x, **y)
         else:
-            chain_path = call_stack.stack.to_string()
-        
+            caller_stacke_entry = call_stack.stack.stack_entries[-1]
+            
             x0_obj = x[0]
             ret_obj = self.func(*x, **y)
 
             x0_t_obj = obj_tracking.tracking_store.get_tracking_obj(x0_obj)
             if x0_t_obj.last_obj_state_uri is None:
-                x0_t_obj.last_obj_state_uri = rdfl.dump_obj_state(chain_path, x0_obj, x0_t_obj)
+                x0_t_obj.last_obj_state_uri = rdfl.dump_obj_state(x0_obj, x0_t_obj, caller_stacke_entry)
 
             ret_t_obj = obj_tracking.tracking_store.get_tracking_obj(ret_obj)
             if ret_t_obj.last_obj_state_uri is None:
-                ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(chain_path, ret_obj, ret_t_obj)
+                ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(ret_obj, ret_t_obj, caller_stacke_entry)
 
             rdfl.dump_triple__(ret_t_obj.last_obj_state_uri, "<df-projection>", x0_t_obj.last_obj_state_uri)
         
@@ -62,18 +62,18 @@ class Caller_to_datetime:
         if call_stack.stack.size() == 0:
             ret_obj = self.func(*x, **y)
         else:
-            chain_path = call_stack.stack.to_string()
+            caller_stacke_entry = call_stack.stack.stack_entries[-2]
         
             x0_obj = x[0]
             ret_obj = self.func(*x, **y)
 
             x0_t_obj = obj_tracking.tracking_store.get_tracking_obj(x0_obj)
             if x0_t_obj.last_obj_state_uri is None:
-                x0_t_obj.last_obj_state_uri = rdfl.dump_obj_state(chain_path, x0_obj, x0_t_obj)
+                x0_t_obj.last_obj_state_uri = rdfl.dump_obj_state(x0_obj, x0_t_obj, caller_stacke_entry)
 
             ret_t_obj = obj_tracking.tracking_store.get_tracking_obj(ret_obj)
             if ret_t_obj.last_obj_state_uri is None:
-                ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(chain_path, ret_obj, ret_t_obj)
+                ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(ret_obj, ret_t_obj, caller_stacke_entry)
 
             rdfl.dump_triple__(ret_t_obj.last_obj_state_uri, "<to_datetime>", x0_t_obj.last_obj_state_uri)
         
@@ -181,6 +181,7 @@ class MethodCall(call_stack.StackEntry):
         self.method_bound_args = self.method_signature.bind(*all_args, **method_kwargs)
         self.method_bound_args.apply_defaults()
 
+        caller_stack_entry = call_stack.stack.stack_entries[-2]
         updates_d = {}
         for arg_name, arg_value in self.method_bound_args.arguments.items():
             arg_kind = method_signature.parameters.get(arg_name).kind
@@ -188,7 +189,7 @@ class MethodCall(call_stack.StackEntry):
             if arg_kind == inspect.Parameter.VAR_KEYWORD: # case for lambda args of assign
                 for kwarg_name, kwarg_value in arg_value.items():
                     if inspect.isfunction(kwarg_value):
-                        new_kwarg_value = CallbackObj(call_stack.stack.to_string(), kwarg_value) # create empty callback obj as placeholder for future results
+                        new_kwarg_value = CallbackObj(caller_stack_entry, kwarg_value) # create empty callback obj as placeholder for future results
                         updates_d[kwarg_name] = new_kwarg_value                        
                 self.method_bound_args.arguments[arg_name].update(updates_d); updates_d = {}
 
@@ -198,7 +199,6 @@ class MethodCall(call_stack.StackEntry):
         #ipdb.set_trace()
         t_obj = obj_tracking.tracking_store.get_tracking_obj(obj)
         thread_id = threading.get_native_id()
-        caller_stack_entry = call_stack.stack.stack_entries[-2]
         rdfl.dump_method_call_in(self, thread_id, obj, t_obj,
                                  method_name, method_signature, self.method_bound_args,
                                  caller_stack_entry)
@@ -224,7 +224,7 @@ class MethodCall(call_stack.StackEntry):
                         arg_obj = kwarg_value
                         arg_t_obj = obj_tracking.tracking_store.get_tracking_obj(arg_obj.ret)
                         if arg_t_obj.last_obj_state_uri is None:
-                            arg_t_obj.last_obj_state_uri = rdfl.dump_obj_state(self.chain_path, arg_obj.ret, arg_t_obj)
+                            arg_t_obj.last_obj_state_uri = rdfl.dump_obj_state(arg_obj.ret, arg_t_obj, caller_stack_entry)
                         rdfl.dump_triple__(arg_obj.uri, "<ret-val>", arg_t_obj.last_obj_state_uri)
 
 

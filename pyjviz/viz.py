@@ -51,7 +51,7 @@ def dump_dot_code(g, vertical, show_objects):
         select ?obj_state ?version ?obj_type ?obj_uuid ?df_shape ?df_head { 
           ?obj_state rdf:type <ObjState>; <obj> ?obj.
           ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid.
-          ?obj_state <part-of> ?sg; <version> ?version .
+          ?obj_state <part-of>+ ?sg; <version> ?version .
           ?obj_state <df-shape> ?df_shape .
           optional {?obj_state <df-head> ?df_head} .
         }
@@ -79,7 +79,7 @@ def dump_dot_code(g, vertical, show_objects):
                            rdf:label ?method_name; 
                            <method-counter> ?method_count;
                            <method-stack-depth> ?method_stack_depth;
-                           <part-of> ?sg .
+                           <part-of>+ ?sg .
         }
         """
         for method_call_obj, method_name, method_count, method_stack_depth in g.query(rq, base = rdflogging.base_uri, initBindings = {'sg': subgraph}):
@@ -89,7 +89,7 @@ def dump_dot_code(g, vertical, show_objects):
 
         rq = """
         select ?callback_obj ?sg {
-          ?callback_obj rdf:type <CallbackObj>; <part-of> ?sg.
+          ?callback_obj rdf:type <CallbackObj>; <part-of>+ ?sg.
         }
         """
         for callback_obj, sg in g.query(rq, base = rdflogging.base_uri, initBindings = {'sg': subgraph}):
@@ -103,7 +103,7 @@ def dump_dot_code(g, vertical, show_objects):
         #ipdb.set_trace()
         rq = """
         select ?method_call_obj ?caller_obj ?ret_obj ?arg1_name ?arg1_obj ?arg2_name ?arg2_obj ?arg3_name ?arg3_obj { 
-          ?method_call_obj rdf:type <MethodCall>; <part-of> ?sg;
+          ?method_call_obj rdf:type <MethodCall>; <part-of>+ ?sg;
                            <method-call-arg0> ?caller_obj;
                            <method-call-return> ?ret_obj .
           optional { ?method_call_obj <method-call-arg1> ?arg1_obj; <method-call-arg1-name> ?arg1_name }

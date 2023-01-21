@@ -102,8 +102,7 @@ class RDFLogger:
         if isinstance(arg_obj, pf_pandas.CallbackObj):
             arg_obj.uri = f"<CallbackObj#{self.random_id}>"; self.random_id += 1
             rdfl.dump_triple__(arg_obj.uri, "rdf:type", "<CallbackObj>")
-            arg_obj_chain_uri = rdfl.register_chain(arg_obj.chain_path)
-            rdfl.dump_triple__(arg_obj.uri, "<part-of>", arg_obj_chain_uri)
+            rdfl.dump_triple__(arg_obj.uri, "<part-of>", caller_stack_entry.uri)
             rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.uri)
             rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.uri)
             rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}-name>", '"' + (arg_name if arg_name else '') + '"')
