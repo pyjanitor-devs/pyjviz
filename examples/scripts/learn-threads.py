@@ -49,7 +49,7 @@ if __name__ == "__main__":
     
     with pyjviz.SubGraph("c") as c:
         r1 = df.x()
-        if 0:
+        if 1:
             r20 = prun(lambda: df.y(0))
             r21 = prun(lambda: df.y(1))
             res = r1.m(pwait(r20), pwait(r21))

@@ -19,7 +19,7 @@ if __name__ == "__main__":
     print(TestDF, TestDF.__name__, TestDF.__supertype__)
     print(TestDF.columns)
 
-    with pyjviz.MethodsChain("c") as c:
+    with pyjviz.SubGraph("c") as c:
         df = pd.DataFrame({'a': range(10)})
         df1 = df.a0()
         df2 = df.a0()
@@ -28,4 +28,4 @@ if __name__ == "__main__":
 
     print(df1.describe())
 
-    c.render_rdflog(show_objects = False)
+    c.save_dot(show_objects = False)
