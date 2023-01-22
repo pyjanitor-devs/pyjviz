@@ -2,7 +2,6 @@ import ipdb
 import threading
 import pandas as pd
 import pandas_flavor as pf
-import inspect
 import uuid
 from contextlib import nullcontext
 
@@ -10,19 +9,6 @@ from . import rdflogging
 from . import obj_tracking
 from . import methods_chain
 from . import call_stack
-
-class CallbackObj:
-    def __init__(self, caller_stack_entry, func):
-        self.caller_stack_entry = caller_stack_entry
-        self.func = func
-        self.ret = None
-        self.uri = None
-
-    def __call__(self, *args, **kwargs):
-        print("CallbackOBJ called")
-        self.ret = self.func(*args, **kwargs)
-        #ipdb.set_trace()
-        return self.ret
 
 class DataFrameAttr:
     def __init__(self, func):
@@ -156,78 +142,6 @@ def enable_pf_pandas__():
 
 # pandas_flavor register.py callback
 
-class MethodCall(call_stack.StackEntry):
-    def __init__(self, method_name):
-        super().__init__(rdf_type_uri = "<MethodCall>")
-        self.method_bound_args = None
-        #ipdb.set_trace()
-        self.uri = f"<MethodCall#{str(uuid.uuid4())}>"
-        self.method_name = method_name
-        rdfl = rdflogging.rdflogger
-        rdfl.dump_triple__(self.uri, "rdf:type", self.rdf_type_uri)
-
-    def __enter__(self):
-        call_stack.stack.push(self)
-        return self
-        
-    def __exit__(self, type, value, traceback):
-        call_stack.stack.pop()
-        
-    def handle_start_method_call(self, obj, method_name, method_signature, method_args, method_kwargs):
-        rdfl = rdflogging.rdflogger
-        
-        all_args = tuple([obj] + list(method_args))
-        self.method_signature = method_signature
-        self.method_bound_args = self.method_signature.bind(*all_args, **method_kwargs)
-        self.method_bound_args.apply_defaults()
-
-        caller_stack_entry = call_stack.stack.stack_entries[-2]
-        updates_d = {}
-        for arg_name, arg_value in self.method_bound_args.arguments.items():
-            arg_kind = method_signature.parameters.get(arg_name).kind
-            print(method_name, arg_name, arg_kind)
-            if arg_kind == inspect.Parameter.VAR_KEYWORD: # case for lambda args of assign
-                for kwarg_name, kwarg_value in arg_value.items():
-                    if inspect.isfunction(kwarg_value):
-                        new_kwarg_value = CallbackObj(caller_stack_entry, kwarg_value) # create empty callback obj as placeholder for future results
-                        updates_d[kwarg_name] = new_kwarg_value                        
-                self.method_bound_args.arguments[arg_name].update(updates_d); updates_d = {}
-
-        new_args = self.method_bound_args.args
-        new_kwargs = self.method_bound_args.kwargs
-
-        #ipdb.set_trace()
-        t_obj = obj_tracking.tracking_store.get_tracking_obj(obj)
-        thread_id = threading.get_native_id()
-        rdfl.dump_method_call_in(self, thread_id, obj, t_obj,
-                                 method_name, method_signature, self.method_bound_args,
-                                 caller_stack_entry)
-
-        return new_args, new_kwargs
-
-    def handle_end_method_call(self, ret):
-        rdfl = rdflogging.rdflogger
-        ret_obj = ret if not ret is None else obj
-
-        ret_t_obj = obj_tracking.tracking_store.get_tracking_obj(ret_obj)
-
-        caller_stack_entry = call_stack.stack.stack_entries[-2]
-        ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(ret_obj, ret_t_obj, caller_stack_entry)
-        rdfl.dump_triple__(self.uri, "<method-call-return>", ret_t_obj.last_obj_state_uri)
-
-        # catching arg callback values returned after method call executed all callbacks
-        for arg_name, arg_value in self.method_bound_args.arguments.items():
-            arg_kind = self.method_signature.parameters.get(arg_name).kind
-            if arg_kind == inspect.Parameter.VAR_KEYWORD:
-                for kwarg_name, kwarg_value in arg_value.items():
-                    if isinstance(kwarg_value, CallbackObj):
-                        arg_obj = kwarg_value
-                        arg_t_obj = obj_tracking.tracking_store.get_tracking_obj(arg_obj.ret)
-                        if arg_t_obj.last_obj_state_uri is None:
-                            arg_t_obj.last_obj_state_uri = rdfl.dump_obj_state(arg_obj.ret, arg_t_obj, caller_stack_entry)
-                        rdfl.dump_triple__(arg_obj.uri, "<ret-val>", arg_t_obj.last_obj_state_uri)
-
-
 def cb_create_method_call_context_manager(method_name):
     if call_stack.stack.size() == 0:
         return nullcontext()
@@ -235,32 +149,10 @@ def cb_create_method_call_context_manager(method_name):
     method_calls = call_stack.stack.to_methods_calls() + [method_name]
     print("method_calls:", method_calls)
     if len(method_calls) == 1:
-        ret = MethodCall(method_name)
+        ret = methods_chain.MethodCall(method_name)
     elif len(method_calls) == 2 and method_calls[-2] == 'assign':
-        ret = MethodCall(method_name)
+        ret = methods_chain.MethodCall(method_name)
     else:
         ret = nullcontext()
         
     return ret
-    
-                        
-"""
-def cb_notify_dataframe_method_call(obj, method_name, method_signature, method_args, method_kwargs):
-    result = None
-    print("pyjviz call stack:", call_stack.stack.to_string())
-    #cond = call_stack.call_stack.size() == 1 or (call_stack.call_stack.size() == 2 and call_stack.call_stack.calls[-1] == "copy")
-    #cond = cond and not (call_stack.call_stack.size() >= 2 and call_stack.call_stack.calls[-1] == "copy" and call_stack.call_stack.calls[-2] == "rename")
-    cond = True
-    if call_stack.stack.size() > 0 and cond:
-        result = MethodCallHandler(obj, method_name, method_signature, method_args, method_kwargs)
-    return result
-
-def cb_notify_series_method_call(obj, method_name, method_signature, method_args, method_kwargs):
-    result = None
-    print("pyjviz call stack:", call_stack.stack.to_string())
-    #cond = call_stack.stack.size() <= 2
-    cond = True
-    if call_stack.stack.size() > 0 and cond:
-        result = MethodCallHandler(obj, method_name, method_signature, method_args, method_kwargs)
-    return result
-"""     

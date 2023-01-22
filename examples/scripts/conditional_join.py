@@ -24,7 +24,7 @@ if __name__ == "__main__":
     res1.describe()
 
     if 1:
-        with c1:
+        if 1: #with c1:
             with pyjviz.SubGraph("c2"):
                 #ipdb.set_trace()
                 res2 = df1.select_columns('value_1').conditional_join(
@@ -36,4 +36,4 @@ if __name__ == "__main__":
         print(res2)
         res2.describe()
 
-    c1.save_dot(vertical = False, show_objects = True)
+    pyjviz.save_dot(vertical = False, show_objects = True)

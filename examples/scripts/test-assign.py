@@ -38,4 +38,4 @@ if __name__ == "__main__":
     #ipdb.set_trace()
     print(df.describe())
 
-    cc.save_dot(vertical = True, show_objects = True)
+    pyjviz.save_dot(vertical = True, show_objects = True)

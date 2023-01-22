@@ -29,4 +29,4 @@ if __name__ == "__main__":
                  )
     print(clean)
 
-    c.save_dot(vertical = True, show_objects = False)
+    pyjviz.save_dot(vertical = True, show_objects = False)

@@ -11,7 +11,7 @@ import inspect
 import pandas_flavor as pf
 
 from . import obj_tracking
-from . import pf_pandas
+from . import methods_chain
 from . import call_stack
 
 base_uri = 'https://github.com/pyjanitor-devs/pyjviz/rdflog.shacl.ttl#'
@@ -100,7 +100,7 @@ class RDFLogger:
     def dump_method_call_arg__(self, method_call_obj, c, arg_name, arg_obj, caller_stack_entry):
         rdfl = self
         method_call_uri = method_call_obj.uri
-        if isinstance(arg_obj, pf_pandas.CallbackObj):
+        if isinstance(arg_obj, methods_chain.CallbackObj):
             #ipdb.set_trace()
             arg_obj.uri = f"<CallbackObj#{self.random_id}>"; self.random_id += 1
             rdfl.dump_triple__(arg_obj.uri, "rdf:type", "<CallbackObj>")
@@ -127,13 +127,11 @@ class RDFLogger:
         thread_uri = rdfl.register_thread(thread_id)
         method_call_uri = method_call_obj.uri
 
-        rdfl.dump_triple__(method_call_uri, "rdf:label", '"' + method_name + '"')
         rdfl.dump_triple__(method_call_uri, "<method-thread>", thread_uri)
         global method_counter
         rdfl.dump_triple__(method_call_uri, "<method-counter>", method_counter); method_counter += 1
         rdfl.dump_triple__(method_call_uri, "<method-stack-depth>", call_stack.stack.size())
         rdfl.dump_triple__(method_call_uri, "<method-stack-trace>", '"' + call_stack.stack.to_methods_calls_string() + '"')
-        rdfl.dump_triple__(method_call_uri, "<part-of>", caller_stack_entry.uri)
 
         c = 0
         for arg_name, arg_obj in method_bound_args.arguments.items():

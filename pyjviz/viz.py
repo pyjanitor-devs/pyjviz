@@ -10,16 +10,17 @@ import sys, base64
 import rdflib
 from io import StringIO
 
-import graphviz as gv
+import graphviz
 
 from . import rdflogging
+from . import nb_utils
 
 def uri_to_dot_id(uri):
     return str(hash(uri)).replace("-", "d")
 
 def dump_dot_code(g, vertical, show_objects):
     #ipdb.set_trace()
-    subgraphs = [r for r in g.query("select ?pp ?pl { ?pp rdf:type <SubGraph>; rdf:label ?pl }", base = rdflogging.base_uri)]
+    subgraphs = [r for r in g.query("select ?pp ?pl { ?pp rdf:type <SubGraph>; rdf:label ?pl; <part-of> rdf:nil }", base = rdflogging.base_uri)]
 
     out_fd = StringIO()
 
@@ -181,17 +182,30 @@ def dump_dot_code(g, vertical, show_objects):
     print("}", file = out_fd)
     return out_fd.getvalue()
 
-def render_rdflog(rdflog_ttl_fn, verbose = True, vertical = True, show_objects = False):
-    g = rdflib.Graph()
-    g.parse(rdflog_ttl_fn)
-
+def print_dot(vertical = False, show_objects = False):
     #ipdb.set_trace()
-    if len(g) == 0:
-        print(f"render_rdflog: empty graph found in {rdflog_ttl_fn}, no viz output will be produced")
-        
-    dot_code = dump_dot_code(g, vertical, show_objects)
-    gv_src = gv.Source(dot_code)
-    gv_src.render(rdflog_ttl_fn + '.dot', format = 'png', engine = 'dot')
+    g = rdflogging.rdflogger.triples_sink.get_graph()
+    print(dump_dot_code(g, vertical = vertical, show_objects = show_objects))
 
-    if verbose:
-        print(f"\nsaved diagram file {rdflog_ttl_fn + '.dot' + '.png'}")
+def save_dot(dot_output_fn = None, vertical = False, show_objects = False):
+    ts = rdflogging.rdflogger.triples_sink
+    if dot_output_fn is None:
+        if hasattr(ts, 'output_fn') and ts.output_fn is not None:
+            ttl_output_fn = ts.output_fn
+            dot_output_fn = ttl_output_fn + ".dot"
+        else:
+            raise Exception("can't guess dot_output_fn")
+
+    g = ts.get_graph()
+    dot_code = dump_dot_code(g, vertical = vertical, show_objects = show_objects)
+    gvz = graphviz.Source(dot_code)
+    gvz.render(dot_output_fn, format = 'png', engine = 'dot')
+
+def show(vertical = False, show_objects = False):
+    ts = rdflogging.rdflogger.triples_sink
+    if not (hasattr(ts, 'output_fn') and ts.output_fn is None):
+        raise Exception("triple sink is not in-memory file")
+
+    g = ts.get_graph()
+    dot_code = dump_dot_code(g, vertical = vertical, show_objects = show_objects)
+    nb_utils.show_method_chain(dot_code)

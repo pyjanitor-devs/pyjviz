@@ -1,4 +1,4 @@
-import ipdb
+#import ipdb
 import janitor
 import pandas_flavor as pf
 import pyjviz
@@ -12,7 +12,7 @@ TestDF.columns = ['a']
 
 @pf.register_dataframe_method
 def a0(df: pd.DataFrame) -> TestDF:
-    ipdb.set_trace()
+    #ipdb.set_trace()
     print("a0")
     return pd.DataFrame(df)
     #return df
@@ -28,8 +28,8 @@ if __name__ == "__main__":
         df1 = df.a0().a0()
         df2 = df.a0()
 
-    ipdb.set_trace()
+    #ipdb.set_trace()
     print(df1.describe())
 
-    C.save_dot()
+    pyjviz.save_dot()
     

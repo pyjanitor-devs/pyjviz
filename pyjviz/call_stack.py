@@ -13,10 +13,10 @@ class Stack:
         self.stack_entries = []
 
     def to_string(self):
-        return ":".join([x.rdf_type_uri for x in self.stack_entries])
+        return ":".join([x.rdf_type for x in self.stack_entries])
 
     def to_methods_calls(self):
-        ret = [se.method_name for se in self.stack_entries if se.rdf_type_uri == "<MethodCall>"]
+        ret = [se.label for se in self.stack_entries if se.rdf_type == "MethodCall"]
         return ret
 
     def to_methods_calls_string(self):
