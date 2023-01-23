@@ -88,9 +88,9 @@ class RDFLogger:
     def dump_DataFrame_obj_state(self, obj_state_uri, df, kwargs = {'show-head': True}):
         self.dump_triple__(obj_state_uri, "<df-shape>", f'"{df.shape}"')
         if kwargs.get('show-head', False) == True:
-            #df_head_html = df.head().to_html()
+            df_head_html = df.head().to_html().replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;").replace("\n", "&#10;")
             #ipdb.set_trace()
-            df_head_html = base64.b64encode(df.head(5).to_string(index = False, justify = 'start').encode('ascii')).decode('ascii')
+            #df_head_html = base64.b64encode(df.head(5).to_string(index = False, justify = 'start').encode('ascii')).decode('ascii')
             self.dump_triple__(obj_state_uri, "<df-head>", '"' + df_head_html + '"')
         #self.dump_triple__(obj_state_uri, "<df-columns>", f'"{df.columns}"')
 

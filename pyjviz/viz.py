@@ -6,6 +6,7 @@ import os.path
 import collections
 import html
 import sys, base64
+import pandas as pd
 
 import rdflib
 from io import StringIO
@@ -29,6 +30,9 @@ def dump_dot_code(g, vertical, show_objects):
     print("""
     digraph G {
     #splines=false;
+    #ratio=fill;
+    #size="800px,600px";
+    #center=true;
     rankdir = "{rankdir}"
     fontname="Helvetica,Arial,sans-serif"
     node [ 
@@ -59,17 +63,19 @@ def dump_dot_code(g, vertical, show_objects):
         """
 
         for obj_state, version, obj_type, obj_uudi, df_shape, df_head in g.query(rq, base = rdflogging.base_uri, initBindings = {'sg': subgraph}):
-            #cols = "\n".join(['<tr><td align="left"><FONT POINT-SIZE="8px">' + html.escape(x) + "</FONT></td></tr>" for x in df_cols.toPython().split(",")])
-            df_head = base64.b64decode(df_head.encode('ascii')).decode('ascii') if df_head else ""
-            df_head = df_head.replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br/>")
             print(f"""
             node_{uri_to_dot_id(obj_state)} [
                 color="#88000022"
                 shape = rect
                 label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
                          <tr> <td> <b>{obj_state}</b><br/>{obj_type} {version} {obj_uudi}<br/>{df_shape}</td> </tr>
-            <tr><td align="left">{df_head}</td></tr>
                          </table>>
+                href="javascript: 
+                {{ let w = window.open('', '_blank', 'width=800,height=200');
+                  /* let ii= `&lt;img src=&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==&apos;&gt;&lt;/img&gt;`; */
+                  let ii = `{df_head}`;
+                  w.document.write(ii); }}
+                 "
                 ];
 
             """, file = out_fd)
@@ -199,7 +205,7 @@ def save_dot(dot_output_fn = None, vertical = False, show_objects = False):
     g = ts.get_graph()
     dot_code = dump_dot_code(g, vertical = vertical, show_objects = show_objects)
     gvz = graphviz.Source(dot_code)
-    gvz.render(dot_output_fn, format = 'png', engine = 'dot')
+    gvz.render(dot_output_fn, format = 'svg', engine = 'dot')
 
 def show(vertical = False, show_objects = False):
     ts = rdflogging.rdflogger.triples_sink
