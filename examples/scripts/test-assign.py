@@ -27,15 +27,23 @@ if __name__ == "__main__":
         return x.a + x.a
 
     #A = df.a
-    with pyjviz.SubGraph("cc") as cc:
-        df2 = df.assign(c = lambda x: x.a)
-        #df2 = df.assign(c = df.a)
-        #df2 = df.assign(c = df.a, cc = lambda x: x.a)
-        #df2 = df.assign(c = df.a, b = lambda x: x.c, bb = lambda x: x.a + x.b + x.c, d = lambda x: x.a)
-        #df2 = df.assign(c = df.a, b = test_func)
-        #df2 = df.assign(b = lambda x: x.a, c = lambda x: x.b)
+    if 1:
+        with pyjviz.SubGraph("c1") as cc:
+            df2 = df.assign(c = df.a)
+            #df2 = df.assign(c = df.a, cc = lambda x: x.a)
+            #df2 = df.assign(c = df.a, b = lambda x: x.c, bb = lambda x: x.a + x.b + x.c, d = lambda x: x.a)
+            #df2 = df.assign(c = df.a, b = test_func)
+            #df2 = df.assign(b = lambda x: x.a, c = lambda x: x.b)
 
-    #ipdb.set_trace()
+    if 1:
+        with pyjviz.SubGraph("c2") as cc:
+            df2 = df.assign(c = lambda x: x.a)
+            #df2 = df.assign(c = df.a, cc = lambda x: x.a)
+            #df2 = df.assign(c = df.a, b = lambda x: x.c, bb = lambda x: x.a + x.b + x.c, d = lambda x: x.a)
+            #df2 = df.assign(c = df.a, b = test_func)
+            #df2 = df.assign(b = lambda x: x.a, c = lambda x: x.b)
+        
     print(df.describe())
 
+    #ipdb.set_trace()
     pyjviz.save_dot(vertical = True, show_objects = True)

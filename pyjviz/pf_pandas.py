@@ -3,6 +3,7 @@ import threading
 import pandas as pd
 import pandas_flavor as pf
 import uuid
+import inspect
 from contextlib import nullcontext
 
 from . import rdflogging
@@ -16,9 +17,12 @@ class DataFrameAttr:
 
     def __call__(self, *x, **y):
         print("DataFrameAttr __call__", x[1], y)
+        #ipdb.set_trace()
         rdfl = rdflogging.rdflogger
         if call_stack.stack.size() == 0:
             ret_obj = self.func(*x, **y)
+        #elif not (call_stack.stack.size() == 1 and isinstance(call_stack.stack.stack_entries[-1], CallbackObj)):
+        #    ret_obj = self.func(*x, **y)
         else:
             caller_stacke_entry = call_stack.stack.stack_entries[-1]
             
@@ -48,7 +52,7 @@ class Caller_to_datetime:
         if call_stack.stack.size() == 0:
             ret_obj = self.func(*x, **y)
         else:
-            caller_stacke_entry = call_stack.stack.stack_entries[-2]
+            caller_stacke_entry = call_stack.stack.stack_entries[-1]
         
             x0_obj = x[0]
             ret_obj = self.func(*x, **y)
@@ -142,16 +146,18 @@ def enable_pf_pandas__():
 
 # pandas_flavor register.py callback
 
-def cb_create_method_call_context_manager(method_name):
+def cb_create_method_call_context_manager(method_name, method_args, method_kwargs):
     if call_stack.stack.size() == 0:
         return nullcontext()
 
+    will_have_cb_args = len([x for x in method_kwargs.values() if inspect.isfunction(x)]) > 0
     method_calls = call_stack.stack.to_methods_calls() + [method_name]
-    print("method_calls:", method_calls)
+    print("method_calls:", method_calls, will_have_cb_args)
     if len(method_calls) == 1:
-        ret = methods_chain.MethodCall(method_name)
-    elif len(method_calls) == 2 and method_calls[-2] == 'assign':
-        ret = methods_chain.MethodCall(method_name)
+        #ipdb.set_trace()
+        ret = methods_chain.MethodCall(method_name, will_have_cb_args)
+    elif len(method_calls) == 2 and method_calls[-2] == 'assign' and call_stack.stack.stack_entries[-1].will_have_cb_args:
+        ret = methods_chain.MethodCall(method_name, will_have_cb_args)
     else:
         ret = nullcontext()
         

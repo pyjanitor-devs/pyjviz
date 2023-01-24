@@ -99,10 +99,6 @@ class RDFLogger:
         rdfl = self
         method_call_uri = method_call_obj.uri
         if isinstance(arg_obj, methods_chain.CallbackObj):
-            #ipdb.set_trace()
-            arg_obj.uri = f"<CallbackObj#{self.random_id}>"; self.random_id += 1
-            rdfl.dump_triple__(arg_obj.uri, "rdf:type", "<CallbackObj>")
-            rdfl.dump_triple__(arg_obj.uri, "<part-of>", caller_stack_entry.uri)
             rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.uri)
             rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}-name>", '"' + (arg_name if arg_name else '') + '"')
         elif isinstance(arg_obj, pd.DataFrame) or isinstance(arg_obj, pd.Series):

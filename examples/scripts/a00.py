@@ -28,4 +28,4 @@ if __name__ == "__main__":
 
     print(df1.describe())
 
-    c.save_dot(show_objects = False)
+    pyjviz.save_dot(show_objects = False)
