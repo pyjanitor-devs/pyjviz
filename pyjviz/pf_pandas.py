@@ -21,7 +21,7 @@ class DataFrameAttr:
         rdfl = rdflogging.rdflogger
         if call_stack.stack.size() == 0:
             ret_obj = self.func(*x, **y)
-        #elif not (call_stack.stack.size() == 1 and isinstance(call_stack.stack.stack_entries[-1], CallbackObj)):
+        #elif not (call_stack.stack.size() == 1 and isinstance(call_stack.stack.stack_entries[-1], NestedCall)):
         #    ret_obj = self.func(*x, **y)
         else:
             caller_stacke_entry = call_stack.stack.stack_entries[-1]
@@ -150,14 +150,14 @@ def cb_create_method_call_context_manager(method_name, method_args, method_kwarg
     if call_stack.stack.size() == 0:
         return nullcontext()
 
-    will_have_cb_args = len([x for x in method_kwargs.values() if inspect.isfunction(x)]) > 0
+    will_have_nested_call_args = len([x for x in method_kwargs.values() if inspect.isfunction(x)]) > 0
     method_calls = call_stack.stack.to_methods_calls() + [method_name]
-    print("method_calls:", method_calls, will_have_cb_args)
+    print("method_calls:", method_calls, will_have_nested_call_args)
     if len(method_calls) == 1:
         #ipdb.set_trace()
-        ret = methods_chain.MethodCall(method_name, will_have_cb_args)
-    elif len(method_calls) == 2 and method_calls[-2] == 'assign' and call_stack.stack.stack_entries[-1].will_have_cb_args:
-        ret = methods_chain.MethodCall(method_name, will_have_cb_args)
+        ret = methods_chain.MethodCall(method_name, will_have_nested_call_args)
+    elif len(method_calls) == 2 and method_calls[-2] == 'assign' and call_stack.stack.stack_entries[-1].will_have_nested_call_args:
+        ret = methods_chain.MethodCall(method_name, will_have_nested_call_args)
     else:
         ret = nullcontext()
         

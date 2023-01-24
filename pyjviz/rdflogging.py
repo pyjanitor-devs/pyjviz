@@ -98,7 +98,7 @@ class RDFLogger:
     def dump_method_call_arg__(self, method_call_obj, c, arg_name, arg_obj, caller_stack_entry):
         rdfl = self
         method_call_uri = method_call_obj.uri
-        if isinstance(arg_obj, methods_chain.CallbackObj):
+        if isinstance(arg_obj, methods_chain.NestedCall):
             rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.uri)
             rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}-name>", '"' + (arg_name if arg_name else '') + '"')
         elif isinstance(arg_obj, pd.DataFrame) or isinstance(arg_obj, pd.Series):

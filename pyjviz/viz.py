@@ -21,7 +21,7 @@ def uri_to_dot_id(uri):
 
 def dump_dot_code(g, vertical, show_objects):
     #ipdb.set_trace()
-    subgraphs = [r for r in g.query("select ?pp ?pl { ?pp rdf:type <SubGraph>; rdf:label ?pl; <part-of> rdf:nil }", base = rdflogging.base_uri)]
+    subgraphs = [r for r in g.query("select ?pp ?pl { ?pp rdf:type <CodeContext>; rdf:label ?pl; <part-of> rdf:nil }", base = rdflogging.base_uri)]
 
     out_fd = StringIO()
 
@@ -96,13 +96,13 @@ def dump_dot_code(g, vertical, show_objects):
             """, file = out_fd)
 
         rq = """
-        select ?callback_obj ?sg {
-          ?callback_obj rdf:type <CallbackObj>; <part-of>+ ?sg.
+        select ?nested_call ?sg {
+          ?nested_call rdf:type <NestedCall>; <part-of>+ ?sg.
         }
         """
-        for callback_obj, sg in g.query(rq, base = rdflogging.base_uri, initBindings = {'sg': subgraph}):
+        for nested_call, sg in g.query(rq, base = rdflogging.base_uri, initBindings = {'sg': subgraph}):
             print(f"""
-            node_{uri_to_dot_id(callback_obj)} [ label = "CallbackObj" ];
+            node_{uri_to_dot_id(nested_call)} [ label = "NestedCall" ];
             """, file = out_fd)
 
         print(f"}}", file = out_fd)

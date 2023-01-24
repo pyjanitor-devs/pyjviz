@@ -4,7 +4,7 @@ from . import rdflogging
 
 class CallStackEntry:
     """
-    Base class for SubGraph and MethodCall. Each StackEntry obj has:
+    Base class for CodeContext and MethodCall. Each StackEntry obj has:
       - uri - to identify itself in graph as node
       - rdf_type_uri - to identify node type
     """
