@@ -20,8 +20,6 @@ class NestedCall(call_stack.CallStackEntry):
         self.arg_name = arg_name
         self.arg_func = arg_func
         self.ret = None
-
-        self.init_dump__(rdflogging.rdflogger)
         
     def __call__(self, *args, **kwargs):
         with self:

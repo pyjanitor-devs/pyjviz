@@ -12,11 +12,9 @@ class CallStackEntry:
         self.label = label
         self.rdf_type = rdf_type
         self.uri = None
-        self.dump_init_called = False
-
+        self.init_dump__(rdflogging.rdflogger)
+        
     def init_dump__(self, rdfl):
-        if self.dump_init_called:
-            return
         self.uri = f"<{self.rdf_type}#{str(uuid.uuid4())}>"
         rdf_type_uri = f"<{self.rdf_type}>"
         rdfl.dump_triple__(self.uri, "rdf:type", rdf_type_uri)
@@ -28,7 +26,6 @@ class CallStackEntry:
         self.dump_init_called = True
         
     def __enter__(self):
-        self.init_dump__(rdflogging.rdflogger)        
         global stack
         stack.push(self)
         return self

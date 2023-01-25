@@ -30,7 +30,7 @@ def m(df, l_df, r_df):
     print("df:", df.shape)
     print("l_df:", l_df.shape)
     print("r_df:", r_df.shape)
-    return pd.DataFrame(df)
+    return pd.concat([df, l_df, r_df], axis = 1)
 
 @pf.register_dataframe_method
 def x(df):
@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     df = pd.DataFrame({'a': range(10)})
     
-    with pyjviz.SubGraph("c") as c:
+    with pyjviz.CC("c") as c:
         r1 = df.x()
         if 1:
             r20 = prun(lambda: df.y(0))
@@ -58,4 +58,4 @@ if __name__ == "__main__":
             r21 = df.y(1)
             res = r1.m(r20, r21)
     
-    c.save_dot(show_objects = False)
+    pyjviz.save_dot(show_objects = False)
