@@ -20,7 +20,7 @@ print(pd.DataFrame.from_dict(company_sales))
 #  2        Mar     300.0       NaN     600.0
 #  3      April     400.0     500.0     675.0
 
-with pyjviz.CC("why-janitor") as sg:
+with pyjviz.CC() as sg:
     df = (
         pd.DataFrame.from_dict(company_sales)
         .remove_columns(["Company1"])

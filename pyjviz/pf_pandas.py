@@ -20,16 +20,21 @@ class DataFrameFunc:
     def __call__(self, *args, **kwargs):
         #ipdb.set_trace()
         if call_stack.stack.size() == 0:
-            ret_obj = self.func(*args, **kwargs)
-        #elif not (call_stack.stack.size() == 1 and isinstance(call_stack.stack.stack_entries[-1], NestedCall)):
-        #    ret_obj = self.func(*x, **y)
-        else:
-            rdfl = rdflogging.rdflogger
+            method_ctx = nullcontext()
+
+        latest_method_call = call_stack_entries.get_latest_method_call(call_stack.stack)
+        if latest_method_call is None:
             method_ctx = call_stack_entries.MethodCall(self.func_name, False)
-            with method_ctx:
+        else:
+            method_ctx = nullcontext()
+
+        rdfl = rdflogging.rdflogger
+        with method_ctx:
+            if not isinstance(method_ctx, nullcontext):
                 new_args, new_kwargs = method_ctx.handle_start_method_call(self.func_name, self.func_signature, args, kwargs)
                 args = new_args; kwargs = new_kwargs
-                ret_obj = self.func(*args, **kwargs)
+            ret_obj = self.func(*args, **kwargs)
+            if not isinstance(method_ctx, nullcontext):
                 method_ctx.handle_end_method_call(ret_obj)
         
         return ret_obj
