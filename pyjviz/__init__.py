@@ -1,6 +1,6 @@
 from .rdflogging import *
 from .fstriplestore import FSTripleOutputOneShot
-from .methods_chain import *
+from .call_stack_entries import *
 from .viz import *
 
 from .pf_pandas import enable_pf_pandas__

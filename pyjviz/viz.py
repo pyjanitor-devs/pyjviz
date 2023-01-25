@@ -22,7 +22,7 @@ def uri_to_dot_id(uri):
 def dump_subgraph(g, cc_uri, out_fd):    
     subgraphs = [r for r in g.query("select ?pp ?pl { ?pp rdf:type <CodeContext>; rdf:label ?pl; <part-of> ?sg }", base = rdflogging.base_uri, initBindings = {'sg': cc_uri})]
     for subgraph, subgraph_label in subgraphs:
-        if cc_uri != rdflib.RDF.nil:
+        if subgraph_label != rdflib.RDF.nil:
             print(f"""
             subgraph cluster_{uri_to_dot_id(subgraph)} {{
             label = "{subgraph_label}";
@@ -83,7 +83,7 @@ def dump_subgraph(g, cc_uri, out_fd):
             node_{uri_to_dot_id(nested_call)} [ label = "NestedCall" ];
             """, file = out_fd)
 
-        if cc_uri != rdflib.RDF.nil:
+        if subgraph_label != rdflib.RDF.nil:
             print(f"}}", file = out_fd)
     
 

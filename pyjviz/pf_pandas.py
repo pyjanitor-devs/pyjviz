@@ -8,8 +8,8 @@ from contextlib import nullcontext
 
 from . import rdflogging
 from . import obj_tracking
-from . import methods_chain
 from . import call_stack
+from . import call_stack_entries
 
 class DataFrameAttr:
     def __init__(self, func):
@@ -150,13 +150,13 @@ def cb_create_method_call_context_manager(method_name, method_args, method_kwarg
     if call_stack.stack.size() == 0:
         return nullcontext()
 
-    latest_method_call = methods_chain.get_latest_method_call(call_stack.stack)
+    latest_method_call = call_stack_entries.get_latest_method_call(call_stack.stack)
     if latest_method_call is None:
         will_have_nested_call_args = len([x for x in method_kwargs.values() if inspect.isfunction(x)]) > 0
-        ret = methods_chain.MethodCall(method_name, will_have_nested_call_args)
+        ret = call_stack_entries.MethodCall(method_name, will_have_nested_call_args)
     elif latest_method_call.label == 'assign' and latest_method_call.have_nested_call_args:
         will_have_nested_call_args = len([x for x in method_kwargs.values() if inspect.isfunction(x)]) > 0
-        ret = methods_chain.MethodCall(method_name, will_have_nested_call_args)
+        ret = call_stack_entries.MethodCall(method_name, will_have_nested_call_args)
     else:
         ret = nullcontext()
         

@@ -12,8 +12,8 @@ import inspect
 import pandas_flavor as pf
 
 from . import obj_tracking
-from . import methods_chain
 from . import call_stack
+from . import call_stack_entries
 
 base_uri = 'https://github.com/pyjanitor-devs/pyjviz/rdflog.shacl.ttl#'
 method_counter = 0
@@ -98,7 +98,7 @@ class RDFLogger:
     def dump_method_call_arg__(self, method_call_obj, c, arg_name, arg_obj, caller_stack_entry):
         rdfl = self
         method_call_uri = method_call_obj.uri
-        if isinstance(arg_obj, methods_chain.NestedCall):
+        if isinstance(arg_obj, call_stack_entries.NestedCall):
             rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.uri)
             rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}-name>", '"' + (arg_name if arg_name else '') + '"')
         elif isinstance(arg_obj, pd.DataFrame) or isinstance(arg_obj, pd.Series):

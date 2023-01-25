@@ -13,7 +13,7 @@ class CodeContext(call_stack.CallStackEntry):
         super().__init__(label = label, rdf_type = rdf_type)
 
 CC = CodeContext
-        
+
 class NestedCall(call_stack.CallStackEntry):
     def __init__(self, arg_name, arg_func):
         super().__init__(label = f"nested_call({arg_name})", rdf_type = "NestedCall")        
@@ -27,9 +27,8 @@ class NestedCall(call_stack.CallStackEntry):
         with self:
             print("NestedCall called")
             self.ret = self.arg_func(*args, **kwargs)
-            #ipdb.set_trace()
             return self.ret
-        
+
 class MethodCall(CodeContext):
     def __init__(self, method_name, have_nested_call_args):
         super().__init__(label = method_name, rdf_type = "MethodCall")
@@ -60,10 +59,8 @@ class MethodCall(CodeContext):
         new_args = self.method_bound_args.args
         new_kwargs = self.method_bound_args.kwargs
 
-        #ipdb.set_trace()
         t_obj = obj_tracking.tracking_store.get_tracking_obj(obj)
         thread_id = threading.get_native_id()
-        #caller_stack_entry = call_stack.stack.stack_entries[-2]
         caller = get_parent_of_current_entry(call_stack.stack)
         rdfl.dump_method_call_in(self, thread_id, obj, t_obj,
                                  method_name, method_signature, self.method_bound_args,

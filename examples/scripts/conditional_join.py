@@ -13,7 +13,7 @@ if __name__ == "__main__":
                         'value_2A': [0,3,7,12,0,2,3,1],
                         'value_2B': [1,5,9,15,1,4,6,3]})
 
-    with pyjviz.CC() as top:
+    with pyjviz.CC("top") as top:
         with pyjviz.CC("c1") as c1:
             res1 = df1.conditional_join(df2,
                                         ('id', 'id', "<"),
