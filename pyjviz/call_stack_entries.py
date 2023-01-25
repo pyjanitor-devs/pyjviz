@@ -36,10 +36,10 @@ class MethodCall(CodeContext):
         self.have_nested_call_args = have_nested_call_args
         self.nested_call_args = []
         
-    def handle_start_method_call(self, obj, method_name, method_signature, method_args, method_kwargs):
+    def handle_start_method_call(self, method_name, method_signature, method_args, method_kwargs):
         rdfl = rdflogging.rdflogger
-
-        all_args = tuple([obj] + list(method_args))
+        
+        all_args = method_args
         self.method_signature = method_signature
         self.method_bound_args = self.method_signature.bind(*all_args, **method_kwargs)
         self.method_bound_args.apply_defaults()
@@ -59,10 +59,9 @@ class MethodCall(CodeContext):
         new_args = self.method_bound_args.args
         new_kwargs = self.method_bound_args.kwargs
 
-        t_obj = obj_tracking.tracking_store.get_tracking_obj(obj)
         thread_id = threading.get_native_id()
         caller = get_parent_of_current_entry(call_stack.stack)
-        rdfl.dump_method_call_in(self, thread_id, obj, t_obj,
+        rdfl.dump_method_call_in(self, thread_id,
                                  method_name, method_signature, self.method_bound_args,
                                  caller)
 

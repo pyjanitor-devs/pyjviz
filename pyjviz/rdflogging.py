@@ -112,7 +112,7 @@ class RDFLogger:
         else:
             pass
         
-    def dump_method_call_in(self, method_call_obj, thread_id, obj, t_obj,
+    def dump_method_call_in(self, method_call_obj, thread_id,
                             method_name, method_signature, method_bound_args,
                             caller_stack_entry):
         #ipdb.set_trace()
