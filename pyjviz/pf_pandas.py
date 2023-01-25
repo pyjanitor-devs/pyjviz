@@ -12,33 +12,25 @@ from . import call_stack
 from . import call_stack_entries
 
 class DataFrameFunc:
-    def __init__(self, func, func_uri):
+    def __init__(self, func_name, func):
+        self.func_name = func_name
         self.func = func
-        self.func_uri = func_uri
+        self.func_signature = inspect.signature(func)
 
-    def __call__(self, *x, **y):
+    def __call__(self, *args, **kwargs):
         #ipdb.set_trace()
-        print("DataFrameFunc __call__", self.func_uri, x[1:], y)
-        rdfl = rdflogging.rdflogger
         if call_stack.stack.size() == 0:
-            ret_obj = self.func(*x, **y)
+            ret_obj = self.func(*args, **kwargs)
         #elif not (call_stack.stack.size() == 1 and isinstance(call_stack.stack.stack_entries[-1], NestedCall)):
         #    ret_obj = self.func(*x, **y)
         else:
-            caller_stack_entry = call_stack.stack.stack_entries__[-1]
-            
-            x0_obj = x[0]
-            ret_obj = self.func(*x, **y)
-
-            x0_t_obj = obj_tracking.tracking_store.get_tracking_obj(x0_obj)
-            if x0_t_obj.last_obj_state_uri is None:
-                x0_t_obj.last_obj_state_uri = rdfl.dump_obj_state(x0_obj, x0_t_obj, caller_stack_entry)
-
-            ret_t_obj = obj_tracking.tracking_store.get_tracking_obj(ret_obj)
-            if ret_t_obj.last_obj_state_uri is None:
-                ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(ret_obj, ret_t_obj, caller_stack_entry)
-
-            rdfl.dump_triple__(ret_t_obj.last_obj_state_uri, self.func_uri, x0_t_obj.last_obj_state_uri)
+            rdfl = rdflogging.rdflogger
+            method_ctx = call_stack_entries.MethodCall(self.func_name, False)
+            with method_ctx:
+                new_args, new_kwargs = method_ctx.handle_start_method_call(self.func_name, self.func_signature, args, kwargs)
+                args = new_args; kwargs = new_kwargs
+                ret_obj = self.func(*args, **kwargs)
+                method_ctx.handle_end_method_call(ret_obj)
         
         return ret_obj
     
@@ -56,11 +48,11 @@ def enable_pf_pandas__():
     
     if 1:
         old_getattr = pd.DataFrame.__getattr__
-        pd.DataFrame.__getattr__ = lambda *x, **y: DataFrameFunc(old_getattr, "<df-projection>")(*x, *y)
+        pd.DataFrame.__getattr__ = lambda *x, **y: DataFrameFunc("df-projection", old_getattr)(*x, *y)
    
     if 1:
         old_to_datetime = pd.to_datetime
-        pd.to_datetime = lambda *x, **y: DataFrameFunc(old_to_datetime, "<to_datetime>")(*x, **y)
+        pd.to_datetime = lambda *x, **y: DataFrameFunc("to_datetime", old_to_datetime)(*x, **y)
         
     old_describe = pd.DataFrame.describe
     #del pd.DataFrame.describe
