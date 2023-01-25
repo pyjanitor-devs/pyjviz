@@ -19,39 +19,17 @@ from . import nb_utils
 def uri_to_dot_id(uri):
     return str(hash(uri)).replace("-", "d")
 
-def dump_dot_code(g, vertical, show_objects):
-    #ipdb.set_trace()
-    subgraphs = [r for r in g.query("select ?pp ?pl { ?pp rdf:type <CodeContext>; rdf:label ?pl; <part-of> rdf:nil }", base = rdflogging.base_uri)]
-
-    out_fd = StringIO()
-
-    rankdir = "TB" if vertical else "LR"
-    
-    print("""
-    digraph G {
-    #splines=false;
-    #ratio=fill;
-    #size="800px,600px";
-    #center=true;
-    rankdir = "{rankdir}"
-    fontname="Helvetica,Arial,sans-serif"
-    node [ 
-      style=filled
-      shape=rect
-      pencolor="#00000044" // frames color
-      fontname="Helvetica,Arial,sans-serif"
-      shape=plaintext
-    ]
-    edge [fontname="Helvetica,Arial,sans-serif"]    
-    """.replace("{rankdir}", rankdir), file = out_fd)
-
-    #ipdb.set_trace()    
+def dump_subgraph(g, cc_uri, out_fd):    
+    subgraphs = [r for r in g.query("select ?pp ?pl { ?pp rdf:type <CodeContext>; rdf:label ?pl; <part-of> ?sg }", base = rdflogging.base_uri, initBindings = {'sg': cc_uri})]
     for subgraph, subgraph_label in subgraphs:
-        print(f"""
-        subgraph cluster_{uri_to_dot_id(subgraph)} {{
-          label = "{subgraph_label}";
-        """, file = out_fd)
-            
+        if cc_uri != rdflib.RDF.nil:
+            print(f"""
+            subgraph cluster_{uri_to_dot_id(subgraph)} {{
+            label = "{subgraph_label}";
+            """, file = out_fd)
+
+        dump_subgraph(g, subgraph, out_fd)
+        
         rq = """
         select ?obj_state ?version ?obj_type ?obj_uuid ?df_shape ?df_head { 
           ?obj_state rdf:type <ObjState>; <obj> ?obj.
@@ -105,13 +83,44 @@ def dump_dot_code(g, vertical, show_objects):
             node_{uri_to_dot_id(nested_call)} [ label = "NestedCall" ];
             """, file = out_fd)
 
-        print(f"}}", file = out_fd)
-            
-    for subgraph, subgraph_label in subgraphs:
+        if cc_uri != rdflib.RDF.nil:
+            print(f"}}", file = out_fd)
+    
+
+def dump_dot_code(g, vertical, show_objects):
+    #ipdb.set_trace()
+
+    out_fd = StringIO()
+
+    rankdir = "TB" if vertical else "LR"
+    
+    print("""
+    digraph G {
+    #splines=false;
+    #ratio=fill;
+    #size="800px,600px";
+    #center=true;
+    rankdir = "{rankdir}"
+    fontname="Helvetica,Arial,sans-serif"
+    node [ 
+      style=filled
+      shape=rect
+      pencolor="#00000044" // frames color
+      fontname="Helvetica,Arial,sans-serif"
+      shape=plaintext
+    ]
+    edge [fontname="Helvetica,Arial,sans-serif"]    
+    """.replace("{rankdir}", rankdir), file = out_fd)
+
+
+    dump_subgraph(g, rdflib.RDF.nil, out_fd)
+    
+    #for subgraph, subgraph_label in subgraphs:
+    if 1:
         #ipdb.set_trace()
         rq = """
         select ?method_call_obj ?caller_obj ?ret_obj ?arg1_name ?arg1_obj ?arg2_name ?arg2_obj ?arg3_name ?arg3_obj { 
-          ?method_call_obj rdf:type <MethodCall>; <part-of>+ ?sg;
+          ?method_call_obj rdf:type <MethodCall>;
                            <method-call-arg0> ?caller_obj;
                            <method-call-return> ?ret_obj .
           optional { ?method_call_obj <method-call-arg1> ?arg1_obj; <method-call-arg1-name> ?arg1_name }
@@ -119,7 +128,7 @@ def dump_dot_code(g, vertical, show_objects):
           optional { ?method_call_obj <method-call-arg3> ?arg3_obj; <method-call-arg3-name> ?arg3_name }
         }
         """
-        for method_call_obj, caller_obj, ret_obj, arg1_name, arg1_obj, arg2_name, arg2_obj, arg3_name, arg3_obj in g.query(rq, base = rdflogging.base_uri, initBindings = {'sg': subgraph}):
+        for method_call_obj, caller_obj, ret_obj, arg1_name, arg1_obj, arg2_name, arg2_obj, arg3_name, arg3_obj in g.query(rq, base = rdflogging.base_uri):
             print(f"""
             node_{uri_to_dot_id(caller_obj)} -> node_{uri_to_dot_id(method_call_obj)} [penwidth = 3];
             node_{uri_to_dot_id(method_call_obj)} -> node_{uri_to_dot_id(ret_obj)} [penwidth = 3];

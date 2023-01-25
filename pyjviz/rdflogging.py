@@ -125,7 +125,7 @@ class RDFLogger:
         global method_counter
         rdfl.dump_triple__(method_call_uri, "<method-counter>", method_counter); method_counter += 1
         rdfl.dump_triple__(method_call_uri, "<method-stack-depth>", call_stack.stack.size())
-        rdfl.dump_triple__(method_call_uri, "<method-stack-trace>", '"' + call_stack.stack.to_methods_calls_string() + '"')
+        rdfl.dump_triple__(method_call_uri, "<method-stack-trace>", '"' + call_stack.stack.to_string() + '"')
 
         c = 0
         for arg_name, arg_obj in method_bound_args.arguments.items():

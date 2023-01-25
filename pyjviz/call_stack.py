@@ -12,7 +12,6 @@ class CallStackEntry:
         self.label = label
         self.rdf_type = rdf_type
         self.uri = None
-
         self.dump_init_called = False
 
     def init_dump__(self, rdfl):
@@ -21,9 +20,10 @@ class CallStackEntry:
         self.uri = f"<{self.rdf_type}#{str(uuid.uuid4())}>"
         rdf_type_uri = f"<{self.rdf_type}>"
         rdfl.dump_triple__(self.uri, "rdf:type", rdf_type_uri)
-        rdfl.dump_triple__(self.uri, "rdf:label", '"' + self.label + '"')
+        label_obj = f'"{self.label}"' if self.label else 'rdf:nil'
+        rdfl.dump_triple__(self.uri, "rdf:label", label_obj)
         global stack
-        parent_uri = stack.stack_entries[-1].uri if stack.size() > 0 else "rdf:nil"
+        parent_uri = stack.stack_entries__[-1].uri if stack.size() > 0 else "rdf:nil"
         rdfl.dump_triple__(self.uri, "<part-of>", parent_uri)
         self.dump_init_called = True
         
@@ -40,26 +40,26 @@ class CallStackEntry:
         
 class CallStack:
     def __init__(self):
-        self.stack_entries = []
+        self.stack_entries__ = []
 
     def to_string(self):
-        return ":".join([x.rdf_type for x in self.stack_entries])
+        return ":".join([f"{x.label}@{x.rdf_type}" for x in self.stack_entries__])
 
-    def to_methods_calls(self):
-        ret = [se.label for se in self.stack_entries if se.rdf_type == "MethodCall"]
-        return ret
+    #def to_methods_calls__(self):
+    #    ret = [se.label for se in self.stack_entries__ if se.rdf_type == "MethodCall"]
+    #    return ret
 
-    def to_methods_calls_string(self):
-        return ":".join(self.to_methods_calls())
+    #def to_methods_calls_string(self):
+    #    return ":".join(self.to_methods_calls__())
     
     def size(self):
-        return len(self.stack_entries)
+        return len(self.stack_entries__)
 
     def push(self, e):
-        self.stack_entries.append(e)
+        self.stack_entries__.append(e)
         
     def pop(self):
-        return self.stack_entries.pop()
-    
+        return self.stack_entries__.pop()
+
 stack = CallStack()
 

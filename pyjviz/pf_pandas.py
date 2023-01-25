@@ -24,18 +24,18 @@ class DataFrameAttr:
         #elif not (call_stack.stack.size() == 1 and isinstance(call_stack.stack.stack_entries[-1], NestedCall)):
         #    ret_obj = self.func(*x, **y)
         else:
-            caller_stacke_entry = call_stack.stack.stack_entries[-1]
+            caller_stack_entry = call_stack.stack.stack_entries__[-1]
             
             x0_obj = x[0]
             ret_obj = self.func(*x, **y)
 
             x0_t_obj = obj_tracking.tracking_store.get_tracking_obj(x0_obj)
             if x0_t_obj.last_obj_state_uri is None:
-                x0_t_obj.last_obj_state_uri = rdfl.dump_obj_state(x0_obj, x0_t_obj, caller_stacke_entry)
+                x0_t_obj.last_obj_state_uri = rdfl.dump_obj_state(x0_obj, x0_t_obj, caller_stack_entry)
 
             ret_t_obj = obj_tracking.tracking_store.get_tracking_obj(ret_obj)
             if ret_t_obj.last_obj_state_uri is None:
-                ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(ret_obj, ret_t_obj, caller_stacke_entry)
+                ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(ret_obj, ret_t_obj, caller_stack_entry)
 
             rdfl.dump_triple__(ret_t_obj.last_obj_state_uri, "<df-projection>", x0_t_obj.last_obj_state_uri)
         
@@ -52,18 +52,18 @@ class Caller_to_datetime:
         if call_stack.stack.size() == 0:
             ret_obj = self.func(*x, **y)
         else:
-            caller_stacke_entry = call_stack.stack.stack_entries[-1]
+            caller_stack_entry = call_stack.stack.stack_entries__[-1]
         
             x0_obj = x[0]
             ret_obj = self.func(*x, **y)
 
             x0_t_obj = obj_tracking.tracking_store.get_tracking_obj(x0_obj)
             if x0_t_obj.last_obj_state_uri is None:
-                x0_t_obj.last_obj_state_uri = rdfl.dump_obj_state(x0_obj, x0_t_obj, caller_stacke_entry)
+                x0_t_obj.last_obj_state_uri = rdfl.dump_obj_state(x0_obj, x0_t_obj, caller_stack_entry)
 
             ret_t_obj = obj_tracking.tracking_store.get_tracking_obj(ret_obj)
             if ret_t_obj.last_obj_state_uri is None:
-                ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(ret_obj, ret_t_obj, caller_stacke_entry)
+                ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(ret_obj, ret_t_obj, caller_stack_entry)
 
             rdfl.dump_triple__(ret_t_obj.last_obj_state_uri, "<to_datetime>", x0_t_obj.last_obj_state_uri)
         
@@ -150,13 +150,12 @@ def cb_create_method_call_context_manager(method_name, method_args, method_kwarg
     if call_stack.stack.size() == 0:
         return nullcontext()
 
-    will_have_nested_call_args = len([x for x in method_kwargs.values() if inspect.isfunction(x)]) > 0
-    method_calls = call_stack.stack.to_methods_calls() + [method_name]
-    print("method_calls:", method_calls, will_have_nested_call_args)
-    if len(method_calls) == 1:
-        #ipdb.set_trace()
+    latest_method_call = methods_chain.get_latest_method_call(call_stack.stack)
+    if latest_method_call is None:
+        will_have_nested_call_args = len([x for x in method_kwargs.values() if inspect.isfunction(x)]) > 0
         ret = methods_chain.MethodCall(method_name, will_have_nested_call_args)
-    elif len(method_calls) == 2 and method_calls[-2] == 'assign' and call_stack.stack.stack_entries[-1].will_have_nested_call_args:
+    elif latest_method_call.label == 'assign' and latest_method_call.have_nested_call_args:
+        will_have_nested_call_args = len([x for x in method_kwargs.values() if inspect.isfunction(x)]) > 0
         ret = methods_chain.MethodCall(method_name, will_have_nested_call_args)
     else:
         ret = nullcontext()

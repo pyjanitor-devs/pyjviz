@@ -9,41 +9,32 @@ from . import rdflogging
 from . import obj_tracking
 
 class CodeContext(call_stack.CallStackEntry):
-    def __init__(self, label, rdf_type = "CodeContext"):
+    def __init__(self, label = None, rdf_type = "CodeContext"):
         super().__init__(label = label, rdf_type = rdf_type)
 
 CC = CodeContext
         
-class NestedCall:
+class NestedCall(call_stack.CallStackEntry):
     def __init__(self, arg_name, arg_func):
-        #super().__init__(label = f"nested_call({arg_name})", rdf_type = "NestedCall")
-        self.label = f"nested_call({arg_name})"
-        self.rdf_type = "NestedCall"
-        self.uri = f"<NestedCall#{str(uuid.uuid4())}>"
-        
+        super().__init__(label = f"nested_call({arg_name})", rdf_type = "NestedCall")        
         self.arg_name = arg_name
         self.arg_func = arg_func
         self.ret = None
 
-        #self.init_dump__(rdflogging.rdflogger)
-        rdfl = rdflogging.rdflogger
-        rdf_type_uri = f"<{self.rdf_type}>"
-        rdfl.dump_triple__(self.uri, "rdf:type", rdf_type_uri)
-        rdfl.dump_triple__(self.uri, "rdf:label", '"' + self.label + '"')
-        parent_uri = call_stack.stack.stack_entries[-1].uri if call_stack.stack.size() > 0 else "rdf:nil"
-        rdfl.dump_triple__(self.uri, "<part-of>", parent_uri)
+        self.init_dump__(rdflogging.rdflogger)
         
     def __call__(self, *args, **kwargs):
-        print("NestedCall called")
-        self.ret = self.arg_func(*args, **kwargs)
-        #ipdb.set_trace()
-        return self.ret
+        with self:
+            print("NestedCall called")
+            self.ret = self.arg_func(*args, **kwargs)
+            #ipdb.set_trace()
+            return self.ret
         
 class MethodCall(CodeContext):
-    def __init__(self, method_name, will_have_nested_call_args):
+    def __init__(self, method_name, have_nested_call_args):
         super().__init__(label = method_name, rdf_type = "MethodCall")
         self.method_bound_args = None
-        self.will_have_nested_call_args = will_have_nested_call_args
+        self.have_nested_call_args = have_nested_call_args
         self.nested_call_args = []
         
     def handle_start_method_call(self, obj, method_name, method_signature, method_args, method_kwargs):
@@ -72,10 +63,11 @@ class MethodCall(CodeContext):
         #ipdb.set_trace()
         t_obj = obj_tracking.tracking_store.get_tracking_obj(obj)
         thread_id = threading.get_native_id()
-        caller_stack_entry = call_stack.stack.stack_entries[-2]
+        #caller_stack_entry = call_stack.stack.stack_entries[-2]
+        caller = get_parent_of_current_entry(call_stack.stack)
         rdfl.dump_method_call_in(self, thread_id, obj, t_obj,
                                  method_name, method_signature, self.method_bound_args,
-                                 caller_stack_entry)
+                                 caller)
 
         return new_args, new_kwargs
 
@@ -85,8 +77,9 @@ class MethodCall(CodeContext):
 
         ret_t_obj = obj_tracking.tracking_store.get_tracking_obj(ret_obj)
 
-        caller_stack_entry = call_stack.stack.stack_entries[-2]
-        ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(ret_obj, ret_t_obj, caller_stack_entry)
+        #caller_stack_entry = call_stack.stack.stack_entries[-2]
+        caller = get_parent_of_current_entry(call_stack.stack)
+        ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(ret_obj, ret_t_obj, caller)
         rdfl.dump_triple__(self.uri, "<method-call-return>", ret_t_obj.last_obj_state_uri)
 
         # catching nested calls values returned after method call executed
@@ -95,3 +88,36 @@ class MethodCall(CodeContext):
             if t_obj.last_obj_state_uri is None:
                 raise Exception("expected to have uri assigned")
             rdfl.dump_triple__(nested_call_obj.uri, "<ret-val>", t_obj.last_obj_state_uri)
+
+
+def get_latest_method_call(stack):
+    ret = None
+           
+    for se in reversed(stack.stack_entries__):
+        if isinstance(se, MethodCall):
+            ret = se
+            break
+        elif isinstance(se, NestedCall):
+            ret = None
+            break
+        elif isinstance(se, CodeContext):
+            continue
+
+    return ret
+
+def get_parent_of_current_entry(stack):
+    ret = None
+           
+    if stack.size() > 0:
+        for se in reversed(stack.stack_entries__):
+            if isinstance(se, MethodCall):
+                ret = se
+                break
+            elif isinstance(se, NestedCall):
+                continue
+            elif isinstance(se, CodeContext):
+                ret = se
+                break
+
+    return ret
+    
