@@ -112,6 +112,13 @@ def enable_pf_pandas__():
     def combine_first(s: pd.Series, other) -> pd.Series:
         ret = old_combine_first(s, other)
         return ret
+
+    if 0:
+        old_apply = pd.Series.apply
+        @pf.register_series_method
+        def apply(s: pd.Series, func) -> pd.Series:
+            ret = old_apply(s, func)
+            return ret
     
 
 # pandas_flavor register.py callback
@@ -121,6 +128,8 @@ def cb_create_method_call_context_manager(method_name, method_args, method_kwarg
         return nullcontext()
 
     latest_method_call = call_stack_entries.get_latest_method_call(call_stack.stack)
+    #if method_name == 'apply':
+    #    ipdb.set_trace()
     if latest_method_call is None:
         will_have_nested_call_args = len([x for x in method_kwargs.values() if inspect.isfunction(x)]) > 0
         ret = call_stack_entries.MethodCall(method_name, will_have_nested_call_args)

@@ -17,6 +17,7 @@ CC = CodeContext
 class NestedCall(call_stack.CallStackEntry):
     def __init__(self, arg_name, arg_func):
         super().__init__(label = f"nested_call({arg_name})", rdf_type = "NestedCall")        
+        #ipdb.set_trace()
         self.arg_name = arg_name
         self.arg_func = arg_func
         self.ret = None
@@ -25,6 +26,11 @@ class NestedCall(call_stack.CallStackEntry):
         with self:
             print("NestedCall called")
             self.ret = self.arg_func(*args, **kwargs)
+            ret_t_obj = obj_tracking.tracking_store.get_tracking_obj(self.ret)
+            if ret_t_obj.last_obj_state_uri is None:
+                caller_stack_entry = get_parent_of_current_entry(call_stack.stack)
+                rdfl = rdflogging.rdflogger
+                ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(self.ret, ret_t_obj, caller_stack_entry)
             return self.ret
 
 class MethodCall(CodeContext):
@@ -39,10 +45,24 @@ class MethodCall(CodeContext):
         
         all_args = method_args
         self.method_signature = method_signature
+        #ipdb.set_trace()
         self.method_bound_args = self.method_signature.bind(*all_args, **method_kwargs)
-        self.method_bound_args.apply_defaults()
+        args_w_specified_values = self.method_bound_args.arguments.keys()
+        # NB:
+        # according to python doc default values are evaluated and saved only once when function is defined
+        # apply_defaults method is to be used to put default values to method_bound_args.arguments
+        # decision to call or not to call apply_defaults could affect program execution since we could modify arguments
+        # of real method call which will happen after this method returns new args and kwargs.
+        # E.g. loop over all arguments will be affected
+        # since apply_defaults will add new entries which were skipped by method_signature.bind since they are omit and use default values
+        #  --- >>>> commented out ---> self.method_bound_args.apply_defaults()
 
-        for arg_name, arg_value in self.method_bound_args.arguments.items():
+        # NB:
+        # loop over args_w_specified_values will skip the args where func value should be supplied and default func value is used.
+        # purpose of the loop is to replace such func arg values with equivalent obj of class NestedCall which suppose to collect
+        # call tracking information for visualization. so no such information will be collected for fund args where default value is used
+        for arg_name in args_w_specified_values:
+            arg_value = self.method_bound_args.arguments.get(arg_name)
             arg_kind = method_signature.parameters.get(arg_name).kind
             print(method_name, arg_name, arg_kind)
             if arg_kind == inspect.Parameter.VAR_KEYWORD: # case for lambda args of assign
@@ -59,9 +79,9 @@ class MethodCall(CodeContext):
 
         thread_id = threading.get_native_id()
         caller = get_parent_of_current_entry(call_stack.stack)
-        rdfl.dump_method_call_in(self, thread_id,
-                                 method_name, method_signature, self.method_bound_args,
-                                 caller)
+        
+        # NB: since apply_defaults is not called then no tracking of args with default values will take place
+        rdfl.dump_method_call_in(self, thread_id, method_name, method_signature, self.method_bound_args, caller)
 
         return new_args, new_kwargs
 

@@ -7,6 +7,7 @@ import collections
 import html
 import sys, base64
 import pandas as pd
+import textwrap
 
 import rdflib
 from io import StringIO
@@ -46,7 +47,7 @@ def dump_subgraph(g, cc_uri, out_fd):
                 color="#88000022"
                 shape = rect
                 label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
-                         <tr> <td> <b>{obj_state}</b><br/>{obj_type} {version} {obj_uudi}<br/>{df_shape}</td> </tr>
+                         <tr> <td> <b>{obj_state.split('/')[-1]}</b><br/>{obj_type} {df_shape} {version}</td> </tr>
                          </table>>
                 href="javascript: 
                 {{ let w = window.open('', '_blank', 'width=800,height=200');
@@ -59,18 +60,20 @@ def dump_subgraph(g, cc_uri, out_fd):
             """, file = out_fd)
 
         rq = """
-        select ?method_call_obj ?method_name ?method_count ?method_stack_depth ?method_stack_trace { 
+        select ?method_call_obj ?method_name ?method_display ?method_count ?method_stack_depth ?method_stack_trace { 
           ?method_call_obj rdf:type <MethodCall>; 
                            rdf:label ?method_name; 
-                           <method-counter> ?method_count;
+                           <method-counter> ?method_count; <method-display> ?method_display;
                            <method-stack-depth> ?method_stack_depth;
                            <method-stack-trace> ?method_stack_trace;
                            <part-of>+ ?sg .
         }
         """
-        for method_call_obj, method_name, method_count, method_stack_depth, method_stack_trace in g.query(rq, base = rdflogging.base_uri, initBindings = {'sg': subgraph}):
+        for method_call_obj, method_name, method_display, method_count, method_stack_depth, method_stack_trace in g.query(rq, base = rdflogging.base_uri, initBindings = {'sg': subgraph}):
+            method_display = base64.b64decode(method_display.toPython().encode('ascii')).decode('ascii')
+            #method_display = "<br/>".join(textwrap.wrap(method_display, width = 40))
             print(f"""
-            node_{uri_to_dot_id(method_call_obj)} [ label = "{method_name}#{method_count}({method_stack_depth})\n{method_stack_trace}" ];
+            node_{uri_to_dot_id(method_call_obj)} [ label = <<TABLE border="0" align="left"><TR><TD>{method_display}</TD></TR></TABLE>> ];
             """, file = out_fd)
 
         rq = """
@@ -119,19 +122,19 @@ def dump_dot_code(g, vertical, show_objects):
     if 1:
         #ipdb.set_trace()
         rq = """
-        select ?method_call_obj ?caller_obj ?ret_obj ?arg1_name ?arg1_obj ?arg2_name ?arg2_obj ?arg3_name ?arg3_obj { 
+        select ?method_call_obj ?arg0_obj ?arg0_name ?ret_obj ?arg1_name ?arg1_obj ?arg2_name ?arg2_obj ?arg3_name ?arg3_obj { 
           ?method_call_obj rdf:type <MethodCall>;
-                           <method-call-arg0> ?caller_obj;
+                           <method-call-arg0> ?arg0_obj; <method-call-arg0-name> ?arg0_name;
                            <method-call-return> ?ret_obj .
           optional { ?method_call_obj <method-call-arg1> ?arg1_obj; <method-call-arg1-name> ?arg1_name }
           optional { ?method_call_obj <method-call-arg2> ?arg2_obj; <method-call-arg2-name> ?arg2_name }
           optional { ?method_call_obj <method-call-arg3> ?arg3_obj; <method-call-arg3-name> ?arg3_name }
         }
         """
-        for method_call_obj, caller_obj, ret_obj, arg1_name, arg1_obj, arg2_name, arg2_obj, arg3_name, arg3_obj in g.query(rq, base = rdflogging.base_uri):
+        for method_call_obj, arg0_obj, arg0_name, ret_obj, arg1_name, arg1_obj, arg2_name, arg2_obj, arg3_name, arg3_obj in g.query(rq, base = rdflogging.base_uri):
             print(f"""
-            node_{uri_to_dot_id(caller_obj)} -> node_{uri_to_dot_id(method_call_obj)} [penwidth = 3];
-            node_{uri_to_dot_id(method_call_obj)} -> node_{uri_to_dot_id(ret_obj)} [penwidth = 3];
+            node_{uri_to_dot_id(arg0_obj)} -> node_{uri_to_dot_id(method_call_obj)} [label="{arg0_name}"];
+            node_{uri_to_dot_id(method_call_obj)} -> node_{uri_to_dot_id(ret_obj)};
             """, file = out_fd)
 
             # NB: copy-paste is bad

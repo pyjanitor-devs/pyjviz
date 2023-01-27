@@ -39,6 +39,7 @@ with pyjviz.CC() as sg:
     # 1        Feb   250.0     500.0   550.0
     # 3      April   500.0     675.0   800.0
 
+    # comment line below to fix spurious apply calls caused by pandas printing implementation
     print(df)
 
 pyjviz.save_dot(vertical = True)

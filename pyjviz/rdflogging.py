@@ -115,7 +115,6 @@ class RDFLogger:
     def dump_method_call_in(self, method_call_obj, thread_id,
                             method_name, method_signature, method_bound_args,
                             caller_stack_entry):
-        #ipdb.set_trace()
         rdfl = self
         
         thread_uri = rdfl.register_thread(thread_id)
@@ -127,6 +126,17 @@ class RDFLogger:
         rdfl.dump_triple__(method_call_uri, "<method-stack-depth>", call_stack.stack.size())
         rdfl.dump_triple__(method_call_uri, "<method-stack-trace>", '"' + call_stack.stack.to_string() + '"')
 
+        method_display_args = []
+        for p_name, p in method_bound_args.arguments.items():
+            if isinstance(p, pd.DataFrame) or isinstance(p, pd.Series):
+                method_display_args.append("<b>"+p_name+"</b>")
+            else:
+                method_display_args.append(p_name + " = " + str(p).replace("<", "&lt;").replace(">", "&gt;"))
+
+        method_display_s = base64.b64encode(("<i>" + method_name + "</i>" + "  (" + ", ".join(method_display_args) + ")").encode('ascii')).decode('ascii')
+        rdfl.dump_triple__(method_call_uri, "<method-display>", '"' + method_display_s + '"')
+        
+        #ipdb.set_trace()
         c = 0
         for arg_name, arg_obj in method_bound_args.arguments.items():
             arg_kind = method_signature.parameters.get(arg_name).kind
