@@ -32,6 +32,31 @@ def dump_subgraph(g, cc_uri, out_fd):
         dump_subgraph(g, subgraph, out_fd)
         
         rq = """
+        select ?show_obj ?obj_type ?df_shape ?df_head { 
+          ?show_obj rdf:type <ShowObj>; rdf:type ?obj_type; <part-of> ?sg.
+          ?show_obj <df-shape> ?df_shape .
+          optional {?show_obj <df-head> ?df_head} .
+        }
+        """
+        for show_obj, obj_type, df_shape, df_head in g.query(rq, base = rdflogging.base_uri, initBindings = {'sg': subgraph}):
+            print(f"""
+            node_{uri_to_dot_id(show_obj)} [
+                fillcolor="#44056022"
+                #shape = rect
+                label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
+                         <tr> <td> <b>{show_obj.split('/')[-1]}</b><br/>DataFrame {df_shape}</td> </tr>
+                         </table>>
+                href="javascript: 
+                {{ let w = window.open('', '_blank', 'width=800,height=200');
+                  /* let ii= `&lt;img src=&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==&apos;&gt;&lt;/img&gt;`; */
+                  let ii = `{df_head}`;
+                  w.document.write(ii); }}
+                 "
+                ];
+
+            """, file = out_fd)
+
+        rq = """
         select ?obj_state ?version ?obj_type ?obj_uuid ?df_shape ?df_head { 
           ?obj_state rdf:type <ObjState>; <obj> ?obj.
           ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid.
@@ -40,7 +65,6 @@ def dump_subgraph(g, cc_uri, out_fd):
           optional {?obj_state <df-head> ?df_head} .
         }
         """
-
         for obj_state, version, obj_type, obj_uudi, df_shape, df_head in g.query(rq, base = rdflogging.base_uri, initBindings = {'sg': subgraph}):
             print(f"""
             node_{uri_to_dot_id(obj_state)} [
@@ -196,6 +220,20 @@ def dump_dot_code(g, vertical, show_objects):
             print(f"""
             node_{uri_to_dot_id(to_obj)} -> node_{uri_to_dot_id(from_obj)} [label="{pred_s}", penwidth=2.5];
             """, file = out_fd)
+
+        rq = """
+        select ?from_obj ?to_obj ?pred { 
+          ?from_obj rdf:type <MethodCall>.
+          ?to_obj rdf:type <ShowObj>.
+          ?from_obj ?pred ?to_obj 
+        }
+        """
+        for from_obj, to_obj, pred in g.query(rq, base = rdflogging.base_uri):
+            pred_s = pred.toPython().split('/')[-1]
+            print(f"""
+            node_{uri_to_dot_id(from_obj)} -> node_{uri_to_dot_id(to_obj)} [label="{pred_s}", style="dotted"];
+            """, file = out_fd)
+        
             
     print("}", file = out_fd)
     return out_fd.getvalue()

@@ -134,4 +134,19 @@ def get_parent_of_current_entry(stack):
                 break
 
     return ret
+
+def get_parent_code_context_of_current_entry(stack):
+    ret = None
+           
+    if stack.size() > 0:
+        for se in reversed(stack.stack_entries__):
+            if isinstance(se, MethodCall):
+                continue
+            elif isinstance(se, NestedCall):
+                continue
+            elif isinstance(se, CodeContext):
+                ret = se
+                break
+
+    return ret
     

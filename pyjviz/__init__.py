@@ -14,3 +14,4 @@ if pyjviz_enabled:
         triple_store = FSTripleOutputOneShot(base_uri, "pyjviz-test-output", os.path.basename(sys.argv[0]) + ".ttl")
     set_rdflogger__(RDFLogger(triple_store))
     enable_pf_pandas__()
+

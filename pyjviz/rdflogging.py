@@ -27,7 +27,19 @@ def get_obj_type(o):
         raise Exception(f"unknown type of o: {str(type(o))}")
 
     return ret
-    
+
+def show_obj(edge_uri, pyjviz_obj):
+    if not isinstance(pyjviz_obj, pd.DataFrame):
+        raise Exception("obj of type {type((pyjviz_obj)} is not supported")
+
+    subj_uri = call_stack.stack.get_top().uri
+    parent_obj_uri = call_stack_entries.get_parent_code_context_of_current_entry(call_stack.stack).uri
+    show_obj_uri = f"<ShowObj#{rdflogger.random_id}>"; rdflogger.random_id += 1
+    rdflogger.dump_triple__(show_obj_uri, "rdf:type", "<ShowObj>")
+    rdflogger.dump_triple__(show_obj_uri, "<part-of>", parent_obj_uri)
+    rdflogger.dump_triple__(subj_uri, edge_uri, show_obj_uri)
+    rdflogger.dump_DataFrame_obj_state(show_obj_uri, pyjviz_obj)
+
 class RDFLogger:        
     def __init__(self, triples_sink):
         self.triples_sink = triples_sink

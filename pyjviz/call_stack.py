@@ -58,5 +58,8 @@ class CallStack:
     def pop(self):
         return self.stack_entries__.pop()
 
+    def get_top(self):
+        return self.stack_entries__[-1]
+    
 stack = CallStack()
 
