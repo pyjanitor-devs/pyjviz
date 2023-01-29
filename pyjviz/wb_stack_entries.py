@@ -1,20 +1,20 @@
-import ipdb
+#import ipdb
 import threading
 import pandas as pd
 import inspect
 import uuid
 
-from . import call_stack
+from . import wb_stack
 from . import rdflogging
 from . import obj_tracking
 
-class CodeContext(call_stack.CallStackEntry):
+class CodeBlock(wb_stack.WithBlock):
     def __init__(self, label = None, rdf_type = "CodeContext"):
         super().__init__(label = label, rdf_type = rdf_type)
 
-CC = CodeContext
+CB = CodeBlock
 
-class NestedCall(call_stack.CallStackEntry):
+class NestedCall(wb_stack.WithBlock):
     def __init__(self, arg_name, arg_func):
         super().__init__(label = f"nested_call({arg_name})", rdf_type = "NestedCall")        
         #ipdb.set_trace()
@@ -28,12 +28,12 @@ class NestedCall(call_stack.CallStackEntry):
             self.ret = self.arg_func(*args, **kwargs)
             ret_t_obj = obj_tracking.tracking_store.get_tracking_obj(self.ret)
             if ret_t_obj.last_obj_state_uri is None:
-                caller_stack_entry = get_parent_of_current_entry(call_stack.stack)
+                caller_stack_entry = get_parent_of_current_entry(wb_stack.stack)
                 rdfl = rdflogging.rdflogger
                 ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(self.ret, ret_t_obj, caller_stack_entry)
             return self.ret
 
-class MethodCall(CodeContext):
+class MethodCall(wb_stack.WithBlock):
     def __init__(self, method_name, have_nested_call_args):
         super().__init__(label = method_name, rdf_type = "MethodCall")
         self.method_bound_args = None
@@ -78,7 +78,7 @@ class MethodCall(CodeContext):
         new_kwargs = self.method_bound_args.kwargs
 
         thread_id = threading.get_native_id()
-        caller = get_parent_of_current_entry(call_stack.stack)
+        caller = get_parent_of_current_entry(wb_stack.wb_stack)
         
         # NB: since apply_defaults is not called then no tracking of args with default values will take place
         rdfl.dump_method_call_in(self, thread_id, method_name, method_signature, self.method_bound_args, caller)
@@ -91,8 +91,7 @@ class MethodCall(CodeContext):
 
         ret_t_obj = obj_tracking.tracking_store.get_tracking_obj(ret_obj)
 
-        #caller_stack_entry = call_stack.stack.stack_entries[-2]
-        caller = get_parent_of_current_entry(call_stack.stack)
+        caller = get_parent_of_current_entry(wb_stack.wb_stack)
         ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(ret_obj, ret_t_obj, caller)
         rdfl.dump_triple__(self.uri, "<method-call-return>", ret_t_obj.last_obj_state_uri)
 
@@ -114,7 +113,7 @@ def get_latest_method_call(stack):
         elif isinstance(se, NestedCall):
             ret = None
             break
-        elif isinstance(se, CodeContext):
+        elif isinstance(se, CodeBlock):
             continue
 
     return ret
@@ -129,7 +128,7 @@ def get_parent_of_current_entry(stack):
                 break
             elif isinstance(se, NestedCall):
                 continue
-            elif isinstance(se, CodeContext):
+            elif isinstance(se, CodeBlock):
                 ret = se
                 break
 
@@ -144,7 +143,7 @@ def get_parent_code_context_of_current_entry(stack):
                 continue
             elif isinstance(se, NestedCall):
                 continue
-            elif isinstance(se, CodeContext):
+            elif isinstance(se, CodeBlock):
                 ret = se
                 break
 

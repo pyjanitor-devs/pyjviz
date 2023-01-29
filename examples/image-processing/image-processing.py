@@ -95,7 +95,7 @@ def apply_feature_engeneering(df: pd.DataFrame) -> pd.DataFrame:
 
 file_pathes = pd.Series(glob.glob("dataset/*.jpg"))
 
-with pyjviz.CC("initial-phase") as cc:
+with pyjviz.CB("initial-phase") as cc:
     initial_phase_df = (file_pathes
                         .load_images()#.subplot(image_col = 'image', title_col = 'im_name', title = '(Original Image by Gino Borja, AIM)')
                         .binarize_images(threshold_otsu)#.subplot(image_col = 'binarized', title_col = file_pathes, title = 'binarized')
@@ -103,7 +103,7 @@ with pyjviz.CC("initial-phase") as cc:
                         .labeling()#.subplot(image_col = 'label_im', title_col = file_pathes, title = 'labeled')
                         )
 if 1:    
-    with pyjviz.CC("build-features"):
+    with pyjviz.CB("build-features"):
         final_df = (initial_phase_df
                     .get_properties_of_each_region()
                     .assign(type = lambda x: x.im_name.apply(lambda x: x.split('.')[0]))

@@ -8,8 +8,8 @@ from contextlib import nullcontext
 
 from . import rdflogging
 from . import obj_tracking
-from . import call_stack
-from . import call_stack_entries
+from . import wb_stack
+from . import wb_stack_entries
 
 class DataFrameFunc:
     def __init__(self, func_name, func):
@@ -19,12 +19,12 @@ class DataFrameFunc:
 
     def __call__(self, *args, **kwargs):
         #ipdb.set_trace()
-        if call_stack.stack.size() == 0:
+        if wb_stack.wb_stack.size() == 0:
             method_ctx = nullcontext()
 
-        latest_method_call = call_stack_entries.get_latest_method_call(call_stack.stack)
+        latest_method_call = wb_stack_entries.get_latest_method_call(wb_stack.wb_stack)
         if latest_method_call is None:
-            method_ctx = call_stack_entries.MethodCall(self.func_name, False)
+            method_ctx = wb_stack_entries.MethodCall(self.func_name, False)
         else:
             method_ctx = nullcontext()
 
@@ -38,9 +38,29 @@ class DataFrameFunc:
                 method_ctx.handle_end_method_call(ret_obj)
         
         return ret_obj
+
+
+class PandasFlavorMethodCallFactory:
+    @staticmethod
+    def create(method_name, method_args, method_kwargs):
+        if wb_stack.wb_stack.size() == 0:
+            return nullcontext()
+
+        latest_method_call = wb_stack_entries.get_latest_method_call(wb_stack.wb_stack)
+        if latest_method_call is None:
+            will_have_nested_call_args = len([x for x in method_kwargs.values() if inspect.isfunction(x)]) > 0
+            ret = wb_stack_entries.MethodCall(method_name, will_have_nested_call_args)
+        elif latest_method_call.label == 'assign' and latest_method_call.have_nested_call_args:
+            will_have_nested_call_args = len([x for x in method_kwargs.values() if inspect.isfunction(x)]) > 0
+            ret = wb_stack_entries.MethodCall(method_name, will_have_nested_call_args)
+        else:
+            ret = nullcontext()
+
+        return ret
+
     
 def enable_pf_pandas__():
-    pf.register.cb_create_call_stack_context_manager = cb_create_method_call_context_manager
+    pf.register.method_call_ctx_factory = PandasFlavorMethodCallFactory.create
     
     old_DataFrame_init = pd.DataFrame.__init__
     def aux_init(func, *x, **y):
@@ -120,23 +140,3 @@ def enable_pf_pandas__():
             ret = old_apply(s, func)
             return ret
     
-
-# pandas_flavor register.py callback
-
-def cb_create_method_call_context_manager(method_name, method_args, method_kwargs):
-    if call_stack.stack.size() == 0:
-        return nullcontext()
-
-    latest_method_call = call_stack_entries.get_latest_method_call(call_stack.stack)
-    #if method_name == 'apply':
-    #    ipdb.set_trace()
-    if latest_method_call is None:
-        will_have_nested_call_args = len([x for x in method_kwargs.values() if inspect.isfunction(x)]) > 0
-        ret = call_stack_entries.MethodCall(method_name, will_have_nested_call_args)
-    elif latest_method_call.label == 'assign' and latest_method_call.have_nested_call_args:
-        will_have_nested_call_args = len([x for x in method_kwargs.values() if inspect.isfunction(x)]) > 0
-        ret = call_stack_entries.MethodCall(method_name, will_have_nested_call_args)
-    else:
-        ret = nullcontext()
-        
-    return ret

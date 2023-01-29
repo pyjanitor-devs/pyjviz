@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     df = pd.DataFrame({'a': range(10)})
 
-    with pyjviz.CC("c") as C:
+    with pyjviz.CB("c") as C:
         df0 = df.a0()
         df1 = df.a0().a0()
         df2 = df.a0()

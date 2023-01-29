@@ -2,9 +2,12 @@ import uuid
 
 from . import rdflogging
 
-class CallStackEntry:
+class WithBlock:
     """
-    Base class for CodeContext and MethodCall. Each StackEntry obj has:
+    Code blocks in python - https://docs.python.org/3/reference/executionmodel.html#:~:text=A%20Python%20program%20is%20constructed,typed%20interactively%20is%20a%20block.
+    With PEP use of 'block' - https://peps.python.org/pep-0343/#specification-the-with-statement
+
+    Base class for CodeBlock, MethodCall and NestedCall.
       - uri - to identify itself in graph as node
       - rdf_type_uri - to identify node type
     """
@@ -20,22 +23,22 @@ class CallStackEntry:
         rdfl.dump_triple__(self.uri, "rdf:type", rdf_type_uri)
         label_obj = f'"{self.label}"' if self.label else 'rdf:nil'
         rdfl.dump_triple__(self.uri, "rdf:label", label_obj)
-        global stack
-        parent_uri = stack.stack_entries__[-1].uri if stack.size() > 0 else "rdf:nil"
+        global wb_stack
+        parent_uri = wb_stack.stack_entries__[-1].uri if wb_stack.size() > 0 else "rdf:nil"
         rdfl.dump_triple__(self.uri, "<part-of>", parent_uri)
         self.dump_init_called = True
         
     def __enter__(self):
-        global stack
-        stack.push(self)
+        global wb_stack
+        wb_stack.push(self)
         return self
 
     def __exit__(self, type, value, traceback):
         rdflogging.rdflogger.flush__()
-        global stack
-        stack.pop()
+        global wb_stack
+        wb_stack.pop()
         
-class CallStack:
+class WithBlockStack:
     def __init__(self):
         self.stack_entries__ = []
 
@@ -61,5 +64,5 @@ class CallStack:
     def get_top(self):
         return self.stack_entries__[-1]
     
-stack = CallStack()
+wb_stack = WithBlockStack()
 

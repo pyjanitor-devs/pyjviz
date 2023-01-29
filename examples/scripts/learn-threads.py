@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     df = pd.DataFrame({'a': range(10)})
     
-    with pyjviz.CC("c") as c:
+    with pyjviz.CB("c") as c:
         r1 = df.x()
         if 1:
             r20 = prun(lambda: df.y(0))

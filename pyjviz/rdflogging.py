@@ -12,8 +12,8 @@ import inspect
 import pandas_flavor as pf
 
 from . import obj_tracking
-from . import call_stack
-from . import call_stack_entries
+from . import wb_stack
+from . import wb_stack_entries
 
 base_uri = 'https://github.com/pyjanitor-devs/pyjviz/rdflog.shacl.ttl#'
 method_counter = 0
@@ -32,8 +32,8 @@ def show_obj(edge_uri, pyjviz_obj):
     if not isinstance(pyjviz_obj, pd.DataFrame):
         raise Exception("obj of type {type((pyjviz_obj)} is not supported")
 
-    subj_uri = call_stack.stack.get_top().uri
-    parent_obj_uri = call_stack_entries.get_parent_code_context_of_current_entry(call_stack.stack).uri
+    subj_uri = wb_stack.wb_stack.get_top().uri
+    parent_obj_uri = wb_stack_entries.get_parent_code_context_of_current_entry(wb_stack.wb_stack).uri
     show_obj_uri = f"<ShowObj#{rdflogger.random_id}>"; rdflogger.random_id += 1
     rdflogger.dump_triple__(show_obj_uri, "rdf:type", "<ShowObj>")
     rdflogger.dump_triple__(show_obj_uri, "<part-of>", parent_obj_uri)
@@ -110,7 +110,7 @@ class RDFLogger:
     def dump_method_call_arg__(self, method_call_obj, c, arg_name, arg_obj, caller_stack_entry):
         rdfl = self
         method_call_uri = method_call_obj.uri
-        if isinstance(arg_obj, call_stack_entries.NestedCall):
+        if isinstance(arg_obj, wb_stack_entries.NestedCall):
             rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.uri)
             rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}-name>", '"' + (arg_name if arg_name else '') + '"')
         elif isinstance(arg_obj, pd.DataFrame) or isinstance(arg_obj, pd.Series):
@@ -135,8 +135,8 @@ class RDFLogger:
         rdfl.dump_triple__(method_call_uri, "<method-thread>", thread_uri)
         global method_counter
         rdfl.dump_triple__(method_call_uri, "<method-counter>", method_counter); method_counter += 1
-        rdfl.dump_triple__(method_call_uri, "<method-stack-depth>", call_stack.stack.size())
-        rdfl.dump_triple__(method_call_uri, "<method-stack-trace>", '"' + call_stack.stack.to_string() + '"')
+        rdfl.dump_triple__(method_call_uri, "<method-stack-depth>", wb_stack.wb_stack.size())
+        rdfl.dump_triple__(method_call_uri, "<method-stack-trace>", '"' + wb_stack.wb_stack.to_string() + '"')
 
         method_display_args = []
         for p_name, p in method_bound_args.arguments.items():
