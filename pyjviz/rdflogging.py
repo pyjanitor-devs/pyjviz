@@ -6,17 +6,13 @@ import os.path
 import textwrap
 import pandas as pd
 import uuid
-import base64
-import inspect
 
 import pandas_flavor as pf
 
 from . import obj_tracking
 from . import wb_stack
-from . import wb_stack_entries
 
 base_uri = 'https://github.com/pyjanitor-devs/pyjviz/rdflog.shacl.ttl#'
-method_counter = 0
 
 def get_obj_type(o):
     if isinstance(o, pd.DataFrame):
@@ -33,7 +29,7 @@ def show_obj(edge_uri, pyjviz_obj):
         raise Exception("obj of type {type((pyjviz_obj)} is not supported")
 
     subj_uri = wb_stack.wb_stack.get_top().uri
-    parent_obj_uri = wb_stack_entries.get_parent_code_context_of_current_entry(wb_stack.wb_stack).uri
+    parent_obj_uri = wb_stack.wb_stack.get_parent_code_context_of_current_entry().uri
     show_obj_uri = f"<ShowObj#{rdflogger.random_id}>"; rdflogger.random_id += 1
     rdflogger.dump_triple__(show_obj_uri, "rdf:type", "<ShowObj>")
     rdflogger.dump_triple__(show_obj_uri, "<part-of>", parent_obj_uri)
@@ -107,66 +103,7 @@ class RDFLogger:
     def dump_Series_obj_state(self, obj_state_uri, s):
         self.dump_triple__(obj_state_uri, "<df-shape>", f'"{s.shape}"')        
 
-    def dump_method_call_arg__(self, method_call_obj, c, arg_name, arg_obj, caller_stack_entry):
-        rdfl = self
-        method_call_uri = method_call_obj.uri
-        if isinstance(arg_obj, wb_stack_entries.NestedCall):
-            rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.uri)
-            rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}-name>", '"' + (arg_name if arg_name else '') + '"')
-        elif isinstance(arg_obj, pd.DataFrame) or isinstance(arg_obj, pd.Series):
-            arg_t_obj = obj_tracking.tracking_store.get_tracking_obj(arg_obj)
-            if arg_t_obj.last_obj_state_uri is None:
-                arg_t_obj.last_obj_state_uri = rdfl.dump_obj_state(arg_obj, arg_t_obj, caller_stack_entry)
-            arg_uri = arg_t_obj.last_obj_state_uri
-            #ipdb.set_trace()
-            rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_uri)
-            rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}-name>", '"' + (arg_name if arg_name else '') + '"')
-        else:
-            pass
-        
-    def dump_method_call_in(self, method_call_obj, thread_id,
-                            method_name, method_signature, method_bound_args,
-                            caller_stack_entry):
-        rdfl = self
-        
-        thread_uri = rdfl.register_thread(thread_id)
-        method_call_uri = method_call_obj.uri
-
-        rdfl.dump_triple__(method_call_uri, "<method-thread>", thread_uri)
-        global method_counter
-        rdfl.dump_triple__(method_call_uri, "<method-counter>", method_counter); method_counter += 1
-        rdfl.dump_triple__(method_call_uri, "<method-stack-depth>", wb_stack.wb_stack.size())
-        rdfl.dump_triple__(method_call_uri, "<method-stack-trace>", '"' + wb_stack.wb_stack.to_string() + '"')
-
-        method_display_args = []
-        for p_name, p in method_bound_args.arguments.items():
-            if isinstance(p, pd.DataFrame) or isinstance(p, pd.Series):
-                method_display_args.append("<b>"+p_name+"</b>")
-            else:
-                method_display_args.append(p_name + " = " + str(p).replace("<", "&lt;").replace(">", "&gt;"))
-
-        method_display_s = base64.b64encode(("<i>" + method_name + "</i>" + "  (" + ", ".join(method_display_args) + ")").encode('ascii')).decode('ascii')
-        rdfl.dump_triple__(method_call_uri, "<method-display>", '"' + method_display_s + '"')
-        
-        #ipdb.set_trace()
-        c = 0
-        for arg_name, arg_obj in method_bound_args.arguments.items():
-            arg_kind = method_signature.parameters.get(arg_name).kind
-            if arg_kind == inspect.Parameter.VAR_KEYWORD:
-                for kwarg_name, kwarg_obj in arg_obj.items():
-                    self.dump_method_call_arg__(method_call_obj, c, kwarg_name, kwarg_obj, caller_stack_entry)
-                    c += 1
-            elif arg_kind == inspect.Parameter.VAR_POSITIONAL:
-                #ipdb.set_trace()
-                for p_arg_obj in arg_obj:
-                    self.dump_method_call_arg__(method_call_obj, c, None, p_arg_obj, caller_stack_entry)
-                    c += 1
-            else:
-                self.dump_method_call_arg__(method_call_obj, c, arg_name, arg_obj, caller_stack_entry)
-                c += 1
-                
-        return method_call_uri
-
+    
 rdflogger = None
 def set_rdflogger__(o):
     global rdflogger
