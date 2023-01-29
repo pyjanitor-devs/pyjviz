@@ -21,7 +21,7 @@ def uri_to_dot_id(uri):
     return str(hash(uri)).replace("-", "d")
 
 def dump_subgraph(g, cc_uri, out_fd):    
-    subgraphs = [r for r in g.query("select ?pp ?pl { ?pp rdf:type <CodeContext>; rdf:label ?pl; <part-of> ?sg }", base = rdflogging.base_uri, initBindings = {'sg': cc_uri})]
+    subgraphs = [r for r in g.query("select ?pp ?pl { ?pp rdf:type <CodeBlock>; rdf:label ?pl; <part-of> ?sg }", base = rdflogging.base_uri, initBindings = {'sg': cc_uri})]
     for subgraph, subgraph_label in subgraphs:
         if subgraph_label != rdflib.RDF.nil:
             print(f"""

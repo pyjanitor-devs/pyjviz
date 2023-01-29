@@ -9,7 +9,7 @@ from . import rdflogging
 from . import obj_tracking
 
 class CodeBlock(wb_stack.WithBlock):
-    def __init__(self, label = None, rdf_type = "CodeContext"):
+    def __init__(self, label = None, rdf_type = "CodeBlock"):
         super().__init__(label = label, rdf_type = rdf_type)
 
 CB = CodeBlock
@@ -78,7 +78,7 @@ class MethodCall(wb_stack.WithBlock):
         new_kwargs = self.method_bound_args.kwargs
 
         thread_id = threading.get_native_id()
-        caller = get_parent_of_current_entry(wb_stack.wb_stack)
+        caller = wb_stack.wb_stack.get_parent_of_current_entry()
         
         # NB: since apply_defaults is not called then no tracking of args with default values will take place
         rdfl.dump_method_call_in(self, thread_id, method_name, method_signature, self.method_bound_args, caller)
@@ -91,7 +91,7 @@ class MethodCall(wb_stack.WithBlock):
 
         ret_t_obj = obj_tracking.tracking_store.get_tracking_obj(ret_obj)
 
-        caller = get_parent_of_current_entry(wb_stack.wb_stack)
+        caller = wb_stack.wb_stack.get_parent_of_current_entry()
         ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(ret_obj, ret_t_obj, caller)
         rdfl.dump_triple__(self.uri, "<method-call-return>", ret_t_obj.last_obj_state_uri)
 
@@ -103,49 +103,4 @@ class MethodCall(wb_stack.WithBlock):
             rdfl.dump_triple__(nested_call_obj.uri, "<ret-val>", t_obj.last_obj_state_uri)
 
 
-def get_latest_method_call(stack):
-    ret = None
-           
-    for se in reversed(stack.stack_entries__):
-        if isinstance(se, MethodCall):
-            ret = se
-            break
-        elif isinstance(se, NestedCall):
-            ret = None
-            break
-        elif isinstance(se, CodeBlock):
-            continue
-
-    return ret
-
-def get_parent_of_current_entry(stack):
-    ret = None
-           
-    if stack.size() > 0:
-        for se in reversed(stack.stack_entries__):
-            if isinstance(se, MethodCall):
-                ret = se
-                break
-            elif isinstance(se, NestedCall):
-                continue
-            elif isinstance(se, CodeBlock):
-                ret = se
-                break
-
-    return ret
-
-def get_parent_code_context_of_current_entry(stack):
-    ret = None
-           
-    if stack.size() > 0:
-        for se in reversed(stack.stack_entries__):
-            if isinstance(se, MethodCall):
-                continue
-            elif isinstance(se, NestedCall):
-                continue
-            elif isinstance(se, CodeBlock):
-                ret = se
-                break
-
-    return ret
     

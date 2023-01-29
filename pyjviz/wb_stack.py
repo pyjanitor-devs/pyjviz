@@ -63,6 +63,53 @@ class WithBlockStack:
 
     def get_top(self):
         return self.stack_entries__[-1]
+
+    def get_latest_method_call(self):
+        ret = None
+
+        for se in reversed(self.stack_entries__):
+            if se.rdf_type == "MethodCall":
+                ret = se
+                break
+            elif se.rdf_type == "NestedCall":
+                ret = None
+                break
+            elif se.rdf_type == "CodeBlock":
+                continue
+
+        return ret
+
+    def get_parent_of_current_entry(self):
+        ret = None
+
+        if self.size() > 0:
+            for se in reversed(self.stack_entries__):
+                if se.rdf_type == "MethodCall":
+                    ret = se
+                    break
+                elif se.rdf_type == "NestedCall":
+                    continue
+                elif se.rdf_type == "CodeBlock":
+                    ret = se
+                    break
+
+        return ret
+
+    def get_parent_code_context_of_current_entry(self):
+        ret = None
+
+        if self.size() > 0:
+            for se in reversed(self.stack_entries__):
+                if se.rdf_type == "MethodCall":
+                    continue
+                elif se.rdf_type == "NestedCall":
+                    continue
+                elif se.rdf_type == "CodeBlock":
+                    ret = se
+                    break
+
+        return ret
+
     
 wb_stack = WithBlockStack()
 

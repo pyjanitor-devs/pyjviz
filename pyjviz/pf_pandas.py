@@ -22,7 +22,7 @@ class DataFrameFunc:
         if wb_stack.wb_stack.size() == 0:
             method_ctx = nullcontext()
 
-        latest_method_call = wb_stack_entries.get_latest_method_call(wb_stack.wb_stack)
+        latest_method_call = wb_stack.wb_stack.get_latest_method_call()
         if latest_method_call is None:
             method_ctx = wb_stack_entries.MethodCall(self.func_name, False)
         else:
@@ -46,7 +46,7 @@ class PandasFlavorMethodCallFactory:
         if wb_stack.wb_stack.size() == 0:
             return nullcontext()
 
-        latest_method_call = wb_stack_entries.get_latest_method_call(wb_stack.wb_stack)
+        latest_method_call = wb_stack.wb_stack.get_latest_method_call()
         if latest_method_call is None:
             will_have_nested_call_args = len([x for x in method_kwargs.values() if inspect.isfunction(x)]) > 0
             ret = wb_stack_entries.MethodCall(method_name, will_have_nested_call_args)
