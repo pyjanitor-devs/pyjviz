@@ -1,5 +1,5 @@
 import ipdb
-import os, os.path
+import os, os.path, textwrap
 import tempfile
 import io
 import rdflib
@@ -17,6 +17,16 @@ class FSTripleOutput:
         print("@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .", file = self.out_fd)
         print("@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .", file = self.out_fd)
 
+        print(textwrap.dedent("""
+        <WithBlock> rdf:type rdfs:Class .
+        <CodeBlock> rdf:type rdfs:Class .
+        <CodeBlock> rdfs:subClassOf <WithBlock> .
+        <MethodCall> rdf:type rdfs:Class .
+        <MethodCall> rdfs:subClassOf <WithBlock> .
+        <NestedCall> rdf:type rdfs:Class .
+        <NestedCall> rdfs:subClassOf <WithBlock> .
+        """), file = self.out_fd)
+        
     def dump_triple(self, subj, pred, obj):
         print(f"{subj} {pred} {obj} .", file = self.out_fd)
 
