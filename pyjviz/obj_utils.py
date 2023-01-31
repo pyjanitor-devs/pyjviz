@@ -3,9 +3,12 @@ import pandas as pd
 
 from . import fstriplestore
 from . import obj_tracking
+from . import wb_stack
 
 random_id = 0
-def dump_obj_state(obj):
+def dump_obj_state(obj, caller_stack_entry = None):
+    if caller_stack_entry is None:
+        caller_stack_entry = wb_stack.wb_stack.get_parent_of_current_entry()
     t_obj, _ = obj_tracking.tracking_store.get_tracking_obj(obj)
 
     global random_id
@@ -13,6 +16,7 @@ def dump_obj_state(obj):
 
     fstriplestore.triple_store.dump_triple(obj_state_uri, "rdf:type", "<ObjState>")
     fstriplestore.triple_store.dump_triple(obj_state_uri, "<obj>", t_obj.uri)
+    fstriplestore.triple_store.dump_triple(obj_state_uri, "<part-of>", caller_stack_entry.uri)    
     fstriplestore.triple_store.dump_triple(obj_state_uri, "<version>", f'"{t_obj.last_version_num}"')
     t_obj.last_version_num += 1
 

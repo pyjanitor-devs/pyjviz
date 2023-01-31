@@ -32,8 +32,6 @@ class NestedCall(wb_stack.WithBlock):
             ret_t_obj, obj_found = obj_tracking.tracking_store.get_tracking_obj(self.ret)
             if not obj_found:
                 ret_t_obj = obj_utils.dump_obj_state(self.ret)
-                caller_stack_entry = wb_stack.wb_stack.get_parent_of_current_entry()
-                ts.dump_triple(ret_t_obj.uri, "<part-of>", caller_stack_entry.uri)
             return self.ret
 
 method_counter = 0 # NB: should be better way to cout method calls
@@ -92,9 +90,7 @@ class MethodCall(wb_stack.WithBlock):
 
         ret_obj = ret if not ret is None else obj
 
-        caller = wb_stack.wb_stack.get_parent_of_current_entry()
         ret_t_obj = obj_utils.dump_obj_state(ret_obj)
-        ts.dump_triple(ret_t_obj.last_obj_state_uri, "<part-of>", caller.uri)
         ts.dump_triple(self.uri, "<method-call-return>", ret_t_obj.last_obj_state_uri)
 
         # catching nested calls values returned after method call executed
@@ -116,8 +112,7 @@ class MethodCall(wb_stack.WithBlock):
         elif isinstance(arg_obj, pd.DataFrame) or isinstance(arg_obj, pd.Series):
             arg_t_obj, obj_found = obj_tracking.tracking_store.get_tracking_obj(arg_obj)
             if not obj_found:
-                arg_t_obj = obj_utils.dump_obj_state(arg_obj)
-                ts.dump_triple(arg_t_obj.last_obj_state_uri, "<part-of>", caller_stack_entry.uri)
+                arg_t_obj = obj_utils.dump_obj_state(arg_obj, caller_stack_entry)
             ts.dump_triple(method_call_uri, f"<method-call-arg{c}>", arg_t_obj.last_obj_state_uri)
             ts.dump_triple(method_call_uri, f"<method-call-arg{c}-name>", '"' + (arg_name if arg_name else '') + '"')
         else:

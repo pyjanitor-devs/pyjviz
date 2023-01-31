@@ -110,7 +110,8 @@ class WithBlockStack:
                     break
 
         return ret
-
     
 wb_stack = WithBlockStack()
-
+def get_wb_stack():
+    global wb_stack
+    return wb_stack
