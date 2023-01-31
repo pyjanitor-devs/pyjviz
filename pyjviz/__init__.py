@@ -1,4 +1,3 @@
-from .rdflogging import set_rdflogger__
 from .fstriplestore import set_triple_store__, FSTripleOutputOneShot
 from .wb_stack_entries import *
 from .viz import *
@@ -14,6 +13,5 @@ if pyjviz_enabled:
         tstr = FSTripleOutputOneShot("pyjviz-test-output", os.path.basename(sys.argv[0]) + ".ttl")
 
     set_triple_store__(tstr)
-    set_rdflogger__()
     enable_pf_pandas__()
 

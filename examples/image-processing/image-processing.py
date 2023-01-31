@@ -36,7 +36,7 @@ def load_images(file_pathes: pd.Series) -> pd.DataFrame:
     aux_df['file_path'] = file_pathes
     aux_df['file_size'] = aux_df.file_path.apply(lambda x: os.stat(x).st_size)
     #print(aux_df)
-    pyjviz.show_obj('<im-file-sizes>', aux_df)
+    #pyjviz.show_obj('<im-file-sizes>', aux_df)
     
     return df
 

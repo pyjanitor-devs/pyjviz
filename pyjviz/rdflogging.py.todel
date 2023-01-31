@@ -47,7 +47,8 @@ class RDFLogger:
         else:
             thread_uri = self.known_threads[thread_id]
         return thread_uri
-            
+
+    """
     def dump_obj_state(self, obj):
         t_obj, _ = obj_tracking.tracking_store.get_tracking_obj(obj)
 
@@ -76,7 +77,7 @@ class RDFLogger:
 
     def dump_Series_obj_state(self, obj_state_uri, s):
         self.dump_triple__(obj_state_uri, "<df-shape>", f'"{s.shape}"')        
-
+    """
     
 rdflogger = None
 def set_rdflogger__():

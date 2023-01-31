@@ -6,8 +6,9 @@ import inspect
 import uuid
 
 from . import wb_stack
-from . import rdflogging
+from . import fstriplestore
 from . import obj_tracking
+from . import obj_utils
 
 class CodeBlock(wb_stack.WithBlock):
     def __init__(self, label = None, rdf_type = "CodeBlock"):
@@ -24,15 +25,15 @@ class NestedCall(wb_stack.WithBlock):
         self.ret = None
         
     def __call__(self, *args, **kwargs):
+        ts = fstriplestore.triple_store
         with self:
             print("NestedCall called")
             self.ret = self.arg_func(*args, **kwargs)
-            rdfl = rdflogging.rdflogger
             ret_t_obj, obj_found = obj_tracking.tracking_store.get_tracking_obj(self.ret)
             if not obj_found:
-                ret_t_obj = rdfl.dump_obj_state(self.ret)
+                ret_t_obj = obj_utils.dump_obj_state(self.ret)
                 caller_stack_entry = wb_stack.wb_stack.get_parent_of_current_entry()
-                rdfl.dump_triple__(ret_t_obj.uri, "<part-of>", caller_stack_entry.uri)
+                ts.dump_triple(ret_t_obj.uri, "<part-of>", caller_stack_entry.uri)
             return self.ret
 
 method_counter = 0 # NB: should be better way to cout method calls
@@ -87,53 +88,56 @@ class MethodCall(wb_stack.WithBlock):
         return new_args, new_kwargs
 
     def handle_end_method_call(self, ret):
-        rdfl = rdflogging.rdflogger
+        ts = fstriplestore.triple_store
+
         ret_obj = ret if not ret is None else obj
 
         caller = wb_stack.wb_stack.get_parent_of_current_entry()
-        ret_t_obj = rdfl.dump_obj_state(ret_obj)
-        rdfl.dump_triple__(ret_t_obj.last_obj_state_uri, "<part-of>", caller.uri)
-        rdfl.dump_triple__(self.uri, "<method-call-return>", ret_t_obj.last_obj_state_uri)
+        ret_t_obj = obj_utils.dump_obj_state(ret_obj)
+        ts.dump_triple(ret_t_obj.last_obj_state_uri, "<part-of>", caller.uri)
+        ts.dump_triple(self.uri, "<method-call-return>", ret_t_obj.last_obj_state_uri)
 
         # catching nested calls values returned after method call executed
         for nested_call_obj in self.nested_call_args:
             t_obj, obj_found = obj_tracking.tracking_store.get_tracking_obj(nested_call_obj.ret)
             if not obj_found:
                 raise Exception("expected nested call return obj to be tracked already")
-            rdfl.dump_triple__(nested_call_obj.uri, "<ret-val>", t_obj.last_obj_state_uri)
+            ts.dump_triple(nested_call_obj.uri, "<ret-val>", t_obj.last_obj_state_uri)
 
     def dump_method_call_arg__(self, c, arg_name, arg_obj, caller_stack_entry):
-        rdfl = rdflogging.rdflogger
+        ts = fstriplestore.triple_store
+
         method_call_obj = self
         
         method_call_uri = method_call_obj.uri
         if isinstance(arg_obj, NestedCall):
-            rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.uri)
-            rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}-name>", '"' + (arg_name if arg_name else '') + '"')
+            ts.dump_triple(method_call_uri, f"<method-call-arg{c}>", arg_obj.uri)
+            ts.dump_triple(method_call_uri, f"<method-call-arg{c}-name>", '"' + (arg_name if arg_name else '') + '"')
         elif isinstance(arg_obj, pd.DataFrame) or isinstance(arg_obj, pd.Series):
             arg_t_obj, obj_found = obj_tracking.tracking_store.get_tracking_obj(arg_obj)
             if not obj_found:
-                arg_t_obj = rdfl.dump_obj_state(arg_obj)
-                rdfl.dump_triple__(arg_t_obj.last_obj_state_uri, "<part-of>", caller_stack_entry.uri)
-            rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_t_obj.last_obj_state_uri)
-            rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}-name>", '"' + (arg_name if arg_name else '') + '"')
+                arg_t_obj = obj_utils.dump_obj_state(arg_obj)
+                ts.dump_triple(arg_t_obj.last_obj_state_uri, "<part-of>", caller_stack_entry.uri)
+            ts.dump_triple(method_call_uri, f"<method-call-arg{c}>", arg_t_obj.last_obj_state_uri)
+            ts.dump_triple(method_call_uri, f"<method-call-arg{c}-name>", '"' + (arg_name if arg_name else '') + '"')
         else:
             pass
         
     def dump_method_call_in__(self, thread_id,
                               method_name, method_signature, method_bound_args,
                               caller_stack_entry):
-        rdfl = rdflogging.rdflogger
+        ts = fstriplestore.triple_store
+
         method_call_obj = self
         
-        thread_uri = rdfl.register_thread(thread_id)
+        #thread_uri = rdfl.register_thread(thread_id)
         method_call_uri = method_call_obj.uri
 
-        rdfl.dump_triple__(method_call_uri, "<method-thread>", thread_uri)
+        #ts.dump_triple(method_call_uri, "<method-thread>", thread_uri)
         global method_counter
-        rdfl.dump_triple__(method_call_uri, "<method-counter>", method_counter); method_counter += 1
-        rdfl.dump_triple__(method_call_uri, "<method-stack-depth>", wb_stack.wb_stack.size())
-        rdfl.dump_triple__(method_call_uri, "<method-stack-trace>", '"' + wb_stack.wb_stack.to_string() + '"')
+        ts.dump_triple(method_call_uri, "<method-counter>", method_counter); method_counter += 1
+        ts.dump_triple(method_call_uri, "<method-stack-depth>", wb_stack.wb_stack.size())
+        ts.dump_triple(method_call_uri, "<method-stack-trace>", '"' + wb_stack.wb_stack.to_string() + '"')
 
         method_display_args = []
         for p_name, p in method_bound_args.arguments.items():
@@ -143,7 +147,7 @@ class MethodCall(wb_stack.WithBlock):
                 method_display_args.append(p_name + " = " + str(p).replace("<", "&lt;").replace(">", "&gt;"))
 
         method_display_s = base64.b64encode(("<i>" + method_name + "</i>" + "  (" + ", ".join(method_display_args) + ")").encode('ascii')).decode('ascii')
-        rdfl.dump_triple__(method_call_uri, "<method-display>", '"' + method_display_s + '"')
+        ts.dump_triple(method_call_uri, "<method-display>", '"' + method_display_s + '"')
         
         #ipdb.set_trace()
         c = 0

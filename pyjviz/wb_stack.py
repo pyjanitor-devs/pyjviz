@@ -1,6 +1,6 @@
 import uuid
 
-from . import rdflogging
+from . import fstriplestore
 
 class WithBlock:
     """
@@ -15,17 +15,18 @@ class WithBlock:
         self.label = label
         self.rdf_type = rdf_type
         self.uri = None
-        self.init_dump__(rdflogging.rdflogger)
+        self.init_dump__()
         
-    def init_dump__(self, rdfl):
+    def init_dump__(self):
+        rdfl = fstriplestore.triple_store
         self.uri = f"<{self.rdf_type}#{str(uuid.uuid4())}>"
         rdf_type_uri = f"<{self.rdf_type}>"
-        rdfl.dump_triple__(self.uri, "rdf:type", rdf_type_uri)
+        rdfl.dump_triple(self.uri, "rdf:type", rdf_type_uri)
         label_obj = f'"{self.label}"' if self.label else 'rdf:nil'
-        rdfl.dump_triple__(self.uri, "rdf:label", label_obj)
+        rdfl.dump_triple(self.uri, "rdf:label", label_obj)
         global wb_stack
         parent_uri = wb_stack.stack_entries__[-1].uri if wb_stack.size() > 0 else "rdf:nil"
-        rdfl.dump_triple__(self.uri, "<part-of>", parent_uri)
+        rdfl.dump_triple(self.uri, "<part-of>", parent_uri)
         self.dump_init_called = True
         
     def __enter__(self):
@@ -34,7 +35,7 @@ class WithBlock:
         return self
 
     def __exit__(self, type, value, traceback):
-        rdflogging.rdflogger.flush__()
+        fstriplestore.triple_store.flush()
         global wb_stack
         wb_stack.pop()
         
