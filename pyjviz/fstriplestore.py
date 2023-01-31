@@ -4,8 +4,11 @@ import tempfile
 import io
 import rdflib
 
+base_uri = 'https://github.com/pyjanitor-devs/pyjviz/rdflog.shacl.ttl#'
+
 class FSTripleOutput:
-    def __init__(self, base_uri, out_fd):
+    def __init__(self, out_fd):
+        global base_uri
         self.base_uri = base_uri
         self.out_fd = out_fd
         
@@ -21,7 +24,7 @@ class FSTripleOutput:
         self.out_fd.flush()
 
 class FSTripleOutputOneShot(FSTripleOutput):
-    def __init__(self, base_uri, output_dir, output_filename):
+    def __init__(self, output_dir, output_filename):
         self.output_fn = None
         if output_dir is None:
             out_fd = io.StringIO()
@@ -34,7 +37,7 @@ class FSTripleOutputOneShot(FSTripleOutput):
                 self.output_fn = os.path.join(output_dir, output_filename)
                 out_fd = open(self.output_fn, "w+")
 
-        super().__init__(base_uri, out_fd)
+        super().__init__(out_fd)
         self.dump_prefixes__()
         
     def get_graph(self):
@@ -43,4 +46,9 @@ class FSTripleOutputOneShot(FSTripleOutput):
         g.parse(self.out_fd)
         return g
         
-            
+triple_store = None
+def set_triple_store__(o):
+    print("setting up triple_store:", o)
+    global triple_store
+    triple_store = o
+

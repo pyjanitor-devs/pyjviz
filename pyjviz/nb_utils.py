@@ -2,7 +2,6 @@ import graphviz
 import IPython.display
 import rdflib
 
-from . import rdflogging
 from . import viz
 
 def show_method_chain(dot_code):

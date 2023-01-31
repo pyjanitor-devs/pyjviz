@@ -6,7 +6,6 @@ import uuid
 import inspect
 from contextlib import nullcontext
 
-from . import rdflogging
 from . import obj_tracking
 from . import wb_stack
 from . import wb_stack_entries
@@ -28,7 +27,6 @@ class DataFrameFunc:
         else:
             method_ctx = nullcontext()
 
-        rdfl = rdflogging.rdflogger
         with method_ctx:
             if not isinstance(method_ctx, nullcontext):
                 new_args, new_kwargs = method_ctx.handle_start_method_call(self.func_name, self.func_signature, args, kwargs)

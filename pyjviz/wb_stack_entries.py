@@ -27,11 +27,12 @@ class NestedCall(wb_stack.WithBlock):
         with self:
             print("NestedCall called")
             self.ret = self.arg_func(*args, **kwargs)
-            ret_t_obj = obj_tracking.tracking_store.get_tracking_obj(self.ret)
-            if ret_t_obj.last_obj_state_uri is None:
-                caller_stack_entry = get_parent_of_current_entry(wb_stack.stack)
-                rdfl = rdflogging.rdflogger
-                ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(self.ret, ret_t_obj, caller_stack_entry)
+            rdfl = rdflogging.rdflogger
+            ret_t_obj, obj_found = obj_tracking.tracking_store.get_tracking_obj(self.ret)
+            if not obj_found:
+                ret_t_obj = rdfl.dump_obj_state(self.ret)
+                caller_stack_entry = wb_stack.wb_stack.get_parent_of_current_entry()
+                rdfl.dump_triple__(ret_t_obj.uri, "<part-of>", caller_stack_entry.uri)
             return self.ret
 
 method_counter = 0 # NB: should be better way to cout method calls
@@ -42,9 +43,7 @@ class MethodCall(wb_stack.WithBlock):
         self.have_nested_call_args = have_nested_call_args
         self.nested_call_args = []
         
-    def handle_start_method_call(self, method_name, method_signature, method_args, method_kwargs):
-        rdfl = rdflogging.rdflogger
-        
+    def handle_start_method_call(self, method_name, method_signature, method_args, method_kwargs):        
         all_args = method_args
         self.method_signature = method_signature
         #ipdb.set_trace()
@@ -91,19 +90,17 @@ class MethodCall(wb_stack.WithBlock):
         rdfl = rdflogging.rdflogger
         ret_obj = ret if not ret is None else obj
 
-        ret_t_obj = obj_tracking.tracking_store.get_tracking_obj(ret_obj)
-
         caller = wb_stack.wb_stack.get_parent_of_current_entry()
-        ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(ret_obj, ret_t_obj, caller)
+        ret_t_obj = rdfl.dump_obj_state(ret_obj)
+        rdfl.dump_triple__(ret_t_obj.last_obj_state_uri, "<part-of>", caller.uri)
         rdfl.dump_triple__(self.uri, "<method-call-return>", ret_t_obj.last_obj_state_uri)
 
         # catching nested calls values returned after method call executed
         for nested_call_obj in self.nested_call_args:
-            t_obj = obj_tracking.tracking_store.get_tracking_obj(nested_call_obj.ret)
-            if t_obj.last_obj_state_uri is None:
-                raise Exception("expected to have uri assigned")
+            t_obj, obj_found = obj_tracking.tracking_store.get_tracking_obj(nested_call_obj.ret)
+            if not obj_found:
+                raise Exception("expected nested call return obj to be tracked already")
             rdfl.dump_triple__(nested_call_obj.uri, "<ret-val>", t_obj.last_obj_state_uri)
-
 
     def dump_method_call_arg__(self, c, arg_name, arg_obj, caller_stack_entry):
         rdfl = rdflogging.rdflogger
@@ -114,12 +111,11 @@ class MethodCall(wb_stack.WithBlock):
             rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_obj.uri)
             rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}-name>", '"' + (arg_name if arg_name else '') + '"')
         elif isinstance(arg_obj, pd.DataFrame) or isinstance(arg_obj, pd.Series):
-            arg_t_obj = obj_tracking.tracking_store.get_tracking_obj(arg_obj)
-            if arg_t_obj.last_obj_state_uri is None:
-                arg_t_obj.last_obj_state_uri = rdfl.dump_obj_state(arg_obj, arg_t_obj, caller_stack_entry)
-            arg_uri = arg_t_obj.last_obj_state_uri
-            #ipdb.set_trace()
-            rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_uri)
+            arg_t_obj, obj_found = obj_tracking.tracking_store.get_tracking_obj(arg_obj)
+            if not obj_found:
+                arg_t_obj = rdfl.dump_obj_state(arg_obj)
+                rdfl.dump_triple__(arg_t_obj.last_obj_state_uri, "<part-of>", caller_stack_entry.uri)
+            rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}>", arg_t_obj.last_obj_state_uri)
             rdfl.dump_triple__(method_call_uri, f"<method-call-arg{c}-name>", '"' + (arg_name if arg_name else '') + '"')
         else:
             pass

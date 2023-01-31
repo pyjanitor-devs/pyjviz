@@ -14,14 +14,14 @@ from io import StringIO
 
 import graphviz
 
-from . import rdflogging
+from . import fstriplestore
 from . import nb_utils
 
 def uri_to_dot_id(uri):
     return str(hash(uri)).replace("-", "d")
 
-def dump_subgraph(g, cc_uri, out_fd):    
-    subgraphs = [r for r in g.query("select ?pp ?pl { ?pp rdf:type <CodeBlock>; rdf:label ?pl; <part-of> ?sg }", base = rdflogging.base_uri, initBindings = {'sg': cc_uri})]
+def dump_subgraph(g, cc_uri, out_fd):
+    subgraphs = [r for r in g.query("select ?pp ?pl { ?pp rdf:type <CodeBlock>; rdf:label ?pl; <part-of> ?sg }", base = fstriplestore.base_uri, initBindings = {'sg': cc_uri})]
     for subgraph, subgraph_label in subgraphs:
         if subgraph_label != rdflib.RDF.nil:
             print(f"""
@@ -38,7 +38,7 @@ def dump_subgraph(g, cc_uri, out_fd):
           optional {?show_obj <df-head> ?df_head} .
         }
         """
-        for show_obj, obj_type, df_shape, df_head in g.query(rq, base = rdflogging.base_uri, initBindings = {'sg': subgraph}):
+        for show_obj, obj_type, df_shape, df_head in g.query(rq, base = fstriplestore.base_uri, initBindings = {'sg': subgraph}):
             print(f"""
             node_{uri_to_dot_id(show_obj)} [
                 fillcolor="#44056022"
@@ -65,7 +65,7 @@ def dump_subgraph(g, cc_uri, out_fd):
           optional {?obj_state <df-head> ?df_head} .
         }
         """
-        for obj_state, version, obj_type, obj_uudi, df_shape, df_head in g.query(rq, base = rdflogging.base_uri, initBindings = {'sg': subgraph}):
+        for obj_state, version, obj_type, obj_uudi, df_shape, df_head in g.query(rq, base = fstriplestore.base_uri, initBindings = {'sg': subgraph}):
             print(f"""
             node_{uri_to_dot_id(obj_state)} [
                 color="#88000022"
@@ -93,7 +93,7 @@ def dump_subgraph(g, cc_uri, out_fd):
                            <part-of>+ ?sg .
         }
         """
-        for method_call_obj, method_name, method_display, method_count, method_stack_depth, method_stack_trace in g.query(rq, base = rdflogging.base_uri, initBindings = {'sg': subgraph}):
+        for method_call_obj, method_name, method_display, method_count, method_stack_depth, method_stack_trace in g.query(rq, base = fstriplestore.base_uri, initBindings = {'sg': subgraph}):
             method_display = base64.b64decode(method_display.toPython().encode('ascii')).decode('ascii')
             #method_display = "<br/>".join(textwrap.wrap(method_display, width = 40))
             print(f"""
@@ -105,7 +105,7 @@ def dump_subgraph(g, cc_uri, out_fd):
           ?nested_call rdf:type <NestedCall>; <part-of>+ ?sg.
         }
         """
-        for nested_call, sg in g.query(rq, base = rdflogging.base_uri, initBindings = {'sg': subgraph}):
+        for nested_call, sg in g.query(rq, base = fstriplestore.base_uri, initBindings = {'sg': subgraph}):
             print(f"""
             node_{uri_to_dot_id(nested_call)} [ label = "NestedCall" ];
             """, file = out_fd)
@@ -155,7 +155,7 @@ def dump_dot_code(g, vertical, show_objects):
           optional { ?method_call_obj <method-call-arg3> ?arg3_obj; <method-call-arg3-name> ?arg3_name }
         }
         """
-        for method_call_obj, arg0_obj, arg0_name, ret_obj, arg1_name, arg1_obj, arg2_name, arg2_obj, arg3_name, arg3_obj in g.query(rq, base = rdflogging.base_uri):
+        for method_call_obj, arg0_obj, arg0_name, ret_obj, arg1_name, arg1_obj, arg2_name, arg2_obj, arg3_name, arg3_obj in g.query(rq, base = fstriplestore.base_uri):
             print(f"""
             node_{uri_to_dot_id(arg0_obj)} -> node_{uri_to_dot_id(method_call_obj)} [label="{arg0_name}"];
             node_{uri_to_dot_id(method_call_obj)} -> node_{uri_to_dot_id(ret_obj)};
@@ -181,7 +181,7 @@ def dump_dot_code(g, vertical, show_objects):
           ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid; <obj-pyid> ?obj_pyid
         }
         """
-        for obj, obj_type, obj_uuid, obj_pyid in g.query(rq, base = rdflogging.base_uri):
+        for obj, obj_type, obj_uuid, obj_pyid in g.query(rq, base = fstriplestore.base_uri):
             print(f"""
             node_{uri_to_dot_id(obj)} [
             color="#88000022"
@@ -195,7 +195,7 @@ def dump_dot_code(g, vertical, show_objects):
         rq = """
         select ?obj ?obj_state { ?obj_state rdf:type <ObjState>; <obj> ?obj }
         """
-        for obj, obj_state in g.query(rq, base = rdflogging.base_uri):
+        for obj, obj_state in g.query(rq, base = fstriplestore.base_uri):
             print(f"""
             node_{uri_to_dot_id(obj)} -> node_{uri_to_dot_id(obj_state)} [label="obj_state"];
             """, file = out_fd)
@@ -204,7 +204,7 @@ def dump_dot_code(g, vertical, show_objects):
         rq = """
         select ?obj ?obj_state { ?obj_state <ret-val> ?obj }
         """
-        for obj, obj_state in g.query(rq, base = rdflogging.base_uri):
+        for obj, obj_state in g.query(rq, base = fstriplestore.base_uri):
             print(f"""
             node_{uri_to_dot_id(obj)} -> node_{uri_to_dot_id(obj_state)} [label="ret_val"];
             """, file = out_fd)
@@ -215,7 +215,7 @@ def dump_dot_code(g, vertical, show_objects):
                     ?pred ?to_obj 
         }
         """
-        for from_obj, to_obj, pred in g.query(rq, base = rdflogging.base_uri):
+        for from_obj, to_obj, pred in g.query(rq, base = fstriplestore.base_uri):
             pred_s = pred.toPython().split('/')[-1]
             print(f"""
             node_{uri_to_dot_id(to_obj)} -> node_{uri_to_dot_id(from_obj)} [label="{pred_s}", penwidth=2.5];
@@ -228,7 +228,7 @@ def dump_dot_code(g, vertical, show_objects):
           ?from_obj ?pred ?to_obj 
         }
         """
-        for from_obj, to_obj, pred in g.query(rq, base = rdflogging.base_uri):
+        for from_obj, to_obj, pred in g.query(rq, base = fstriplestore.base_uri):
             pred_s = pred.toPython().split('/')[-1]
             print(f"""
             node_{uri_to_dot_id(from_obj)} -> node_{uri_to_dot_id(to_obj)} [label="{pred_s}", style="dotted"];
@@ -240,11 +240,11 @@ def dump_dot_code(g, vertical, show_objects):
 
 def print_dot(vertical = False, show_objects = False):
     #ipdb.set_trace()
-    g = rdflogging.rdflogger.triples_sink.get_graph()
+    g = fstriplestore.triple_store.get_graph()
     print(dump_dot_code(g, vertical = vertical, show_objects = show_objects))
 
 def save_dot(dot_output_fn = None, vertical = False, show_objects = False):
-    ts = rdflogging.rdflogger.triples_sink
+    ts = fstriplestore.triple_store
     if dot_output_fn is None:
         if hasattr(ts, 'output_fn') and ts.output_fn is not None:
             ttl_output_fn = ts.output_fn
@@ -258,7 +258,7 @@ def save_dot(dot_output_fn = None, vertical = False, show_objects = False):
     gvz.render(dot_output_fn, format = 'svg', engine = 'dot')
 
 def show(vertical = False, show_objects = False):
-    ts = rdflogging.rdflogger.triples_sink
+    ts = fstriplestore.triple_store
     if not (hasattr(ts, 'output_fn') and ts.output_fn is None):
         raise Exception("triple sink is not in-memory file")
 
