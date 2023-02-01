@@ -32,7 +32,11 @@ class TrackingStore:
     def __init__(self):
         self.tracking_objs = {} # id(obj) -> TrackingObj
 
-    def get_tracking_obj(self, obj):
+    def find_tracking_obj(self, obj):
+        t_obj, obj_found = self.get_tracking_obj(obj, add_missing = False)
+        return t_obj
+        
+    def get_tracking_obj(self, obj, add_missing = True):
         obj_found = False
         obj_pyid = id(obj)
         tracking_obj = None
@@ -42,7 +46,7 @@ class TrackingStore:
             if candidate_tracking_obj.is_alive():
                 tracking_obj = candidate_tracking_obj
 
-        if tracking_obj is None:
+        if tracking_obj is None and add_missing:
             tracking_obj = self.tracking_objs[obj_pyid] = TrackingObj(obj)
 
         return tracking_obj, obj_found
