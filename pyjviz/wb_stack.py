@@ -110,6 +110,21 @@ class WithBlockStack:
                     break
 
         return ret
+
+    def get_parent_nested_call(self):
+        ret = None
+
+        if self.size() > 0:
+            for se in reversed(self.stack_entries__):
+                if se.rdf_type == "MethodCall":
+                    continue
+                elif se.rdf_type == "NestedCall":
+                    ret = se
+                    break
+                elif se.rdf_type == "CodeBlock":
+                    continue
+        return ret
+        
     
 wb_stack = WithBlockStack()
 def get_wb_stack():
