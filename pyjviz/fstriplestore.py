@@ -55,7 +55,10 @@ class FSTripleOutputOneShot(FSTripleOutput):
         self.out_fd.seek(0)
         g.parse(self.out_fd)
         return g
-        
+
+class FSTripleOutputNull:
+    def dump_triple(self, s, p, o): pass
+    
 triple_store = None
 def set_triple_store__(o):
     print("setting up triple_store:", o)
