@@ -45,13 +45,6 @@ class WithBlockStack:
 
     def to_string(self):
         return ":".join([f"{x.label}@{x.rdf_type}" for x in self.stack_entries__])
-
-    #def to_methods_calls__(self):
-    #    ret = [se.label for se in self.stack_entries__ if se.rdf_type == "MethodCall"]
-    #    return ret
-
-    #def to_methods_calls_string(self):
-    #    return ":".join(self.to_methods_calls__())
     
     def size(self):
         return len(self.stack_entries__)
@@ -72,28 +65,13 @@ class WithBlockStack:
             if se.rdf_type == "MethodCall":
                 ret = se
                 break
-            elif se.rdf_type == "NestedCall":
-                ret = None
-                break
             elif se.rdf_type == "CodeBlock":
                 continue
 
         return ret
 
     def get_parent_of_current_entry(self):
-        ret = None
-
-        if self.size() > 0:
-            for se in reversed(self.stack_entries__):
-                if se.rdf_type == "MethodCall":
-                    ret = se
-                    break
-                elif se.rdf_type == "NestedCall":
-                    continue
-                elif se.rdf_type == "CodeBlock":
-                    ret = se
-                    break
-
+        ret = self.stack_entries__[-1] if self.size() > 0 else None
         return ret
         
     
