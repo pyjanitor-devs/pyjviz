@@ -1,4 +1,5 @@
 import ipdb
+import inspect, dis
 import janitor
 import pandas_flavor as pf
 import pyjviz
@@ -13,6 +14,18 @@ def a0(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(df)
     #return df
 
+def test_f(x):
+    #print(x)
+    #print(id(x))
+    #curr_frame = inspect.currentframe()
+    #print(dis.dis(curr_frame.f_code))
+    #print(curr_frame.f_code.co_varnames)
+    #collect_ids = set([id(curr_frame.f_locals.get(i)) for i in curr_frame.f_code.co_varnames])
+    #print(collect_ids)
+    #print([curr_frame.f_locals.get(i) for i in collect_ids])
+    
+    return x.a
+    
 if __name__ == "__main__":
     df = pd.DataFrame({'a': range(10)})
 
@@ -27,7 +40,7 @@ if __name__ == "__main__":
         return x.a + x.a
 
     #A = df.a
-    if 1:
+    if 0:
         with pyjviz.CB("c1") as cc:
             df2 = df.assign(c = df.a)
             #df2 = df.assign(c = df.a, cc = lambda x: x.a)
@@ -37,7 +50,8 @@ if __name__ == "__main__":
 
     if 1:
         with pyjviz.CB("c2") as cc:
-            df2 = df.assign(c = lambda x: x.a)
+            #df2 = df.assign(c = lambda x: x.a)
+            df2 = df.assign(c = test_f)
             #df2 = df.assign(c = df.a, cc = lambda x: x.a)
             #df2 = df.assign(c = df.a, b = lambda x: x.c, bb = lambda x: x.a + x.b + x.c, d = lambda x: x.a)
             #df2 = df.assign(c = df.a, b = test_func)
@@ -46,4 +60,4 @@ if __name__ == "__main__":
     print(df.describe())
 
     #ipdb.set_trace()
-    pyjviz.save_dot(vertical = True, show_objects = False)
+    pyjviz.save_dot(vertical = True, show_objects = True)
