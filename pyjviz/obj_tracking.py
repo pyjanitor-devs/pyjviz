@@ -32,6 +32,10 @@ class TrackingStore:
     def __init__(self):
         self.tracking_objs = {} # id(obj) -> TrackingObj
 
+    def get_obj_uuid(self, obj_pyid):
+        t_obj = self.tracking_objs.get(obj_pyid)
+        return t_obj.uuid if t_obj and t_obj.is_alive() else None
+        
     def find_tracking_obj(self, obj):
         t_obj, obj_found = self.get_tracking_obj(obj, add_missing = False)
         return t_obj
