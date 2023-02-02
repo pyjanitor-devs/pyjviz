@@ -24,6 +24,8 @@ class DataFrameFunc:
         latest_method_call = wb_stack.wb_stack.get_latest_method_call()
         if latest_method_call is None:
             method_ctx = wb_stack_entries.MethodCall(self.func_name, False)
+        #elif latest_method_call.label == 'assign':
+        #    method_ctx = wb_stack_entries.MethodCall(self.func_name, False)
         else:
             method_ctx = nullcontext()
 
@@ -69,7 +71,7 @@ def enable_pf_pandas__():
     
     pd.DataFrame.__init__ = lambda *x, **y: aux_init(old_DataFrame_init, *x, **y)
     
-    if 1:
+    if 0:
         old_getattr = pd.DataFrame.__getattr__
         pd.DataFrame.__getattr__ = lambda *x, **y: DataFrameFunc("df-projection", old_getattr)(*x, *y)
    
@@ -90,8 +92,6 @@ def enable_pf_pandas__():
     old_rename = pd.DataFrame.rename; del pd.DataFrame.rename
     old_assign = pd.DataFrame.assign; del pd.DataFrame.assign
     old_copy = pd.DataFrame.copy
-    
-    old_combine_first = pd.Series.combine_first
     
     @pf.register_dataframe_method
     def dropna(df: pd.DataFrame, **kwargs) -> pd.DataFrame:
@@ -125,11 +125,13 @@ def enable_pf_pandas__():
         print("new copy:", x, y)
         ret = old_copy(df, *x, **y)
         return ret
-    
-    @pf.register_series_method
-    def combine_first(s: pd.Series, other) -> pd.Series:
-        ret = old_combine_first(s, other)
-        return ret
+
+    if 0:
+        old_combine_first = pd.Series.combine_first    
+        @pf.register_series_method
+        def combine_first(s: pd.Series, other) -> pd.Series:
+            ret = old_combine_first(s, other)
+            return ret
 
     if 0:
         old_apply = pd.Series.apply
