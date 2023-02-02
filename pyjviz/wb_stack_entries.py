@@ -10,29 +10,13 @@ from . import fstriplestore
 from . import obj_tracking
 from . import obj_utils
 
+from .nested_call import NestedCall
+
 class CodeBlock(wb_stack.WithBlock):
     def __init__(self, label = None, rdf_type = "CodeBlock"):
         super().__init__(label = label, rdf_type = rdf_type)
 
 CB = CodeBlock
-
-class NestedCall(wb_stack.WithBlock):
-    def __init__(self, arg_name, arg_func):
-        super().__init__(label = f"nested_call({arg_name})", rdf_type = "NestedCall")        
-        #ipdb.set_trace()
-        self.arg_name = arg_name
-        self.arg_func = arg_func
-        self.ret = None
-        
-    def __call__(self, *args, **kwargs):
-        ts = fstriplestore.triple_store
-        with self:
-            print("NestedCall called")
-            self.ret = self.arg_func(*args, **kwargs)
-            ret_t_obj, obj_found = obj_tracking.tracking_store.get_tracking_obj(self.ret)
-            if not obj_found:
-                ret_t_obj = obj_utils.dump_obj_state(self.ret)
-            return self.ret
 
 method_counter = 0 # NB: should be better way to cout method calls
 class MethodCall(wb_stack.WithBlock):
