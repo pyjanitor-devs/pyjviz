@@ -150,9 +150,9 @@ def dump_dot_code(g, vertical, show_objects):
           ?method_call_obj rdf:type <MethodCall>;
                            <method-call-arg0> ?arg0_obj; <method-call-arg0-name> ?arg0_name;
                            <method-call-return> ?ret_obj .
-          optional { ?method_call_obj <method-call-arg1> ?arg1_obj; <method-call-arg1-name> ?arg1_name }
-          optional { ?method_call_obj <method-call-arg2> ?arg2_obj; <method-call-arg2-name> ?arg2_name }
-          optional { ?method_call_obj <method-call-arg3> ?arg3_obj; <method-call-arg3-name> ?arg3_name }
+          optional { ?arg1_obj rdf:type <ObjState>. ?method_call_obj <method-call-arg1> ?arg1_obj; <method-call-arg1-name> ?arg1_name }
+          optional { ?arg2_obj rdf:type <ObjState>. ?method_call_obj <method-call-arg2> ?arg2_obj; <method-call-arg2-name> ?arg2_name }
+          optional { ?arg3_obj rdf:type <ObjState>. ?method_call_obj <method-call-arg3> ?arg3_obj; <method-call-arg3-name> ?arg3_name }
         }
         """
         for method_call_obj, arg0_obj, arg0_name, ret_obj, arg1_name, arg1_obj, arg2_name, arg2_obj, arg3_name, arg3_obj in g.query(rq, base = fstriplestore.base_uri):
@@ -201,14 +201,37 @@ def dump_dot_code(g, vertical, show_objects):
             """, file = out_fd)
             
     if 1:
+        # taking care of NestedCall arrows
         rq = """
-        select ?obj ?obj_state { ?obj_state <ret-val> ?obj }
+        select ?method_call ?arg0 ?nested_call1_ret_obj_state ?arg1_name ?nested_call1 { 
+          ?nested_call1_ret_obj_state rdf:type <ObjState>.
+          ?nested_call1 rdf:type <NestedCall>; <ret-val> ?nested_call1_ret_obj_state.
+          ?method_call rdf:type <MethodCall>; 
+                       <method-call-arg0> ?arg0;
+                       <method-call-arg1> ?nested_call1;
+                       <method-call-arg1-name> ?arg1_name.
+        }
         """
-        for obj, obj_state in g.query(rq, base = fstriplestore.base_uri):
+        for method_call, arg0, nested_call1_ret_obj_state, arg1_name, nested_call1 in g.query(rq, base = fstriplestore.base_uri):
             print(f"""
-            node_{uri_to_dot_id(obj)} -> node_{uri_to_dot_id(obj_state)} [label="ret_val"];
+            node_{uri_to_dot_id(nested_call1_ret_obj_state)} -> node_{uri_to_dot_id(method_call)} [label="{arg1_name.toPython()}"];
+            node_{uri_to_dot_id(nested_call1)} -> node_{uri_to_dot_id(nested_call1_ret_obj_state)};
+            node_{uri_to_dot_id(arg0)} -> node_{uri_to_dot_id(nested_call1)} [label="REF"];
             """, file = out_fd)
 
+        # nested call refs
+        rq = """
+        select ?nested_call ?ref_obj_state {
+          ?nested_call rdf:type <NestedCall>.
+          ?ref_obj_state rdf:type <ObjState>.
+          ?nested_call <nested-call-ref> ?ref_obj_state.
+        }
+        """
+        for nested_call, ref_obj_state in g.query(rq, base = fstriplestore.base_uri):
+            print(f"""
+            node_{uri_to_dot_id(ref_obj_state)} -> node_{uri_to_dot_id(nested_call)} [label="ref"];
+            """, file = out_fd)
+            
         rq = """
         select ?from_obj ?to_obj ?pred { 
           ?from_obj <df-projection>|<to_datetime> ?to_obj;
