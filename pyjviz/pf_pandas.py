@@ -50,9 +50,9 @@ class PandasFlavorMethodCallFactory:
         if latest_method_call is None:
             will_have_nested_call_args = len([x for x in method_kwargs.values() if inspect.isfunction(x)]) > 0
             ret = wb_stack_entries.MethodCall(method_name, will_have_nested_call_args)
-        elif latest_method_call.label == 'assign' and latest_method_call.have_nested_call_args:
-            will_have_nested_call_args = len([x for x in method_kwargs.values() if inspect.isfunction(x)]) > 0
-            ret = wb_stack_entries.MethodCall(method_name, will_have_nested_call_args)
+        #elif latest_method_call.label == 'assign' and latest_method_call.have_nested_call_args:
+        #    will_have_nested_call_args = len([x for x in method_kwargs.values() if inspect.isfunction(x)]) > 0
+        #    ret = wb_stack_entries.MethodCall(method_name, will_have_nested_call_args)
         else:
             ret = nullcontext()
 
@@ -71,7 +71,7 @@ def enable_pf_pandas__():
     
     pd.DataFrame.__init__ = lambda *x, **y: aux_init(old_DataFrame_init, *x, **y)
     
-    if 0:
+    if 1:
         old_getattr = pd.DataFrame.__getattr__
         pd.DataFrame.__getattr__ = lambda *x, **y: DataFrameFunc("df-projection", old_getattr)(*x, *y)
    
