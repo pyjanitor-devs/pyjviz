@@ -10,24 +10,35 @@ class profile_objs:
         self.collected_ids = set()
 
     def collect_obj_ids(self, frame, event, arg):
-        sys.setprofile(self.collect_obj_ids)
+        trs = obj_tracking.tracking_store
 
         #print(frame.f_code.co_name)
-        #global_ids = [id(frame.f_globals.get(x)) for x in frame.f_code.co_names if x in frame.f_globals]
-        global_ids = [obj_tracking.tracking_store.get_obj_uuid(id(frame.f_globals.get(x))) for x in frame.f_code.co_names if x in frame.f_globals]
+        gs = frame.f_globals
+        #global_ids = [trs.get_obj_uuid(id(gs.get(x))) for x in frame.f_code.co_names if x in gs]
+        global_ids = [(trs.get_uuid(id(gs.get(x))), trs.get_last_obj_state_uri(id(gs.get(x)))) for x in frame.f_code.co_names if x in gs]
         self.collected_ids.update(global_ids)
-        #local_ids = [id(frame.f_locals.get(x)) for x in frame.f_code.co_varnames if x in frame.f_locals]
-        local_ids = [obj_tracking.tracking_store.get_obj_uuid(id(frame.f_locals.get(x))) for x in frame.f_code.co_varnames if x in frame.f_locals]
+
+        ls = frame.f_locals
+        #local_ids = [trs.get_obj_uuid(id(ls.get(x))) for x in frame.f_code.co_varnames if x in ls]
+        local_ids = [(trs.get_uuid(id(ls.get(x))),trs.get_last_obj_state_uri(id(ls.get(x)))) for x in frame.f_code.co_varnames if x in ls]
         self.collected_ids.update(local_ids)
-    
+
+        sys.setprofile(self.collect_obj_ids)
+
     def __enter__(self):
         sys.setprofile(self.collect_obj_ids)
 
     def __exit__(self, type, value, traceback):
         sys.setprofile(None)
 
-    def dump(self):
+    def dump_nested_call_refs(self, nested_call_uri):
+        print("nested call:", nested_call_uri)
         print("collected ids:", self.collected_ids)
+        ts = fstriplestore.triple_store
+
+        for _, ref_obj_state_uri in self.collected_ids:
+            if ref_obj_state_uri:
+                ts.dump_triple(nested_call_uri, "<nested-call-ref>", ref_obj_state_uri)
 
 class NestedCall(wb_stack.WithBlock):
     """
@@ -63,10 +74,9 @@ class NestedCall(wb_stack.WithBlock):
         with ctx:
             self.ret = self.arg_func(*args, **kwargs)
 
-        ctx.dump()
-            
+        ctx.dump_nested_call_refs(self.uri)
+
         ret_t_obj, obj_found = obj_tracking.tracking_store.get_tracking_obj(self.ret)
         if not obj_found:
             ret_t_obj = obj_utils.dump_obj_state(self.ret)
         return self.ret
-
