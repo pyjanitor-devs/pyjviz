@@ -11,8 +11,8 @@ import pandas as pd
 @pf.register_dataframe_method
 def a0(df: pd.DataFrame) -> pd.DataFrame:
     print("a0")
-    return pd.DataFrame(df)
-    #return df
+    #return pd.DataFrame(df)
+    return df
 
 def test_f(x):
     #print(x)
@@ -22,8 +22,7 @@ def test_f(x):
     #print(curr_frame.f_code.co_varnames)
     #collect_ids = set([id(curr_frame.f_locals.get(i)) for i in curr_frame.f_code.co_varnames])
     #print(collect_ids)
-    #print([curr_frame.f_locals.get(i) for i in collect_ids])
-    
+    #print([curr_frame.f_locals.get(i) for i in collect_ids])    
     return x.a
     
 if __name__ == "__main__":
@@ -40,7 +39,7 @@ if __name__ == "__main__":
         return x.a + x.a
 
     #A = df.a
-    if 0:
+    if 1:
         with pyjviz.CB("c1") as cc:
             df2 = df.assign(c = df.a)
             #df2 = df.assign(c = df.a, cc = lambda x: x.a)
@@ -50,8 +49,9 @@ if __name__ == "__main__":
 
     if 1:
         with pyjviz.CB("c2") as cc:
-            #df2 = df.assign(c = lambda x: x.a)
-            df2 = df.assign(c = test_f)
+            aux_df = pd.DataFrame({'b': range(5)}).a0()
+            df2 = df.assign(c = lambda x: x.a + aux_df.shape[0])
+            #df2 = df.assign(c = test_f)
             #df2 = df.assign(c = df.a, cc = lambda x: x.a)
             #df2 = df.assign(c = df.a, b = lambda x: x.c, bb = lambda x: x.a + x.b + x.c, d = lambda x: x.a)
             #df2 = df.assign(c = df.a, b = test_func)
@@ -60,4 +60,4 @@ if __name__ == "__main__":
     print(df.describe())
 
     #ipdb.set_trace()
-    pyjviz.save_dot(vertical = True, show_objects = True)
+    pyjviz.save_dot(vertical = True, show_objects = False)
