@@ -33,7 +33,7 @@ def dump_obj_state(obj, caller_stack_entry = None):
 def dump_DataFrame_obj_state(obj_state_uri, df, kwargs = {'show-head': True}):
     fstriplestore.triple_store.dump_triple(obj_state_uri, "<df-shape>", f'"{df.shape}"')
     if kwargs.get('show-head', False) == True:
-        df_head_html = df.head().applymap(lambda x: textwrap.shorten(str(x), 50)).to_html().replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;").replace("\n", "&#10;")
+        df_head_html = df.head(10).applymap(lambda x: textwrap.shorten(str(x), 50)).to_html().replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;").replace("\n", "&#10;")
         fstriplestore.triple_store.dump_triple(obj_state_uri, "<df-head>", '"' + df_head_html + '"')
 
 def dump_Series_obj_state(obj_state_uri, s):
