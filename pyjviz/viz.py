@@ -2,7 +2,7 @@
 # there is no dependency of this code to other part of pyjanitor
 #
 import ipdb
-import os.path
+import os.path, tempfile
 import collections
 import html
 import sys, base64
@@ -32,13 +32,23 @@ def dump_subgraph(g, cc_uri, out_fd):
         dump_subgraph(g, subgraph, out_fd)
         
         rq = """
-        select ?show_obj ?obj_type ?df_shape ?df_head { 
+        select ?show_obj ?obj_type ?df_shape ?df_head ?df_im { 
           ?show_obj rdf:type <ShowObj>; rdf:type ?obj_type; <part-of> ?sg.
-          ?show_obj <df-shape> ?df_shape .
-          optional {?show_obj <df-head> ?df_head} .
+          optional {?show_obj <df-shape> ?df_shape}
+          optional {?show_obj <df-head> ?df_head}
+          optional {?show_obj <df-plot-im> ?df_im}
         }
         """
-        for show_obj, obj_type, df_shape, df_head in g.query(rq, base = fstriplestore.base_uri, initBindings = {'sg': subgraph}):
+        for show_obj, obj_type, df_shape, df_head, df_im in g.query(rq, base = fstriplestore.base_uri, initBindings = {'sg': subgraph}):
+            if 0:
+                with tempfile.NamedTemporaryFile(dir = './pyjviz-test-output', suffix = '.html', delete = False) as temp_fp:
+                    temp_fp.write(df_head.toPython().encode('ascii'))
+
+            if 1:
+                with tempfile.NamedTemporaryFile(dir = './pyjviz-test-output', suffix = '.html', delete = False) as temp_fp:
+                    temp_fp.write(("<img src='data:image/png;base64," + df_im.toPython() + "'></img>").encode('ascii'))
+                
+                
             print(f"""
             node_{uri_to_dot_id(show_obj)} [
                 fillcolor="#44056022"
@@ -47,10 +57,10 @@ def dump_subgraph(g, cc_uri, out_fd):
                          <tr> <td> <b>{show_obj.split('/')[-1]}</b><br/>DataFrame {df_shape}</td> </tr>
                          </table>>
                 href="javascript: 
-                {{ let w = window.open('', '_blank', 'width=800,height=200');
-                  /* let ii= `&lt;img src=&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==&apos;&gt;&lt;/img&gt;`; */
-                  let ii = `{df_head}`;
-                  w.document.write(ii); }}
+                {{ 
+                  /* alert(location.pathname); */
+                  let w = window.open('{os.path.basename(temp_fp.name)}', '_blank', 'width=900,height=500');
+                }}
                  "
                 ];
 
@@ -66,6 +76,13 @@ def dump_subgraph(g, cc_uri, out_fd):
         }
         """
         for obj_state, version, obj_type, obj_uudi, df_shape, df_head in g.query(rq, base = fstriplestore.base_uri, initBindings = {'sg': subgraph}):
+            #ipdb.set_trace()
+            with tempfile.NamedTemporaryFile(dir = './pyjviz-test-output', suffix = '.html', delete = False) as temp_fp:
+                if df_head:
+                    temp_fp.write(df_head.toPython().replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "'").replace("&#10;", "\n").encode('ascii'))
+                else:
+                    temp_fp.write('NONE'.encode('ascii'))
+            
             print(f"""
             node_{uri_to_dot_id(obj_state)} [
                 color="#88000022"
@@ -74,10 +91,9 @@ def dump_subgraph(g, cc_uri, out_fd):
                          <tr> <td> <b>{obj_state.split('/')[-1]}</b><br/>{obj_type} {df_shape} {version}</td> </tr>
                          </table>>
                 href="javascript: 
-                {{ let w = window.open('', '_blank', 'width=800,height=200');
-                  /* let ii= `&lt;img src=&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==&apos;&gt;&lt;/img&gt;`; */
-                  let ii = `{df_head}`;
-                  w.document.write(ii); }}
+                {{ 
+                  /*alert(location.pathname);*/
+                  let w = window.open('{os.path.basename(temp_fp.name)}', '_blank', 'width=800,height=200'); }}
                  "
                 ];
 
