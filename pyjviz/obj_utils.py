@@ -1,5 +1,7 @@
+#import ipdb
 import textwrap
 import pandas as pd
+import io, base64
 
 from . import fstriplestore
 from . import obj_tracking
@@ -20,7 +22,9 @@ def dump_obj_state(obj):
     fstriplestore.triple_store.dump_triple(obj_state_uri, "<version>", f'"{t_obj.last_version_num}"')
     t_obj.last_version_num += 1
 
-    output_type = 'head'
+    pyjviz_opts = stack_entry.pyjviz_opts
+    key_s = 'obj-state-output-type'
+    output_type = pyjviz_opts.get(key_s) if key_s in pyjviz_opts else 'head'
     if isinstance(obj, pd.DataFrame):
         dump_DataFrame_obj_state(obj_state_uri, obj, output_type)
     elif isinstance(obj, pd.Series):
@@ -40,6 +44,8 @@ def dump_DataFrame_obj_state(obj_state_uri, df, output_type):
         out_fd = io.BytesIO()
         fig = df.plot().get_figure()
         fig.savefig(out_fd)
+        #ipdb.set_trace()
+        im_s = base64.b64encode(out_fd.getvalue()).decode('ascii')
         fstriplestore.triple_store.dump_triple(obj_state_uri, '<df-plot>', '"' + im_s + '"')
     else:
         raise Exception(f"unknown output_type: {output_type}")
