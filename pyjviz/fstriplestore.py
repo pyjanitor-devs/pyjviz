@@ -43,6 +43,7 @@ class FSTripleOutputOneShot(FSTripleOutput):
             output_dir = os.path.expanduser(output_dir)            
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
+                os.makedirs(os.path.join(output_dir, "tmp"))
             if output_filename:
                 self.output_fn = os.path.join(output_dir, output_filename)
                 out_fd = open(self.output_fn, "w+")

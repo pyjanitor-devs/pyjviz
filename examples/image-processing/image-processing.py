@@ -31,14 +31,6 @@ def load_images(file_pathes: pd.Series) -> pd.DataFrame:
         x_image = imread(file_path)
         im_name = os.path.basename(file_path)
         df = df.append({'im_name': im_name, 'image': x_image}, ignore_index = True)
-
-    aux_df = pd.DataFrame(df.im_name)
-    aux_df['file_path'] = file_pathes
-    aux_df['file_size'] = aux_df.file_path.apply(lambda x: os.stat(x).st_size)
-
-    t_obj = pyjviz.dump_obj_state(aux_df)
-    pyjviz.tstr.dump_triple(pyjviz.get_wb_stack().get_top().uri, '<im-file-sizes>', t_obj.last_obj_state_uri)
-    pyjviz.tstr.dump_triple(t_obj.last_obj_state_uri, "rdf:type", "<ShowObj>")
     
     return df
 

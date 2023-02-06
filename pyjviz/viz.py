@@ -32,41 +32,6 @@ def dump_subgraph(g, cc_uri, out_fd):
         dump_subgraph(g, subgraph, out_fd)
         
         rq = """
-        select ?show_obj ?obj_type ?df_shape ?df_head ?df_im { 
-          ?show_obj rdf:type <ShowObj>; rdf:type ?obj_type; <part-of> ?sg.
-          optional {?show_obj <df-shape> ?df_shape}
-          optional {?show_obj <df-head> ?df_head}
-          optional {?show_obj <df-plot-im> ?df_im}
-        }
-        """
-        for show_obj, obj_type, df_shape, df_head, df_im in g.query(rq, base = fstriplestore.base_uri, initBindings = {'sg': subgraph}):
-            if 0:
-                with tempfile.NamedTemporaryFile(dir = './pyjviz-test-output', suffix = '.html', delete = False) as temp_fp:
-                    temp_fp.write(df_head.toPython().encode('ascii'))
-
-            if 1:
-                with tempfile.NamedTemporaryFile(dir = './pyjviz-test-output', suffix = '.html', delete = False) as temp_fp:
-                    temp_fp.write(("<img src='data:image/png;base64," + df_im.toPython() + "'></img>").encode('ascii'))
-                
-                
-            print(f"""
-            node_{uri_to_dot_id(show_obj)} [
-                fillcolor="#44056022"
-                #shape = rect
-                label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
-                         <tr> <td> <b>{show_obj.split('/')[-1]}</b><br/>DataFrame {df_shape}</td> </tr>
-                         </table>>
-                href="javascript: 
-                {{ 
-                  /* alert(location.pathname); */
-                  let w = window.open('{os.path.basename(temp_fp.name)}', '_blank', 'width=900,height=500');
-                }}
-                 "
-                ];
-
-            """, file = out_fd)
-
-        rq = """
         select ?obj_state ?version ?obj_type ?obj_uuid ?df_shape ?df_head ?df_im { 
           ?obj_state rdf:type <ObjState>; <obj> ?obj.
           ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid.
@@ -77,8 +42,7 @@ def dump_subgraph(g, cc_uri, out_fd):
         }
         """
         for obj_state, version, obj_type, obj_uudi, df_shape, df_head, df_im in g.query(rq, base = fstriplestore.base_uri, initBindings = {'sg': subgraph}):
-            #ipdb.set_trace()
-            with tempfile.NamedTemporaryFile(dir = './pyjviz-test-output', suffix = '.html', delete = False) as temp_fp:
+            with tempfile.NamedTemporaryFile(dir = './pyjviz-test-output/tmp', suffix = '.html', delete = False) as temp_fp:
                 if df_head:
                     node_bgcolor = "#88000022"
                     popup_size = (800, 200)
@@ -88,8 +52,11 @@ def dump_subgraph(g, cc_uri, out_fd):
                     popup_size = (900, 500)
                     temp_fp.write(("<img src='data:image/png;base64," + df_im.toPython() + "'></img>").encode('ascii'))
                 else:
+                    node_bgcolor = "#88000022"
+                    popup_size = (800, 200)
                     temp_fp.write('NONE'.encode('ascii'))
             
+            #ipdb.set_trace()
             print(f"""
             node_{uri_to_dot_id(obj_state)} [
                 color="{node_bgcolor}"
@@ -98,10 +65,8 @@ def dump_subgraph(g, cc_uri, out_fd):
                          <tr> <td> <b>{obj_state.split('/')[-1]}</b><br/>{obj_type} {df_shape} {version}</td> </tr>
                          </table>>
                 href="javascript: 
-                {{ 
-                  /*alert(location.pathname);*/
-                  let w = window.open('{os.path.basename(temp_fp.name)}', '_blank', 'width={popup_size[0]},height={popup_size[1]}'); }}
-                 "
+                {{ window.open('tmp/{os.path.basename(temp_fp.name)}', '_blank', 'width={popup_size[0]},height={popup_size[1]}'); }}
+                "
                 ];
 
             """, file = out_fd)
@@ -265,19 +230,6 @@ def dump_dot_code(g, vertical, show_objects):
             pred_s = pred.toPython().split('/')[-1]
             print(f"""
             node_{uri_to_dot_id(to_obj)} -> node_{uri_to_dot_id(from_obj)} [label="{pred_s}", penwidth=2.5];
-            """, file = out_fd)
-
-        rq = """
-        select ?from_obj ?to_obj ?pred { 
-          ?from_obj rdf:type <MethodCall>.
-          ?to_obj rdf:type <ShowObj>.
-          ?from_obj ?pred ?to_obj 
-        }
-        """
-        for from_obj, to_obj, pred in g.query(rq, base = fstriplestore.base_uri):
-            pred_s = pred.toPython().split('/')[-1]
-            print(f"""
-            node_{uri_to_dot_id(from_obj)} -> node_{uri_to_dot_id(to_obj)} [label="{pred_s}", style="dotted"];
             """, file = out_fd)
         
             
