@@ -8,27 +8,6 @@ import janitor, pyjviz
 import pandas_flavor as pf
 import io, base64
 
-wb_stack = pyjviz.wb_stack
-fstriplestore = pyjviz.fstriplestore
-
-old_plot = pd.DataFrame.plot
-@pf.register_dataframe_method
-def plot2(df, title = None):
-    out_fd = io.BytesIO()
-    fig = df.plot().get_figure()
-    fig.savefig(out_fd)
-
-    im_s = base64.b64encode(out_fd.getvalue()).decode('ascii')
-    #ipdb.set_trace()
-    #curr_n, _ = obj_tracking.tracking_store.get_tracking_obj(df)
-    curr_n = wb_stack.wb_stack.get_top().uri
-    parent_n = wb_stack.wb_stack.get_parent_of_current_entry().uri
-    fstriplestore.triple_store.dump_triple(curr_n, 'rdf:type', "<ShowObj>")
-    fstriplestore.triple_store.dump_triple(curr_n, '<part-of>', parent_n)
-    fstriplestore.triple_store.dump_triple(curr_n, '<df-plot-im>', '"' + im_s + '"')
-    
-    return df
-
 if __name__ == "__main__":
     df1 = pd.DataFrame({'id': [1,1,1,2,2,3],
                         'value_1': [2,5,7,1,3,4]})
@@ -50,13 +29,13 @@ if __name__ == "__main__":
     res1.describe()
 
     with top:
-        with pyjviz.CB("c2"):        
-            #ipdb.set_trace()
+        with pyjviz.CB("c2") as c2:
+            c2.set_method_call_opts('conditional_join', {'obj-state-output-type': 'plot'})            
             res2 = df1.select_columns('value_1').conditional_join(
                 df2.select_columns('val*'),
                 ('value_1', 'value_2A', '>'),
                 ('value_1', 'value_2B', '<'),
-            ).plot2('res2')
+            )
 
     print(res2)
     res2.describe()

@@ -24,11 +24,9 @@ with pyjviz.CB() as sg:
     df = (
         pd.DataFrame.from_dict(company_sales)
         .remove_columns(["Company1"])
-        #.set_chain("most-cleaning")
         .dropna(subset=["Company2", "Company3"])
         .rename_column("Company2", "Amazon")
         .rename_column("Company3", "Facebook")
-        #.reset_chain()
         .add_column("Google", [450.0, 550.0, 800.0])
     )
     

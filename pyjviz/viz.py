@@ -80,15 +80,19 @@ def dump_subgraph(g, cc_uri, out_fd):
             #ipdb.set_trace()
             with tempfile.NamedTemporaryFile(dir = './pyjviz-test-output', suffix = '.html', delete = False) as temp_fp:
                 if df_head:
+                    node_bgcolor = "#88000022"
+                    popup_size = (800, 200)
                     temp_fp.write(df_head.toPython().replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "'").replace("&#10;", "\n").encode('ascii'))
                 elif df_im:
+                    node_bgcolor = "#44056022"
+                    popup_size = (900, 500)
                     temp_fp.write(("<img src='data:image/png;base64," + df_im.toPython() + "'></img>").encode('ascii'))
                 else:
                     temp_fp.write('NONE'.encode('ascii'))
             
             print(f"""
             node_{uri_to_dot_id(obj_state)} [
-                color="#88000022"
+                color="{node_bgcolor}"
                 shape = rect
                 label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
                          <tr> <td> <b>{obj_state.split('/')[-1]}</b><br/>{obj_type} {df_shape} {version}</td> </tr>
@@ -96,7 +100,7 @@ def dump_subgraph(g, cc_uri, out_fd):
                 href="javascript: 
                 {{ 
                   /*alert(location.pathname);*/
-                  let w = window.open('{os.path.basename(temp_fp.name)}', '_blank', 'width=800,height=200'); }}
+                  let w = window.open('{os.path.basename(temp_fp.name)}', '_blank', 'width={popup_size[0]},height={popup_size[1]}'); }}
                  "
                 ];
 
