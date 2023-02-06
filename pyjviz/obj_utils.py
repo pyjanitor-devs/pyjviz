@@ -8,7 +8,7 @@ from . import obj_tracking
 from . import wb_stack
 
 random_id = 0
-def dump_obj_state(obj):
+def dump_obj_state(obj, pyjviz_opts = None):
     caller_stack_entry = wb_stack.wb_stack.get_parent_of_current_entry()
     stack_entry = wb_stack.wb_stack.get_top()    
     t_obj, _ = obj_tracking.tracking_store.get_tracking_obj(obj)
@@ -22,9 +22,11 @@ def dump_obj_state(obj):
     fstriplestore.triple_store.dump_triple(obj_state_uri, "<version>", f'"{t_obj.last_version_num}"')
     t_obj.last_version_num += 1
 
-    pyjviz_opts = stack_entry.pyjviz_opts
-    key_s = 'obj-state-output-type'
-    output_type = pyjviz_opts.get(key_s) if key_s in pyjviz_opts else 'head'
+    output_type = 'head'
+    if pyjviz_opts:
+        key_s = 'obj-state-output-type'
+        output_type = pyjviz_opts.get(key_s) if key_s in pyjviz_opts else 'head'
+        
     if isinstance(obj, pd.DataFrame):
         dump_DataFrame_obj_state(obj_state_uri, obj, output_type)
     elif isinstance(obj, pd.Series):

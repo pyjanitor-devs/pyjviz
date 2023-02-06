@@ -67,19 +67,22 @@ def dump_subgraph(g, cc_uri, out_fd):
             """, file = out_fd)
 
         rq = """
-        select ?obj_state ?version ?obj_type ?obj_uuid ?df_shape ?df_head { 
+        select ?obj_state ?version ?obj_type ?obj_uuid ?df_shape ?df_head ?df_im { 
           ?obj_state rdf:type <ObjState>; <obj> ?obj.
           ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid.
           ?obj_state <part-of>+ ?sg; <version> ?version .
           ?obj_state <df-shape> ?df_shape .
-          optional {?obj_state <df-head> ?df_head} .
+          optional {?obj_state <df-head> ?df_head}
+          optional {?obj_state <df-plot> ?df_im}
         }
         """
-        for obj_state, version, obj_type, obj_uudi, df_shape, df_head in g.query(rq, base = fstriplestore.base_uri, initBindings = {'sg': subgraph}):
+        for obj_state, version, obj_type, obj_uudi, df_shape, df_head, df_im in g.query(rq, base = fstriplestore.base_uri, initBindings = {'sg': subgraph}):
             #ipdb.set_trace()
             with tempfile.NamedTemporaryFile(dir = './pyjviz-test-output', suffix = '.html', delete = False) as temp_fp:
                 if df_head:
                     temp_fp.write(df_head.toPython().replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "'").replace("&#10;", "\n").encode('ascii'))
+                elif df_im:
+                    temp_fp.write(("<img src='data:image/png;base64," + df_im.toPython() + "'></img>").encode('ascii'))
                 else:
                     temp_fp.write('NONE'.encode('ascii'))
             

@@ -46,7 +46,9 @@ class PandasFlavorMethodCallFactory:
 
         latest_method_call = wb_stack.wb_stack.get_latest_method_call()
         if latest_method_call is None:
-            ret = wb_stack_entries.MethodCall(method_name)
+            method_opts = wb_stack.wb_stack.get_top().method_opts
+            pyjviz_opts = method_opts.get(method_name) if method_name in method_opts else {}
+            ret = wb_stack_entries.MethodCall(method_name, pyjviz_opts)
         else:
             ret = nullcontext()
 

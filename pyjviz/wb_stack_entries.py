@@ -15,15 +15,20 @@ from .nested_call import NestedCall
 class CodeBlock(wb_stack.WithBlock):
     def __init__(self, label = None, rdf_type = "CodeBlock"):
         super().__init__(label = label, rdf_type = rdf_type)
+        self.method_opts = {}
 
+    def set_method_call_opts(self, method_name, pyjviz_opts):
+        self.method_opts[method_name] = pyjviz_opts
+        
 CB = CodeBlock
 
 method_counter = 0 # NB: should be better way to cout method calls
 class MethodCall(wb_stack.WithBlock):
-    def __init__(self, method_name):
+    def __init__(self, method_name, pyjviz_opts = {}):
         super().__init__(label = method_name, rdf_type = "MethodCall")
         self.method_bound_args = None
         self.nested_call_args = []
+        self.pyjviz_opts = pyjviz_opts
         
     def handle_start_method_call(self, method_name, method_signature, method_args, method_kwargs):        
         all_args = method_args
@@ -72,7 +77,7 @@ class MethodCall(wb_stack.WithBlock):
 
         ret_obj = ret if not ret is None else obj
 
-        ret_t_obj = obj_utils.dump_obj_state(ret_obj)
+        ret_t_obj = obj_utils.dump_obj_state(ret_obj, self.pyjviz_opts)
         ts.dump_triple(self.uri, "<method-call-return>", ret_t_obj.last_obj_state_uri)
 
         # catching nested calls values returned after method call executed

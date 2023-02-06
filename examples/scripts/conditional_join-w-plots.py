@@ -38,12 +38,12 @@ if __name__ == "__main__":
 
     with pyjviz.CB("top") as top:
         with pyjviz.CB("c1") as c1:
+            c1.set_method_call_opts('conditional_join', {'obj-state-output-type': 'plot'})
             res1 = df1.conditional_join(df2,
                                         ('id', 'id', "<"),
                                         df_columns = {'id':'df_id'},
                                         right_columns = {'id':'right_id'}
                                         )
-            res1.plot2('res1')
             
     res2 = df1.describe()
     print(res1)
