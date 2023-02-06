@@ -20,8 +20,7 @@ def dump_obj_state(obj):
     fstriplestore.triple_store.dump_triple(obj_state_uri, "<version>", f'"{t_obj.last_version_num}"')
     t_obj.last_version_num += 1
 
-    output_type = stack_entry.pyjviz_opts.get('obj-state-output-type', None)
-    output_type = output_type if output_type else 'head'
+    output_type = 'head'
     if isinstance(obj, pd.DataFrame):
         dump_DataFrame_obj_state(obj_state_uri, obj, output_type)
     elif isinstance(obj, pd.Series):
