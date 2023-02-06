@@ -20,10 +20,9 @@ CB = CodeBlock
 
 method_counter = 0 # NB: should be better way to cout method calls
 class MethodCall(wb_stack.WithBlock):
-    def __init__(self, method_name, have_nested_call_args):
+    def __init__(self, method_name):
         super().__init__(label = method_name, rdf_type = "MethodCall")
         self.method_bound_args = None
-        self.have_nested_call_args = have_nested_call_args
         self.nested_call_args = []
         
     def handle_start_method_call(self, method_name, method_signature, method_args, method_kwargs):        
@@ -62,10 +61,9 @@ class MethodCall(wb_stack.WithBlock):
         new_kwargs = self.method_bound_args.kwargs
 
         thread_id = threading.get_native_id()
-        caller = wb_stack.wb_stack.get_parent_of_current_entry()
         
         # NB: since apply_defaults is not called then no tracking of args with default values will take place
-        self.dump_method_call_in__(thread_id, method_name, method_signature, self.method_bound_args, caller)
+        self.dump_method_call_in__(thread_id, method_name, method_signature, self.method_bound_args)
 
         return new_args, new_kwargs
 
@@ -84,7 +82,7 @@ class MethodCall(wb_stack.WithBlock):
                 raise Exception("expected nested call return obj to be tracked already")
             ts.dump_triple(nested_call_obj.uri, "<ret-val>", t_obj.last_obj_state_uri)
 
-    def dump_method_call_arg__(self, c, arg_name, arg_obj, caller_stack_entry):
+    def dump_method_call_arg__(self, c, arg_name, arg_obj):
         ts = fstriplestore.triple_store
 
         method_call_obj = self
@@ -96,15 +94,15 @@ class MethodCall(wb_stack.WithBlock):
         elif isinstance(arg_obj, pd.DataFrame) or isinstance(arg_obj, pd.Series):
             arg_t_obj, obj_found = obj_tracking.tracking_store.get_tracking_obj(arg_obj)
             if not obj_found:
-                arg_t_obj = obj_utils.dump_obj_state(arg_obj, caller_stack_entry)
+                arg_t_obj = obj_utils.dump_obj_state(arg_obj)
             ts.dump_triple(method_call_uri, f"<method-call-arg{c}>", arg_t_obj.last_obj_state_uri)
             ts.dump_triple(method_call_uri, f"<method-call-arg{c}-name>", '"' + (arg_name if arg_name else '') + '"')
         else:
             pass
         
     def dump_method_call_in__(self, thread_id,
-                              method_name, method_signature, method_bound_args,
-                              caller_stack_entry):
+                              method_name, method_signature,
+                              method_bound_args):
         ts = fstriplestore.triple_store
 
         method_call_obj = self
@@ -134,15 +132,15 @@ class MethodCall(wb_stack.WithBlock):
             arg_kind = method_signature.parameters.get(arg_name).kind
             if arg_kind == inspect.Parameter.VAR_KEYWORD:
                 for kwarg_name, kwarg_obj in arg_obj.items():
-                    self.dump_method_call_arg__(c, kwarg_name, kwarg_obj, caller_stack_entry)
+                    self.dump_method_call_arg__(c, kwarg_name, kwarg_obj)
                     c += 1
             elif arg_kind == inspect.Parameter.VAR_POSITIONAL:
                 #ipdb.set_trace()
                 for p_arg_obj in arg_obj:
-                    self.dump_method_call_arg__(c, None, p_arg_obj, caller_stack_entry)
+                    self.dump_method_call_arg__(c, None, p_arg_obj)
                     c += 1
             else:
-                self.dump_method_call_arg__(c, arg_name, arg_obj, caller_stack_entry)
+                self.dump_method_call_arg__(c, arg_name, arg_obj)
                 c += 1
                 
         return method_call_uri
