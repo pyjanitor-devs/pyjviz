@@ -43,7 +43,8 @@ def dump_subgraph(g, cc_uri, out_fd):
         """
         for obj_state, version, obj_type, obj_uudi, df_shape, df_head, df_im in g.query(rq, base = fstriplestore.base_uri, initBindings = {'sg': subgraph}):
             if fstriplestore.triple_store.output_dir:
-                with tempfile.NamedTemporaryFile(dir = './pyjviz-test-output/tmp', suffix = '.html', delete = False) as temp_fp:
+                temp_dir = os.path.join(fstriplestore.triple_store.output_dir, "tmp")
+                with tempfile.NamedTemporaryFile(dir = temp_dir, suffix = '.html', delete = False) as temp_fp:
                     if df_head:
                         node_bgcolor = "#88000022"
                         popup_size = (800, 200)
@@ -58,7 +59,8 @@ def dump_subgraph(g, cc_uri, out_fd):
                         temp_fp.write('NONE'.encode('ascii'))
 
                     href = f"""href="javascript:
-                    {{ window.open('tmp/{os.path.basename(temp_fp.name)}', '_blank', 'width={popup_size[0]},height={popup_size[1]}'); }}
+                    /* alert(location.pathname.match(/.*\//) + '\n' + '{temp_fp.name}' + '\n' + '{fstriplestore.triple_store.output_dir}'); */
+                    {{ window.open(location.pathname.match(/.*\//) + 'tmp/' + '{os.path.basename(temp_fp.name)}', '_blank', 'width={popup_size[0]},height={popup_size[1]}'); }}
                     "
                     """
             else:

@@ -11,8 +11,11 @@ pyjviz_enabled = not ('PYJVIZ_DISABLED' in os.environ and os.environ.get('PYJVIZ
 if pyjviz_enabled:
     if os.path.basename(sys.argv[0]) == 'ipykernel_launcher.py':
         tstr = FSTripleOutputOneShot(None, None) # -- NB: how can we detect that this is notebook run
-    else:
-        tstr = FSTripleOutputOneShot("pyjviz-test-output", os.path.basename(sys.argv[0]) + ".ttl")
+    else:        
+        pyjviz_output_dir = os.environ.get('PYJVIZ_OUTPUT_DIR') if 'PYJVIZ_OUTPUT_DIR' in os.environ else "~/.pyjviz"            
+        pyjviz_output_dir = os.path.expanduser(pyjviz_output_dir)
+        tstr = FSTripleOutputOneShot(pyjviz_output_dir,
+                                     os.path.basename(sys.argv[0]) + ".ttl")
 
     set_triple_store__(tstr)
     enable_pf_pandas__()
