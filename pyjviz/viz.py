@@ -42,20 +42,30 @@ def dump_subgraph(g, cc_uri, out_fd):
         }
         """
         for obj_state, version, obj_type, obj_uudi, df_shape, df_head, df_im in g.query(rq, base = fstriplestore.base_uri, initBindings = {'sg': subgraph}):
-            with tempfile.NamedTemporaryFile(dir = './pyjviz-test-output/tmp', suffix = '.html', delete = False) as temp_fp:
-                if df_head:
-                    node_bgcolor = "#88000022"
-                    popup_size = (800, 200)
-                    temp_fp.write(df_head.toPython().replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "'").replace("&#10;", "\n").encode('ascii'))
-                elif df_im:
-                    node_bgcolor = "#44056022"
-                    popup_size = (900, 500)
-                    temp_fp.write(("<img src='data:image/png;base64," + df_im.toPython() + "'></img>").encode('ascii'))
-                else:
-                    node_bgcolor = "#88000022"
-                    popup_size = (800, 200)
-                    temp_fp.write('NONE'.encode('ascii'))
-            
+            if fstriplestore.triple_store.output_dir:
+                with tempfile.NamedTemporaryFile(dir = './pyjviz-test-output/tmp', suffix = '.html', delete = False) as temp_fp:
+                    if df_head:
+                        node_bgcolor = "#88000022"
+                        popup_size = (800, 200)
+                        temp_fp.write(df_head.toPython().replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "'").replace("&#10;", "\n").encode('ascii'))
+                    elif df_im:
+                        node_bgcolor = "#44056022"
+                        popup_size = (900, 500)
+                        temp_fp.write(("<img src='data:image/png;base64," + df_im.toPython() + "'></img>").encode('ascii'))
+                    else:
+                        node_bgcolor = "#88000022"
+                        popup_size = (800, 200)
+                        temp_fp.write('NONE'.encode('ascii'))
+
+                    href = f"""href="javascript:
+                    {{ window.open('tmp/{os.path.basename(temp_fp.name)}', '_blank', 'width={popup_size[0]},height={popup_size[1]}'); }}
+                    "
+                    """
+            else:
+                href = ""
+                node_bgcolor = "#88000022"
+                popup_size = (800, 200)
+                
             #ipdb.set_trace()
             print(f"""
             node_{uri_to_dot_id(obj_state)} [
@@ -64,9 +74,7 @@ def dump_subgraph(g, cc_uri, out_fd):
                 label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
                          <tr> <td> <b>{obj_state.split('/')[-1]}</b><br/>{obj_type} {df_shape} {version}</td> </tr>
                          </table>>
-                href="javascript: 
-                {{ window.open('tmp/{os.path.basename(temp_fp.name)}', '_blank', 'width={popup_size[0]},height={popup_size[1]}'); }}
-                "
+                {href}
                 ];
 
             """, file = out_fd)

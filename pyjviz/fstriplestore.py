@@ -35,17 +35,20 @@ class FSTripleOutput:
 
 class FSTripleOutputOneShot(FSTripleOutput):
     def __init__(self, output_dir, output_filename):
+        self.output_dir = output_dir
         self.output_fn = None
-        if output_dir is None:
+
+        if self.output_dir is None:
             out_fd = io.StringIO()
         else:
             #ipdb.set_trace()
-            output_dir = os.path.expanduser(output_dir)            
-            if not os.path.exists(output_dir):
-                os.makedirs(output_dir)
-                os.makedirs(os.path.join(output_dir, "tmp"))
+            self.output_dir = os.path.expanduser(self.output_dir)
+            if not os.path.exists(self.output_dir):
+                os.makedirs(self.output_dir)
+                os.makedirs(os.path.join(self.output_dir, "tmp"))
+
             if output_filename:
-                self.output_fn = os.path.join(output_dir, output_filename)
+                self.output_fn = os.path.join(self.output_dir, output_filename)
                 out_fd = open(self.output_fn, "w+")
 
         super().__init__(out_fd)
