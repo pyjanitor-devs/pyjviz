@@ -30,7 +30,7 @@ def dump_obj_state(obj, pyjviz_opts = None):
     if isinstance(obj, pd.DataFrame):
         dump_DataFrame_obj_state(obj_state_uri, obj, output_type)
     elif isinstance(obj, pd.Series):
-        dump_Series_obj_state(obj_state_uri, obj)
+        dump_Series_obj_state(obj_state_uri, obj, output_type)
     else:
         raise Exception(f"unknown obj type at {obj_state_uri}")
 
@@ -53,6 +53,17 @@ def dump_DataFrame_obj_state(obj_state_uri, df, output_type):
         raise Exception(f"unknown output_type: {output_type}")
 
 
-def dump_Series_obj_state(obj_state_uri, s):
+def dump_Series_obj_state(obj_state_uri, s, output_type):
     fstriplestore.triple_store.dump_triple(obj_state_uri, "<df-shape>", f'"{s.shape}"')        
-
+    if output_type == 'head':
+        pass
+    elif output_type == 'plot':
+        out_fd = io.BytesIO()
+        fig = s.plot().get_figure()
+        fig.savefig(out_fd)
+        #ipdb.set_trace()
+        im_s = base64.b64encode(out_fd.getvalue()).decode('ascii')
+        fstriplestore.triple_store.dump_triple(obj_state_uri, '<df-plot>', '"' + im_s + '"')
+    else:
+        raise Exception(f"unknown output_type: {output_type}")
+        
