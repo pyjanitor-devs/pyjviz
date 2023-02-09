@@ -1,7 +1,8 @@
-import ipdb
+#import ipdb
 import threading
 import pandas as pd
 import pandas_flavor as pf
+import pandas_flavor.register
 import uuid
 import inspect
 from contextlib import nullcontext
@@ -56,7 +57,8 @@ class PandasFlavorMethodCallFactory:
 
     
 def enable_pf_pandas__():
-    pf.register.method_call_ctx_factory = PandasFlavorMethodCallFactory.create
+    #ipdb.set_trace()
+    pandas_flavor.register.method_call_ctx_factory = PandasFlavorMethodCallFactory.create
     
     old_DataFrame_init = pd.DataFrame.__init__
     def aux_init(func, *x, **y):
