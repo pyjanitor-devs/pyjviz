@@ -25,6 +25,16 @@ class FSTripleOutput:
         <MethodCall> rdfs:subClassOf <WithBlock> .
         <NestedCall> rdf:type rdfs:Class .
         <NestedCall> rdfs:subClassOf <WithBlock> .
+
+        <Obj> rdf:type rdfs:Class .
+        <ObjState> rdf:type rdfs:Class .
+        <ObjStateCC> rdf:type rdfs:Class .
+
+        <CC> rdf:type rdfs:Class .
+        <CCGlance> rdf:type rdfs:Class .
+        <CCGlance> rdfs:subClassOf <CC> .
+        <CCBasicPlot> rdf:type rdfs:Class .
+        <CCBasicPlot> rdfs:subClassOf <CC> .
         """), file = self.out_fd)
         
     def dump_triple(self, subj, pred, obj):

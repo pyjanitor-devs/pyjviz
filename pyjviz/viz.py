@@ -20,6 +20,40 @@ from . import nb_utils
 def uri_to_dot_id(uri):
     return str(hash(uri)).replace("-", "d")
 
+def make_table_popup_href(head_html):
+    if head_html is None:
+        return ""
+    
+    href = ""
+    if fstriplestore.triple_store.output_dir:
+        temp_dir = os.path.join(fstriplestore.triple_store.output_dir, "tmp")
+        with tempfile.NamedTemporaryFile(dir = temp_dir, suffix = '.html', delete = False) as temp_fp:
+            popup_size = (800, 200)
+            temp_fp.write(head_html.toPython().replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "'").replace("&#10;", "\n").encode('ascii'))
+            href = f"""href="javascript:
+                    /* alert(location.pathname.match(/.*\//) + '\n' + '{temp_fp.name}' + '\n' + '{fstriplestore.triple_store.output_dir}'); */
+                    {{ window.open(location.pathname.match(/.*\//) + 'tmp/' + '{os.path.basename(temp_fp.name)}', '_blank', 'width={popup_size[0]},height={popup_size[1]}'); }}
+            "
+            """
+            
+    return href
+
+def make_image_popup_href(image_b64):
+    href = ""
+    if fstriplestore.triple_store.output_dir:
+        temp_dir = os.path.join(fstriplestore.triple_store.output_dir, "tmp")
+        with tempfile.NamedTemporaryFile(dir = temp_dir, suffix = '.html', delete = False) as temp_fp:
+            popup_size = (900, 500)
+            temp_fp.write(("<img src='data:image/png;base64," + image_b64.toPython() + "'></img>").encode('ascii'))
+            href = f"""href="javascript:
+                    /* alert(location.pathname.match(/.*\//) + '\n' + '{temp_fp.name}' + '\n' + '{fstriplestore.triple_store.output_dir}'); */
+                    {{ window.open(location.pathname.match(/.*\//) + 'tmp/' + '{os.path.basename(temp_fp.name)}', '_blank', 'width={popup_size[0]},height={popup_size[1]}'); }}
+            "
+            """
+            
+    return href
+    
+
 def dump_subgraph(g, cc_uri, out_fd):
     subgraphs = [r for r in g.query("select ?pp ?pl { ?pp rdf:type <CodeBlock>; rdf:label ?pl; <part-of> ?sg }", base = fstriplestore.base_uri, initBindings = {'sg': cc_uri})]
     for subgraph, subgraph_label in subgraphs:
@@ -40,29 +74,66 @@ def dump_subgraph(g, cc_uri, out_fd):
         """
         for obj_state, version, obj_type, obj_uudi in g.query(rq, base = fstriplestore.base_uri, initBindings = {'sg': subgraph}):
             obj_state_cc_rq = """
-            select ?shape {
-            ?obj_state_cc <obj-state> ?obj_state.
-            ?obj_state_cc rdf:type <CCGlance>;
-                          <shape> ?shape
+            select ?obj_state ?cc_type {
+            ?obj_state_cc rdf:type/rdfs:subClassOf+ <CC>;
+                          rdf:type ?cc_type;
+                          <obj-state> ?obj_state.
             }
             """
 
-            node_bgcolor = "#88000022"
-            for shape in g.query(obj_state_cc_rq, base = fstriplestore.base_uri, initBindings = {'obj_state': obj_state}):
-                #ipdb.set_trace()
-                shape = shape[0]
-                print(f"""
-                node_{uri_to_dot_id(obj_state)} [
-                color="{node_bgcolor}"
-                shape = rect
-                label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
-                         <tr> <td> <b>{obj_state.split('/')[-1]}</b><br/>{obj_type} {shape.toPython()} {version}</td> </tr>
-                         </table>>                
-                ];
+            ccs = pd.DataFrame(columns = ['obj_state_cc', 'cc_type'])
+            for obj_state_cc, cc_type in g.query(obj_state_cc_rq, base = fstriplestore.base_uri, initBindings = {'obj_state': obj_state}):
+                ccs = pd.concat([ccs, pd.DataFrame([[obj_state_cc, cc_type]], columns = ccs.columns)], axis = 0, ignore_index = True)
 
+            cc_basic_plot_uri = rdflib.URIRef('CCBasicPlot', base = fstriplestore.base_uri)
+            cc_glance_uri = rdflib.URIRef('CCGlance', base = fstriplestore.base_uri)
+            target_cc_type = cc_basic_plot_uri if (ccs.cc_type == cc_basic_plot_uri).any() else cc_glance_uri
+            bindings = {'obj_state': obj_state, 'target_cc_type': target_cc_type}
+
+            if target_cc_type == cc_glance_uri:
+                if obj_type.toPython() == "DataFrame":
+                    glance_rq = """
+                    select ?shape ?head { 
+                      ?obj_state_cc <obj-state> ?obj_state; rdf:type ?target_cc_type; <shape> ?shape; <df-head> ?head .
+                    }
+                    """
+                    for shape, head in g.query(glance_rq, base = fstriplestore.base_uri, initBindings = bindings):
+                        shape = shape
+                        node_bgcolor = "#88000022"
+                        href = make_table_popup_href(head)
+                elif obj_type.toPython() == "Series":
+                    glance_rq = "select ?shape { ?obj_state_cc <obj-state> ?obj_state; rdf:type ?target_cc_type; <shape> ?shape }"
+                    for shape in g.query(glance_rq, base = fstriplestore.base_uri, initBindings = bindings):
+                        shape = shape[0]
+                        node_bgcolor = "#88000022"
+                        href = make_table_popup_href(None)
+                else:
+                    raise Exception(f"unknown obj_type {obj_type}")
+            elif target_cc_type == cc_basic_plot_uri:
+                basic_plot_rq = "select ?shape ?plot_im { ?obj_state_cc <obj-state> ?obj_state; rdf:type ?target_cc_type; <shape> ?shape; <plot-im> ?plot_im }"
+                #ipdb.set_trace()
+                for shape, plot_im in g.query(basic_plot_rq, base = fstriplestore.base_uri, initBindings = bindings):
+                    shape = shape
+                    node_bgcolor = "#44056022"
+                    href = make_image_popup_href(plot_im)
+            else:
+                raise Exception(f"unknown cc_type {target_cc_type}")                    
+                    
+            print(f"""
+            node_{uri_to_dot_id(obj_state)} [
+            color="{node_bgcolor}"
+            shape = rect
+            label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
+            <tr> <td> <b>{obj_state.split('/')[-1]}</b><br/>{obj_type} {shape.toPython()} {version}</td> </tr>
+            </table>>
+            {href}
+            ];
             """, file = out_fd)
 
-
+            del shape
+            del href
+            del node_bgcolor
+            
         rq = """
         select ?method_call_obj ?method_name ?method_display ?method_count ?method_stack_depth ?method_stack_trace { 
           ?method_call_obj rdf:type <MethodCall>; 

@@ -49,7 +49,7 @@ def dump_DataFrame_obj_state_cc(obj_state_uri, df, output_type):
         ts.dump_triple(obj_state_cc_uri, "<df-head>", '"' + df_head_html + '"')
     elif output_type == 'plot':
         ts.dump_triple(obj_state_cc_uri, "rdf:type", "<CCBasicPlot>")
-        ts.dump_triple(obj_state_cc_uri, "<df-shape>", f'"{df.shape}"')
+        ts.dump_triple(obj_state_cc_uri, "<shape>", f'"{df.shape}"')
         out_fd = io.BytesIO()
         fig = df.plot().get_figure()
         fig.savefig(out_fd)
@@ -73,7 +73,7 @@ def dump_Series_obj_state_cc(obj_state_uri, s, output_type):
         ts.dump_triple(obj_state_cc_uri, "<shape>", f"{len(s)}")
     elif output_type == 'plot':
         ts.dump_triple(obj_state_cc_uri, "rdf:type", "<CCBasicPlot>")        
-        ts.dump_triple(obj_state_cc_uri, "<s-size>", f"{len(s)}")
+        ts.dump_triple(obj_state_cc_uri, "<shape>", f"{len(s)}")
         out_fd = io.BytesIO()
         fig = s.plot().get_figure()
         fig.savefig(out_fd)
