@@ -17,7 +17,6 @@ if __name__ == "__main__":
 
     with pyjviz.CB("top") as top:
         with pyjviz.CB("c1") as c1:
-            c1.set_method_call_opts('conditional_join', {'obj-state-output-type': 'plot'})
             res1 = df1.conditional_join(df2,
                                         ('id', 'id', "<"),
                                         df_columns = {'id':'df_id'},
@@ -30,12 +29,11 @@ if __name__ == "__main__":
 
     with top:
         with pyjviz.CB("c2") as c2:
-            c2.set_method_call_opts('conditional_join', {'obj-state-output-type': 'plot'})            
             res2 = df1.select_columns('value_1').conditional_join(
                 df2.select_columns('val*'),
                 ('value_1', 'value_2A', '>'),
                 ('value_1', 'value_2B', '<'),
-            )
+            ).pin()
 
     print(res2)
     res2.describe()

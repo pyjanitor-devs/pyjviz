@@ -8,6 +8,7 @@ import inspect
 from contextlib import nullcontext
 
 from . import obj_tracking
+from . import obj_utils
 from . import wb_stack
 from . import wb_stack_entries
 
@@ -47,9 +48,7 @@ class PandasFlavorMethodCallFactory:
 
         latest_method_call = wb_stack.wb_stack.get_latest_method_call()
         if latest_method_call is None:
-            method_opts = wb_stack.wb_stack.get_top().method_opts
-            pyjviz_opts = method_opts.get(method_name) if method_name in method_opts else {}
-            ret = wb_stack_entries.MethodCall(method_name, pyjviz_opts)
+            ret = wb_stack_entries.MethodCall(method_name)
         else:
             ret = nullcontext()
 
@@ -76,10 +75,19 @@ def enable_pf_pandas__():
     if 1:
         old_to_datetime = pd.to_datetime
         pd.to_datetime = lambda *x, **y: DataFrameFunc("to_datetime", old_to_datetime)(*x, **y)
-        
+
+    if 1:
+        # we need those registration of pin method to make sure method call syntax work
+        # actual pin implementation is in MethodCall handle_* methods
+        @pf.register_series_method
+        def pin(s: pd.Series, output_type = 'head'): return s
+
+        @pf.register_dataframe_method
+        def pin(df: pd.DataFrame, output_type = 'head'): return df
+    
     old_describe = pd.DataFrame.describe
     #del pd.DataFrame.describe
-
+    
     @pf.register_dataframe_method
     def describe(df: pd.DataFrame) -> pd.DataFrame:
         print("override describe")

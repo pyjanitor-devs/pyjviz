@@ -32,54 +32,36 @@ def dump_subgraph(g, cc_uri, out_fd):
         dump_subgraph(g, subgraph, out_fd)
         
         rq = """
-        select ?obj_state ?version ?obj_type ?obj_uuid ?df_shape ?df_head ?df_im { 
+        select ?obj_state ?version ?obj_type ?obj_uuid { 
           ?obj_state rdf:type <ObjState>; <obj> ?obj.
           ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid.
           ?obj_state <part-of>+ ?sg; <version> ?version .
-          ?obj_state <df-shape> ?df_shape .
-          optional {?obj_state <df-head> ?df_head}
-          optional {?obj_state <df-plot> ?df_im}
         }
         """
-        for obj_state, version, obj_type, obj_uudi, df_shape, df_head, df_im in g.query(rq, base = fstriplestore.base_uri, initBindings = {'sg': subgraph}):
-            if fstriplestore.triple_store.output_dir:
-                temp_dir = os.path.join(fstriplestore.triple_store.output_dir, "tmp")
-                with tempfile.NamedTemporaryFile(dir = temp_dir, suffix = '.html', delete = False) as temp_fp:
-                    if df_head:
-                        node_bgcolor = "#88000022"
-                        popup_size = (800, 200)
-                        temp_fp.write(df_head.toPython().replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "'").replace("&#10;", "\n").encode('ascii'))
-                    elif df_im:
-                        node_bgcolor = "#44056022"
-                        popup_size = (900, 500)
-                        temp_fp.write(("<img src='data:image/png;base64," + df_im.toPython() + "'></img>").encode('ascii'))
-                    else:
-                        node_bgcolor = "#88000022"
-                        popup_size = (800, 200)
-                        temp_fp.write('NONE'.encode('ascii'))
+        for obj_state, version, obj_type, obj_uudi in g.query(rq, base = fstriplestore.base_uri, initBindings = {'sg': subgraph}):
+            obj_state_cc_rq = """
+            select ?shape {
+            ?obj_state_cc <obj-state> ?obj_state.
+            ?obj_state_cc rdf:type <CCGlance>;
+                          <shape> ?shape
+            }
+            """
 
-                    href = f"""href="javascript:
-                    /* alert(location.pathname.match(/.*\//) + '\n' + '{temp_fp.name}' + '\n' + '{fstriplestore.triple_store.output_dir}'); */
-                    {{ window.open(location.pathname.match(/.*\//) + 'tmp/' + '{os.path.basename(temp_fp.name)}', '_blank', 'width={popup_size[0]},height={popup_size[1]}'); }}
-                    "
-                    """
-            else:
-                href = ""
-                node_bgcolor = "#88000022"
-                popup_size = (800, 200)
-                
-            #ipdb.set_trace()
-            print(f"""
-            node_{uri_to_dot_id(obj_state)} [
+            node_bgcolor = "#88000022"
+            for shape in g.query(obj_state_cc_rq, base = fstriplestore.base_uri, initBindings = {'obj_state': obj_state}):
+                #ipdb.set_trace()
+                shape = shape[0]
+                print(f"""
+                node_{uri_to_dot_id(obj_state)} [
                 color="{node_bgcolor}"
                 shape = rect
                 label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
-                         <tr> <td> <b>{obj_state.split('/')[-1]}</b><br/>{obj_type} {df_shape} {version}</td> </tr>
-                         </table>>
-                {href}
+                         <tr> <td> <b>{obj_state.split('/')[-1]}</b><br/>{obj_type} {shape.toPython()} {version}</td> </tr>
+                         </table>>                
                 ];
 
             """, file = out_fd)
+
 
         rq = """
         select ?method_call_obj ?method_name ?method_display ?method_count ?method_stack_depth ?method_stack_trace { 
