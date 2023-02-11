@@ -20,7 +20,7 @@ from . import nb_utils
 def uri_to_dot_id(uri):
     return str(hash(uri)).replace("-", "d")
 
-def make_table_popup_href(head_html):
+def make_table_popup_href(head_html, popup_output):
     if head_html is None:
         return ""
     
@@ -30,31 +30,34 @@ def make_table_popup_href(head_html):
         with tempfile.NamedTemporaryFile(dir = temp_dir, suffix = '.html', delete = False) as temp_fp:
             popup_size = (800, 200)
             temp_fp.write(head_html.toPython().replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "'").replace("&#10;", "\n").encode('ascii'))
-            href = f"""href="javascript:
-                    /* alert(location.pathname.match(/.*\//) + '\n' + '{temp_fp.name}' + '\n' + '{fstriplestore.triple_store.output_dir}'); */
-                    {{ window.open(location.pathname.match(/.*\//) + 'tmp/' + '{os.path.basename(temp_fp.name)}', '_blank', 'width={popup_size[0]},height={popup_size[1]}'); }}
+            if popup_output:
+                href = f"""href="javascript:
+                {{ window.open(location.pathname.match(/.*\//) + 'tmp/' + '{os.path.basename(temp_fp.name)}', '_blank', 'width={popup_size[0]},height={popup_size[1]}'); }}
             "
-            """
+                """
+            else:
+                href = 'href="tmp/' + os.path.basename(temp_fp.name) + '"'
             
     return href
 
-def make_image_popup_href(image_b64):
+def make_image_popup_href(image_b64, popup_output):
     href = ""
     if fstriplestore.triple_store.output_dir:
         temp_dir = os.path.join(fstriplestore.triple_store.output_dir, "tmp")
         with tempfile.NamedTemporaryFile(dir = temp_dir, suffix = '.html', delete = False) as temp_fp:
             popup_size = (900, 500)
             temp_fp.write(("<img src='data:image/png;base64," + image_b64.toPython() + "'></img>").encode('ascii'))
-            href = f"""href="javascript:
-                    /* alert(location.pathname.match(/.*\//) + '\n' + '{temp_fp.name}' + '\n' + '{fstriplestore.triple_store.output_dir}'); */
-                    {{ window.open(location.pathname.match(/.*\//) + 'tmp/' + '{os.path.basename(temp_fp.name)}', '_blank', 'width={popup_size[0]},height={popup_size[1]}'); }}
-            "
-            """
+            if popup_output:
+                href = f"""href="javascript:
+                {{ window.open(location.pathname.match(/.*\//) + 'tmp/' + '{os.path.basename(temp_fp.name)}', '_blank', 'width={popup_size[0]},height={popup_size[1]}'); }}
+                "
+                """
+            else:
+                href = 'href="tmp/' + os.path.basename(temp_fp.name) + '"'
             
     return href
     
-
-def dump_subgraph(g, cc_uri, out_fd):
+def dump_subgraph(g, cc_uri, out_fd, popup_output):
     subgraphs = [r for r in g.query("select ?pp ?pl { ?pp rdf:type <CodeBlock>; rdf:label ?pl; <part-of> ?sg }", base = fstriplestore.base_uri, initBindings = {'sg': cc_uri})]
     for subgraph, subgraph_label in subgraphs:
         if subgraph_label != rdflib.RDF.nil:
@@ -63,7 +66,7 @@ def dump_subgraph(g, cc_uri, out_fd):
             label = "{subgraph_label}";
             """, file = out_fd)
 
-        dump_subgraph(g, subgraph, out_fd)
+        dump_subgraph(g, subgraph, out_fd, popup_output)
         
         rq = """
         select ?obj_state ?version ?obj_type ?obj_uuid { 
@@ -100,13 +103,13 @@ def dump_subgraph(g, cc_uri, out_fd):
                     for shape, head in g.query(glance_rq, base = fstriplestore.base_uri, initBindings = bindings):
                         shape = shape
                         node_bgcolor = "#88000022"
-                        href = make_table_popup_href(head)
+                        href = make_table_popup_href(head, popup_output)
                 elif obj_type.toPython() == "Series":
                     glance_rq = "select ?shape { ?obj_state_cc <obj-state> ?obj_state; rdf:type ?target_cc_type; <shape> ?shape }"
                     for shape in g.query(glance_rq, base = fstriplestore.base_uri, initBindings = bindings):
                         shape = shape[0]
                         node_bgcolor = "#88000022"
-                        href = make_table_popup_href(None)
+                        href = make_table_popup_href(None, popup_output)
                 else:
                     raise Exception(f"unknown obj_type {obj_type}")
             elif target_cc_type == cc_basic_plot_uri:
@@ -115,7 +118,7 @@ def dump_subgraph(g, cc_uri, out_fd):
                 for shape, plot_im in g.query(basic_plot_rq, base = fstriplestore.base_uri, initBindings = bindings):
                     shape = shape
                     node_bgcolor = "#44056022"
-                    href = make_image_popup_href(plot_im)
+                    href = make_image_popup_href(plot_im, popup_output)
             else:
                 raise Exception(f"unknown cc_type {target_cc_type}")                    
                     
@@ -165,7 +168,7 @@ def dump_subgraph(g, cc_uri, out_fd):
             print(f"}}", file = out_fd)
     
 
-def dump_dot_code(g, vertical, show_objects):
+def dump_dot_code(g, vertical, show_objects, popup_output):
     #ipdb.set_trace()
 
     out_fd = StringIO()
@@ -191,7 +194,7 @@ def dump_dot_code(g, vertical, show_objects):
     """.replace("{rankdir}", rankdir), file = out_fd)
 
 
-    dump_subgraph(g, rdflib.RDF.nil, out_fd)
+    dump_subgraph(g, rdflib.RDF.nil, out_fd, popup_output)
     
     #for subgraph, subgraph_label in subgraphs:
     if 1:
@@ -304,7 +307,7 @@ def print_dot(vertical = False, show_objects = False):
     g = fstriplestore.triple_store.get_graph()
     print(dump_dot_code(g, vertical = vertical, show_objects = show_objects))
 
-def save_dot(dot_output_fn = None, vertical = False, show_objects = False):
+def save_dot(dot_output_fn = None, vertical = False, show_objects = False, popup_output = False):
     ts = fstriplestore.triple_store
     if dot_output_fn is None:
         if hasattr(ts, 'output_fn') and ts.output_fn is not None:
@@ -314,7 +317,7 @@ def save_dot(dot_output_fn = None, vertical = False, show_objects = False):
             raise Exception("can't guess dot_output_fn")
 
     g = ts.get_graph()
-    dot_code = dump_dot_code(g, vertical = vertical, show_objects = show_objects)
+    dot_code = dump_dot_code(g, vertical = vertical, show_objects = show_objects, popup_output = popup_output)
     gvz = graphviz.Source(dot_code)
     gvz.render(dot_output_fn, format = 'svg', engine = 'dot')
 
