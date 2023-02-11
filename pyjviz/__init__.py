@@ -3,6 +3,7 @@ from .wb_stack import get_wb_stack
 from .wb_stack_entries import *
 from .obj_utils import *
 from .viz import *
+from .rdf_node import arrow
 
 from .pf_pandas import enable_pf_pandas__
 

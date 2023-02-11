@@ -7,6 +7,12 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix dash: <http://datashapes.org/dash#> .
 
+<Arrow> rdf:type rdfs:Class; rdf:type sh:NodeShape; dash:closedByType true;
+	sh:property [sh:path rdf:type; sh:minCount 1; sh:maxCount 1; sh:class <Arrow>];
+	sh:property [sh:path <from>; sh:minCount 1; sh:maxCount 1; sh:class <RDFNode>];
+	sh:property [sh:path <to>; sh:minCount 1; sh:maxCount 1; sh:class <RDFNode>];
+	sh:property [sh:path <arrow-label>; sh:minCount 1; sh:maxCount 1; sh:dataclass xsd:string].
+
 <WithBlock> rdf:type rdfs:Class; rdf:type sh:NodeShape; dash:closedByType true;
 	sh:property [sh:path rdf:type;  sh:minCount 1; sh:maxCount 1; sh:class <WithBlock>];
 	sh:property [sh:path rdf:label; sh:minCount 1; sh:maxCount 1; sh:datatype xsd:string];

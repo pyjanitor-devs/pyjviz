@@ -297,7 +297,15 @@ def dump_dot_code(g, vertical, show_objects, popup_output):
             print(f"""
             node_{uri_to_dot_id(to_obj)} -> node_{uri_to_dot_id(from_obj)} [label="{pred_s}", penwidth=2.5];
             """, file = out_fd)
-        
+
+    if 1:
+        rq = "select ?from ?to ?arrow_label { [] rdf:type <Arrow>; <arrow-from> ?from; <arrow-to> ?to; <arrow-label> ?arrow_label }"
+        for from_obj, to_obj, arrow_label in g.query(rq, base = fstriplestore.base_uri):
+            print(f"""
+            node_{uri_to_dot_id(from_obj)} -> node_{uri_to_dot_id(to_obj)} [label="{arrow_label.toPython()}", penwidth=4.5];
+            """, file = out_fd)
+            
+    
             
     print("}", file = out_fd)
     return out_fd.getvalue()

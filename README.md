@@ -57,7 +57,13 @@ The [`result`][res] of run is SVG file with clickable nodes to provide the way t
 
 [res]: https://asmirnov69.github.io/pyjviz-poc/docs/why-janitor.py.ttl.dot.svg
 
-pyjviz visualization of pyjanitor method chains is based on dumping of RDF log of pyjanitor method calls into rdf log file. Resulting RDF log file contains graph of method calls where user could trace method execution as well as user-defined data useful for visual inspection. Note that visualisation of pyjviz RDF log is not a main goal of provided package. Graphviz visualization avaiable in the package is rather reference implementation with quite limited capablities. However RDF structure defined in rdflog.shacl.ttl could be used by SPARQL processor for visualization and other tasks.
+## How it works?
+
+`pyjviz` visualization of `pyjanitor` method chains is based on dumping of RDF triples `pyjanitor` method calls into log file. Each call of pyjanitor-registered method (including pandas native method calls) is traced and relevant data is saved into RDF log. Resulting RDF log file contains graph of method calls where user could find the trace of method execution as well as other data useful for visual inspection. The structure of RDF graph saved into log file is desribed in rdflog.shacl.ttl.
+
+NOTE THAT visualisation of pyjviz RDF log is not a main goal of provided package. Graphviz-based visualization avaiable in the package is rather reference implementation with quite limited (but still useful) capablities. RDF log is kept in the files and queried using rdflib-provided SPARQL implementation.
+
+--------
 
 Obj is representation of pyjanitor object like pandas DataFrame. However input args are not objects rather object states. The state of object is represeneted by RDF class ObjState. The idea to separate object and object state is introduced to enable pyjviz to visualize situation when object has mutliple states used in method chain due to in-place operations. Such practice is discouraged by most of data packages but still may be used. In most cases where object has only state defined when object is created there is not difference betwen object and object state since there is one-to-one correspondence (isomorfism). So in some context below refernce to an object may imply object state instead.
 
