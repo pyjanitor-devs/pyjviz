@@ -1,9 +1,10 @@
 import ipdb
 import sys, contextlib
-from . import wb_stack
 from . import obj_tracking
 from . import obj_utils
+from . import wb_stack
 from . import fstriplestore
+from . import rdf_node
 
 class profile_objs:
     def __init__(self):
@@ -40,7 +41,7 @@ class profile_objs:
             if ref_obj_state_uri:
                 ts.dump_triple(nested_call_uri, "<nested-call-ref>", ref_obj_state_uri)
 
-class NestedCall(wb_stack.WithBlock):
+class NestedCall(rdf_node.RDFNode):
     """
     NestedCall object is to represent situation like this:
     ```python
@@ -59,7 +60,11 @@ class NestedCall(wb_stack.WithBlock):
     The code then proceed and causes controlled call of `nested_call_func` via __call__ implementation. Results are saved as self.ret and later used by MethodCall.handle_end_method_call
     """
     def __init__(self, arg_name, arg_func):
-        super().__init__(label = f"nested_call({arg_name})", rdf_type = "NestedCall")        
+        super().__init__(rdf_type = "NestedCall", label = f"nested_call({arg_name})")
+        rdfl = fstriplestore.triple_store
+        parent_uri = wb_stack.wb_stack.stack_entries__[-1].uri
+        rdfl.dump_triple(self.uri, "<part-of>", parent_uri)
+        
         #ipdb.set_trace()
         self.arg_name = arg_name
         self.arg_func = arg_func

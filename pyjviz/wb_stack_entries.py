@@ -13,19 +13,18 @@ from . import obj_utils
 from .nested_call import NestedCall
 
 class CodeBlock(wb_stack.WithBlock):
-    def __init__(self, label = None, rdf_type = "CodeBlock"):
-        super().__init__(label = label, rdf_type = rdf_type)
+    def __init__(self, label = None):
+        super().__init__(rdf_type = "CodeBlock", label = label)
         
 CB = CodeBlock
 
-method_counter = 0 # NB: should be better way to cout method calls
+method_counter = 0 # NB: should be better way to count method calls
 class MethodCall(wb_stack.WithBlock):
-    def __init__(self, method_name, pyjviz_opts = {}):
-        super().__init__(label = method_name, rdf_type = "MethodCall")
+    def __init__(self, method_name):
+        super().__init__(rdf_type = "MethodCall", label = method_name)
         self.method_name = method_name
         self.method_bound_args = None
         self.nested_call_args = []
-        self.pyjviz_opts = pyjviz_opts
         
     def handle_start_method_call(self, method_name, method_signature, method_args, method_kwargs):
         if method_name == 'pin':

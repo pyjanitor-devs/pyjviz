@@ -105,11 +105,11 @@ def dump_subgraph(g, cc_uri, out_fd, popup_output):
                         node_bgcolor = "#88000022"
                         href = make_table_popup_href(head, popup_output)
                 elif obj_type.toPython() == "Series":
-                    glance_rq = "select ?shape { ?obj_state_cc <obj-state> ?obj_state; rdf:type ?target_cc_type; <shape> ?shape }"
-                    for shape in g.query(glance_rq, base = fstriplestore.base_uri, initBindings = bindings):
-                        shape = shape[0]
+                    glance_rq = "select ?shape ?head { ?obj_state_cc <obj-state> ?obj_state; rdf:type ?target_cc_type; <shape> ?shape; <df-head> ?head }"
+                    for shape, head in g.query(glance_rq, base = fstriplestore.base_uri, initBindings = bindings):
+                        shape = shape
                         node_bgcolor = "#88000022"
-                        href = make_table_popup_href(None, popup_output)
+                        href = make_table_popup_href(head, popup_output)
                 else:
                     raise Exception(f"unknown obj_type {obj_type}")
             elif target_cc_type == cc_basic_plot_uri:
@@ -307,7 +307,7 @@ def print_dot(vertical = False, show_objects = False):
     g = fstriplestore.triple_store.get_graph()
     print(dump_dot_code(g, vertical = vertical, show_objects = show_objects))
 
-def save_dot(dot_output_fn = None, vertical = False, show_objects = False, popup_output = False):
+def save_dot(dot_output_fn = None, vertical = False, show_objects = False, popup_output = True):
     ts = fstriplestore.triple_store
     if dot_output_fn is None:
         if hasattr(ts, 'output_fn') and ts.output_fn is not None:
@@ -327,5 +327,5 @@ def show(vertical = False, show_objects = False):
         raise Exception("triple sink is not in-memory file")
 
     g = ts.get_graph()
-    dot_code = dump_dot_code(g, vertical = vertical, show_objects = show_objects)
+    dot_code = dump_dot_code(g, vertical = vertical, show_objects = show_objects, popup_output = False)
     nb_utils.show_method_chain(dot_code)

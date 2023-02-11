@@ -71,6 +71,7 @@ def dump_Series_obj_state_cc(obj_state_uri, s, output_type):
     if output_type == 'head':
         ts.dump_triple(obj_state_cc_uri, "rdf:type", "<CCGlance>")
         ts.dump_triple(obj_state_cc_uri, "<shape>", f"{len(s)}")
+        ts.dump_triple(obj_state_cc_uri, "<df-head>", '"NONE"')
     elif output_type == 'plot':
         ts.dump_triple(obj_state_cc_uri, "rdf:type", "<CCBasicPlot>")        
         ts.dump_triple(obj_state_cc_uri, "<shape>", f"{len(s)}")
