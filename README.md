@@ -53,7 +53,7 @@ with pyjviz.CB("WHY JANITOR?") as sg:
 pyjviz.save_dot(vertical = True, popup_output = True)
 ```
 
-The [`result`][res] of run is SVG file with clickable nodes to provide the way to see some details of program behaviour and generated data objects.
+The [`resulting SVG file`][res] of the run shows method chain calls along with intermidiate return and argument object. It has clickable nodes to provide the details of program behaviour and generated data objects.
 
 [res]: https://asmirnov69.github.io/pyjviz-poc/docs/why-janitor.py.ttl.dot.svg
 
