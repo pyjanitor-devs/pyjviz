@@ -14,13 +14,8 @@ company_sales = {
     }
 
 print(pd.DataFrame.from_dict(company_sales))
-#  SalesMonth  Company1  Company2  Company3
-#  0        Jan     150.0     180.0     400.0
-#  1        Feb     200.0     250.0     500.0
-#  2        Mar     300.0       NaN     600.0
-#  3      April     400.0     500.0     675.0
 
-with pyjviz.CB() as sg:
+with pyjviz.CB("WHY JANITOR?") as sg:
     df = (
         pd.DataFrame.from_dict(company_sales)
         .remove_columns(["Company1"])
@@ -29,15 +24,6 @@ with pyjviz.CB() as sg:
         .rename_column("Company3", "Facebook")
         .add_column("Google", [450.0, 550.0, 800.0])
     )
-    
-    # Output looks like this:
-    # Out[15]:
-    #   SalesMonth  Amazon  Facebook  Google
-    # 0        Jan   180.0     400.0   450.0
-    # 1        Feb   250.0     500.0   550.0
-    # 3      April   500.0     675.0   800.0
-
-    # comment line below to fix spurious apply calls caused by pandas printing implementation
     print(df)
 
 pyjviz.save_dot(vertical = True, popup_output = True)
