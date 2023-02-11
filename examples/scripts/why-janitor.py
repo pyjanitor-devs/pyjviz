@@ -40,4 +40,4 @@ with pyjviz.CB() as sg:
     # comment line below to fix spurious apply calls caused by pandas printing implementation
     print(df)
 
-pyjviz.save_dot(vertical = True, popup_output = False)
+pyjviz.save_dot(vertical = True, popup_output = True)
