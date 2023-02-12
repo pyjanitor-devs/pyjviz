@@ -9,20 +9,21 @@ to run examples install pyjanitor, rdflib and graphviz. After that you can insta
 
 ```
 pip install pyjanitor rdflib graphviz
-cd $PYJVIZ_HOME
+git clone https://github.com/pyjanitor-devs/pyjviz.git
+cd pyjviz
 pip install -e .
 cd examples/scripts
 python a0.py
 ```
 
-Resulting logs are in ~/.pyjviz/rdflog - visualized output stored in .svg files.
+Resulting logs are in ~/.pyjviz - visualized output stored in .svg files.
 
 ## How pyjviz helps pyjanitor users?
 
-Consider pyjanitor example why-janitor.py. Modified version is given below (also avaliable here):
+Consider pyjanitor example [why-janitor.py](https://github.com/pyjanitor-devs/pyjviz/blob/main/examples/scripts/why-janitor.py).
 
 ```python
-# using example from https://pyjanitor-devs.github.io/pyjanitor/#why-janitor as base
+# using example from https://pyjanitor-devs.github.io/pyjanitor/#why-janitor as starting point
 
 import numpy as np
 import pandas as pd

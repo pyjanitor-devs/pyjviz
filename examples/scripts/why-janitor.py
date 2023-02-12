@@ -1,4 +1,4 @@
-# using example from https://pyjanitor-devs.github.io/pyjanitor/#why-janitor as base
+# using example from https://pyjanitor-devs.github.io/pyjanitor/#why-janitor as starting point
 
 import numpy as np
 import pandas as pd
