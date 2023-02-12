@@ -5,8 +5,6 @@
 
 ## Quick start
 
-to run examples install pyjanitor, rdflib and graphviz. After that you can install pyjviz:
-
 ```
 pip install pyjanitor rdflib graphviz
 pip install ipython matplotlib
