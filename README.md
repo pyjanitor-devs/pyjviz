@@ -9,6 +9,7 @@ to run examples install pyjanitor, rdflib and graphviz. After that you can insta
 
 ```
 pip install pyjanitor rdflib graphviz
+pip install ipython matplotlib
 git clone https://github.com/pyjanitor-devs/pyjviz.git
 cd pyjviz
 pip install -e .

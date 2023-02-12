@@ -1,7 +1,7 @@
 # pyjviz module implements basic visualisation of pyjviz rdf log
 # there is no dependency of this code to other part of pyjanitor
 #
-import ipdb
+#import ipdb
 import os.path, tempfile
 import collections
 import html
