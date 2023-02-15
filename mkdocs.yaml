@@ -1,0 +1,59 @@
+# Project information
+site_name: pyjviz documentation
+site_url: https://pyjanitor-devs.github.io/pyjviz
+site_description: >-
+  Python implementation of the R package janitor
+
+# Repository
+repo_name: "pyjanitor-devs/pyjviz"
+repo_url: "https://github.com/pyjanitor-devs/pyjviz"
+
+# Configuration
+docs_dir: docs/
+watch:
+  - pyjviz/
+
+theme:
+  name: "material"
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: "blue grey"
+      accent: "light blue"
+  icon:
+    logo: "fontawesome/solid/book"
+  features:
+    - navigation.instant
+    # - navigation.tabs
+    - navigation.top
+    - toc.follow
+    - content.code.copy
+  language: en
+
+# Page tree
+# We customize the navigation by hand to control the order
+# in which pages show up.
+nav:
+  - Home: index.md
+
+plugins:
+  - search
+  - autorefs
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            docstring_style: "google"
+            docstring_options:
+              trim_doctest_flags: true
+            show_root_toc_entry: false
+            show_submodules: true
+            show_source: true
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      use_pygments: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
