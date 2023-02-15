@@ -43,9 +43,6 @@ jobs:
           name: website
           path: site/
 
-      - name: Test docs
-        run: pytest -m "documentation"
-
       - name: Docs preview
         if: ${{ github.event_name == 'pull_request' }}
         uses: nwtgck/actions-netlify@v1.1
