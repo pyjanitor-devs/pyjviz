@@ -5,6 +5,7 @@ import pandas_flavor as pf
 import pyjviz
 import os.path, sys
 
+
 class CustomThread(threading.Thread):
     def __init__(self, t_func):
         threading.Thread.__init__(self)
@@ -15,38 +16,44 @@ class CustomThread(threading.Thread):
     def run(self):
         self.value = self.t_func()
 
+
 def prun(t_func):
     t = CustomThread(t_func)
     t.start()
     return t
+
 
 def pwait(t):
     t.join()
     t_ret = t.value
     return t_ret
 
+
 @pf.register_dataframe_method
 def m(df, l_df, r_df):
     print("df:", df.shape)
     print("l_df:", l_df.shape)
     print("r_df:", r_df.shape)
-    return pd.concat([df, l_df, r_df], axis = 1)
+    return pd.concat([df, l_df, r_df], axis=1)
+
 
 @pf.register_dataframe_method
 def x(df):
     print("x:", df.shape)
     return pd.DataFrame(df)
 
+
 @pf.register_dataframe_method
 def y(df, int_arg):
     print("y:", df.shape, int_arg)
     return pd.DataFrame(df)
 
+
 if __name__ == "__main__":
     print("Main Thread Here!!")
 
-    df = pd.DataFrame({'a': range(10)})
-    
+    df = pd.DataFrame({"a": range(10)})
+
     with pyjviz.CB("c") as c:
         r1 = df.x()
         if 1:
@@ -57,5 +64,5 @@ if __name__ == "__main__":
             r20 = df.y(0)
             r21 = df.y(1)
             res = r1.m(r20, r21)
-    
-    pyjviz.save_dot(show_objects = False)
+
+    pyjviz.save_dot(show_objects=False)

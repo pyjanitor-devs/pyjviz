@@ -8,25 +8,37 @@ import janitor
 import pyjviz
 
 if __name__ == "__main__":
-
     if 1:
         url = "https://github.com/pyjanitor-devs/pyjanitor/blob/dev/examples/notebooks/dirty_data.xlsx?raw=true"
-        dirty = pd.read_excel(url, engine = 'openpyxl')        
+        dirty = pd.read_excel(url, engine="openpyxl")
     else:
         dirty = pd.read_excel("../data/dirty_data.xlsx")
-        
+
     print(dirty)
 
     with pyjviz.CB("from_dirty_to_clean") as c:
-        clean = (dirty
-                 .clean_names()
-                 .dropna(axis='columns', how='all')
-                 .dropna(axis='rows', how='all')
-                 .rename(columns={"%_allocated": "percent_allocated", "full_time_": "full_time"})
-                 .assign(certification = lambda df: df.certification.combine_first(df.certification_1))
-                 .drop(columns='certification_1')
-                 .assign(hire_date = lambda df: pd.to_datetime(df.hire_date, unit='D', origin='1899-12-30'))
-                 )
+        clean = (
+            dirty.clean_names()
+            .dropna(axis="columns", how="all")
+            .dropna(axis="rows", how="all")
+            .rename(
+                columns={
+                    "%_allocated": "percent_allocated",
+                    "full_time_": "full_time",
+                }
+            )
+            .assign(
+                certification=lambda df: df.certification.combine_first(
+                    df.certification_1
+                )
+            )
+            .drop(columns="certification_1")
+            .assign(
+                hire_date=lambda df: pd.to_datetime(
+                    df.hire_date, unit="D", origin="1899-12-30"
+                )
+            )
+        )
     print(clean)
 
-    pyjviz.save_dot(vertical = True, show_objects = False)
+    pyjviz.save_dot(vertical=True, show_objects=False)
