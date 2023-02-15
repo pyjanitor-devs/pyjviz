@@ -13,3 +13,6 @@ dependencies:
   - flake8
   - mkdocs
   - pre-commit
+  - mkdocs-material
+  - mkdocstrings
+  - pymdown-extensions
