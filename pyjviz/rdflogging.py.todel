@@ -26,7 +26,7 @@ def show_obj(edge_uri, pyjviz_obj):
     rdflogger.dump_triple__(subj_uri, edge_uri, show_obj_uri)
     rdflogger.dump_DataFrame_obj_state(show_obj_uri, pyjviz_obj)
 
-class RDFLogger:        
+class RDFLogger:
     def __init__(self, triples_sink):
         self.triples_sink = triples_sink
         self.known_threads = {}
@@ -35,13 +35,13 @@ class RDFLogger:
     def flush__(self):
         self.triples_sink.flush()
         #self.out_fd.flush()
-        
+
     def dump_triple__(self, subj, pred, obj):
         self.triples_sink.dump_triple(subj, pred, obj)
         #print(subj, pred, obj, ".", file = self.out_fd)
 
     def register_thread(self, thread_id):
-        if not thread_id in self.known_threads:            
+        if not thread_id in self.known_threads:
             thread_uri = self.known_threads[thread_id] = f"<Thread#{thread_id}>"
             self.dump_triple__(thread_uri, "rdf:type", "<Thread>")
         else:
@@ -76,11 +76,10 @@ class RDFLogger:
             self.dump_triple__(obj_state_uri, "<df-head>", '"' + df_head_html + '"')
 
     def dump_Series_obj_state(self, obj_state_uri, s):
-        self.dump_triple__(obj_state_uri, "<df-shape>", f'"{s.shape}"')        
+        self.dump_triple__(obj_state_uri, "<df-shape>", f'"{s.shape}"')
     """
-    
+
 rdflogger = None
 def set_rdflogger__():
     global rdflogger
     rdflogger = RDFLogger(fstriplestore.triple_store)
-
