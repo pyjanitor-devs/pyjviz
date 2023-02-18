@@ -39,7 +39,7 @@
       sh:property [sh:path <obj-type>; sh:minCount 1; sh:maxCount 1; sh:datatype xsd:string];
       sh:property [sh:path <obj-uuid>; sh:minCount 1; sh:maxCount 1; sh:datatype xsd:string];
       sh:property [sh:path <obj-pyid>; sh:minCount 1; sh:maxCount 1; sh:datatype xsd:integer].
-      
+
 <ObjState> rdf:type rdfs:Class; rdf:type sh:NodeShape; sh:closed true; dash:closedByType true;
 	   sh:property [sh:path rdf:type; sh:minCount 1; sh:maxCount 1; sh:class <ObjState>];
 	   sh:property [sh:path <part-of>; sh:minCount 1; sh:maxCount 1; sh:class <WithBlock>];
@@ -51,7 +51,7 @@
 <ObjStateCC> rdf:type rdfs:Class; rdf:type sh:NodeShape; sh:closed true; dash:closedByType true;
 	     sh:property [sh:path rdf:type; sh:minCount 1; sh:maxCount 1; sh:class <ObjStateCC>];
 	     sh:property [sh:path rdf:type; sh:minCount 1; sh:maxCount 1; sh:class <CC>];
-	     
+
 <CC> rdf:type rdfs:Class; rdf:type sh:NodeShape; sh:closed true; dash:closedByType true;
      sh:property [sh:path rdf:type; sh:minCount 1; sh:maxCount 1];
 
@@ -64,4 +64,3 @@
      	      sh:property [sh:path rdf:type; sh:minCount 1; sh:maxCount 1];
 	      sh:property [sh:path <shape>; sh:minCount 1; sh:maxCount 1; sh:datatype xsd:string];
 	      sh:property [sh:path <plot-im>; sh:minCount 1; sh:maxCount 1; sh:datatype xsd:string];
-

@@ -12,7 +12,7 @@ class UWMethodCall:
         self.obj = obj
         self.method_name = method_name
         self.bound_method = bound_method
-        
+
     def __call__(self, *method_args, **method_kwargs):
         rdfl = rdflogging.rdflogger
 
@@ -21,17 +21,17 @@ class UWMethodCall:
 
         if methods_chain.curr_methods_chain_path:
             t_obj = obj_tracking.tracking_store.get_tracking_obj(self.obj)
-            chain_path = "/" + "/".join(methods_chain.curr_methods_chain_path)            
+            chain_path = "/" + "/".join(methods_chain.curr_methods_chain_path)
 
             thread_id = threading.get_native_id()
             method_call_uri = rdfl.dump_method_call_in(chain_path, thread_id, self.obj, t_obj, self.method_name, method_args, method_kwargs)
-            
+
         real_method_args = [x.u_obj if isinstance(x, UWObject) else x for x in method_args]
         ret = self.bound_method(*real_method_args, **method_kwargs)
 
         if ret is None:
             ret = self.obj.u_obj
-        
+
         if not methods_chain.curr_methods_chain_path:
             ret_obj = ret
         else:
@@ -42,7 +42,7 @@ class UWMethodCall:
 
             ret_t_obj.last_obj_state_uri = rdfl.dump_obj_state(chain_path, ret_obj, ret_t_obj)
             rdfl.dump_triple__(method_call_uri, "<method-call-return>", ret_t_obj.last_obj_state_uri)
-            
+
         return ret_obj
 
 class UWObject:
@@ -70,7 +70,7 @@ class UWObject:
         self.last_version_num += 1
         return ret
     """
-    
+
     def __getattr__(self, attr):
         u_obj = self.__getattribute__('u_obj')
         method_name = attr
@@ -99,5 +99,5 @@ class UWObjectFactory:
 
     def find_obj(self, wrapper_obj):
         return id(wrapper_obj) in self.objs
-    
+
 uw_object_factory = UWObjectFactory()

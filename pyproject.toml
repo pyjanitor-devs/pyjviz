@@ -1,0 +1,47 @@
+[tool.black]
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | env
+  | venv
+)/
+'''
+include = '\.pyi?$'
+line-length = 79
+target-version = ['py36', 'py37', 'py38']
+
+[tool.interrogate]
+exclude = ["setup.py", "docs", "nbconvert_config.py"]
+fail-under = 55
+ignore-init-method = true
+ignore-init-module = true
+ignore-module = false
+ignore-private = false
+ignore-semiprivate = false
+quiet = false
+verbose = 2
+
+# https://docs.pytest.org/en/6.2.x/mark.html#registering-marks
+[tool.pytest.ini_options]
+markers = [
+    "functions: test for general functions",
+    "biology: tests for biology",
+    "chemistry: tests for chemistry",
+    "finance: tests for finance",
+    "utils: utility tests",
+    "engineering: tests for engineering",
+    "ml: tests for machine learning",
+    "spark_functions: tests for pyspark functions",
+    "xarray: tests for xarray functions",
+    "timeseries: tests for timeseries",
+    "documentation: tests for documentation",
+    "turtle: tests that take more than 5 seconds to execute",
+]
