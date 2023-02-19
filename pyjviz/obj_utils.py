@@ -6,6 +6,7 @@ import base64
 from . import fstriplestore
 from . import obj_tracking
 from . import wb_stack
+from . import rdfio
 
 random_id = 0
 
@@ -36,15 +37,6 @@ def dump_obj_state(obj):
 
 
 def dump_obj_state_cc(obj_state_uri, obj, output_type="head"):
-    if isinstance(obj, pd.DataFrame):
-        dump_DataFrame_obj_state_cc(obj_state_uri, obj, output_type)
-    elif isinstance(obj, pd.Series):
-        dump_Series_obj_state_cc(obj_state_uri, obj, output_type)
-    else:
-        raise Exception(f"unknown obj type at {obj_state_uri}")
-
-
-def dump_DataFrame_obj_state_cc(obj_state_uri, df, output_type):
     ts = fstriplestore.triple_store
     global random_id
     obj_state_cc_uri = f"<ObjStateCC#{random_id}>"
@@ -53,53 +45,5 @@ def dump_DataFrame_obj_state_cc(obj_state_uri, df, output_type):
     ts.dump_triple(obj_state_cc_uri, "rdf:type", "<ObjStateCC>")
     ts.dump_triple(obj_state_cc_uri, "<obj-state>", obj_state_uri)
 
-    if output_type == "head":
-        ts.dump_triple(obj_state_cc_uri, "rdf:type", "<CCGlance>")
-        ts.dump_triple(obj_state_cc_uri, "<shape>", f'"{df.shape}"')
-        df_head_html = (
-            df.head(10)
-            .applymap(lambda x: textwrap.shorten(str(x), 50))
-            .to_html()
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace('"', "&quot;")
-            .replace("\n", "&#10;")
-        )
-        ts.dump_triple(obj_state_cc_uri, "<df-head>", '"' + df_head_html + '"')
-    elif output_type == "plot":
-        ts.dump_triple(obj_state_cc_uri, "rdf:type", "<CCBasicPlot>")
-        ts.dump_triple(obj_state_cc_uri, "<shape>", f'"{df.shape}"')
-        out_fd = io.BytesIO()
-        fig = df.plot().get_figure()
-        fig.savefig(out_fd)
-        # ipdb.set_trace()
-        im_s = base64.b64encode(out_fd.getvalue()).decode("ascii")
-        ts.dump_triple(obj_state_cc_uri, "<plot-im>", '"' + im_s + '"')
-    else:
-        raise Exception(f"unknown output_type: {output_type}")
-
-
-def dump_Series_obj_state_cc(obj_state_uri, s, output_type):
-    ts = fstriplestore.triple_store
-    global random_id
-    obj_state_cc_uri = f"<ObjStateCC#{random_id}>"
-    random_id += 1
-
-    ts.dump_triple(obj_state_cc_uri, "rdf:type", "<ObjStateCC>")
-    ts.dump_triple(obj_state_cc_uri, "<obj-state>", obj_state_uri)
-
-    if output_type == "head":
-        ts.dump_triple(obj_state_cc_uri, "rdf:type", "<CCGlance>")
-        ts.dump_triple(obj_state_cc_uri, "<shape>", f"{len(s)}")
-        ts.dump_triple(obj_state_cc_uri, "<df-head>", '"NONE"')
-    elif output_type == "plot":
-        ts.dump_triple(obj_state_cc_uri, "rdf:type", "<CCBasicPlot>")
-        ts.dump_triple(obj_state_cc_uri, "<shape>", f"{len(s)}")
-        out_fd = io.BytesIO()
-        fig = s.plot().get_figure()
-        fig.savefig(out_fd)
-        # ipdb.set_trace()
-        im_s = base64.b64encode(out_fd.getvalue()).decode("ascii")
-        ts.dump_triple(obj_state_cc_uri, "<plot-im>", '"' + im_s + '"')
-    else:
-        raise Exception(f"unknown output_type: {output_type}")
+    rdfio_obj = rdfio.TableDump(ts) if output_type == "head" else rdfio.BasicPlot(ts)
+    rdfio_obj.to_rdf(obj, obj_state_cc_uri)
