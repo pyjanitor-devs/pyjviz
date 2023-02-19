@@ -96,13 +96,13 @@ def dump_subgraph(g, cc_uri, out_fd, popup_output):
         dump_subgraph(g, subgraph, out_fd, popup_output)
 
         rq = """
-        select ?obj_state ?version ?obj_type ?obj_uuid {
-          ?obj_state rdf:type <ObjState>; <obj> ?obj.
+        select ?obj_state ?version ?obj_type ?obj_uuid ?graphviz_obj_state_label {
+          ?obj_state rdf:type <ObjState>; <obj> ?obj; <graphviz-obj-state-label> ?graphviz_obj_state_label.
           ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid.
           ?obj_state <part-of>+ ?sg; <version> ?version .
         }
         """
-        for obj_state, version, obj_type, obj_uudi in g.query(
+        for obj_state, version, obj_type, obj_uudi, graphviz_obj_state_label in g.query(
             rq, base=fstriplestore.base_uri, initBindings={"sg": subgraph}
         ):
             obj_state_cc_rq = """
@@ -187,13 +187,16 @@ def dump_subgraph(g, cc_uri, out_fd, popup_output):
             else:
                 raise Exception(f"unknown cc_type {target_cc_type}")
 
+            version_s = " " if version.toPython() == "0" else version
+            graphviz_obj_state_label_s = base64.b64decode(graphviz_obj_state_label.toPython().encode("ascii")).decode("ascii")            
             print(
                 f"""
             node_{uri_to_dot_id(obj_state)} [
             color="{node_bgcolor}"
             shape = rect
             label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
-            <tr> <td> <b>{obj_state.split('/')[-1]}</b><br/>{obj_type} {shape.toPython()} {version}</td> </tr>
+            {graphviz_obj_state_label_s}
+            <tr> <td> <font face="small" point-size="8px"><b>{obj_state.split('/')[-1]}</b> <i>{version_s}</i></font></td></tr>
             </table>>
             {href}
             ];

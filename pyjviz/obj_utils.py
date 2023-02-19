@@ -31,6 +31,9 @@ def dump_obj_state(obj):
     t_obj.last_obj_state_uri = obj_state_uri
     t_obj.last_version_num += 1
 
+    obj_state_label_dumper = rdfio.CCGraphvizObjStateLabel(fstriplestore.triple_store)
+    obj_state_label_dumper.to_rdf(obj, obj_state_uri)
+    
     dump_obj_state_cc(obj_state_uri, obj, output_type="head")
 
     return t_obj
@@ -45,5 +48,5 @@ def dump_obj_state_cc(obj_state_uri, obj, output_type="head"):
     ts.dump_triple(obj_state_cc_uri, "rdf:type", "<ObjStateCC>")
     ts.dump_triple(obj_state_cc_uri, "<obj-state>", obj_state_uri)
 
-    rdfio_obj = rdfio.TableDump(ts) if output_type == "head" else rdfio.BasicPlot(ts)
+    rdfio_obj = rdfio.CCGlance(ts) if output_type == "head" else rdfio.CCBasicPlot(ts)
     rdfio_obj.to_rdf(obj, obj_state_cc_uri)
