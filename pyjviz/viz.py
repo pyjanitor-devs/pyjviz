@@ -252,7 +252,7 @@ def dump_subgraph(g, cc_uri, out_fd, popup_output):
             )
 
         if subgraph_label != rdflib.RDF.nil:
-            print("}}", file=out_fd)
+            print(f"}}", file=out_fd)
 
 
 def dump_dot_code(g, vertical, show_objects, popup_output):
