@@ -12,7 +12,6 @@ random_id = 0
 
 def dump_obj_state(obj):
     caller_stack_entry = wb_stack.wb_stack.get_parent_of_current_entry()
-    stack_entry = wb_stack.wb_stack.get_top()
     t_obj, obj_found = obj_tracking.tracking_store.get_tracking_obj(obj)
 
     global random_id
