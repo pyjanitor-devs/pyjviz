@@ -31,7 +31,7 @@ def dump_obj_state(obj):
     t_obj.last_obj_state_uri = obj_state_uri
     t_obj.last_version_num += 1
 
-    obj_state_label_dumper = rdfio.CCGraphvizObjStateLabel(fstriplestore.triple_store)
+    obj_state_label_dumper = rdfio.CCObjStateLabel(fstriplestore.triple_store)
     obj_state_label_dumper.to_rdf(obj, obj_state_uri)
     
     dump_obj_state_cc(obj_state_uri, obj, output_type="head")

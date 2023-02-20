@@ -40,10 +40,11 @@ class FSTripleOutput:
         <ObjStateCC> rdf:type rdfs:Class .
 
         <CC> rdf:type rdfs:Class .
-        <CCGlance> rdf:type rdfs:Class .
-        <CCGlance> rdfs:subClassOf <CC> .
-        <CCBasicPlot> rdf:type rdfs:Class .
-        <CCBasicPlot> rdfs:subClassOf <CC> .
+        <CCObjStateLabel> rdf:type rdfs:Class .
+        <CCObjStateLabelDataFrame> rdf:type rdfs:Class; rdfs:subClassOf <CCObjStateLabel> .
+        <CCObjStateLabelSeries> rdf:type rdfs:Class; rdfs:subClassOf <CCObjStateLabel> .
+        <CCGlance> rdf:type rdfs:class; rdfs:subClassOf <CC> .
+        <CCBasicPlot> rdf:type rdfs:Class; rdfs:subClassOf <CC> .
         """
             ),
             file=self.out_fd,

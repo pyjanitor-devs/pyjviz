@@ -6,7 +6,16 @@ import io, base64
 def to_base64(s):
     return base64.b64encode(s.encode('ascii')).decode('ascii')
 
-class CCGraphvizObjStateLabel:
+class CCObjStateLabel:
+    """
+    CCObjStateLabel - provides to_rdf methods to convert objects to RDF class CCObjStateLabel.
+    Note that produced RDF node *uri* is subclass of CCObjStateLabel. Full hierarchy of CCObjStateLabel:
+    ```mermaid
+    graph TD
+    CCObjStateLabelDataFrame --> CCObjStateLabel
+    CCObjStateLabelSeries --> CCObjStateLabel
+    ```
+    """
     def __init__(self, triple_store):
         self.triple_store = triple_store
 
@@ -18,21 +27,17 @@ class CCGraphvizObjStateLabel:
     def to_rdf_impl(self, obj: pd.DataFrame, uri: str) -> None:
         ts = self.triple_store
         df = obj
-        ts.dump_triple(uri, "rdf:type", "<CCGraphVizObjStateLabel>")
-        obj_type = type(obj).__name__
-        shape = df.shape
-        label = f"<tr> <td>{obj_type}</td><td>{df.shape}</td> </tr>"        
-        ts.dump_triple(uri, "<graphviz-obj-state-label>", '"' + to_base64(label) + '"')        
+        ts.dump_triple(uri, "rdf:type", "<CCObjStateLabel>")
+        ts.dump_triple(uri, "rdf:type", "<CCObjStateLabelDataFrame>")
+        ts.dump_triple(uri, "<df-shape>", f'"{df.shape}"')
 
     @to_rdf.register
     def to_rdf_impl(self, obj: pd.Series, uri: str) -> None:
         ts = self.triple_store
-        df = obj
-        ts.dump_triple(uri, "rdf:type", "<CCGraphVizObjStateLabel>")
-        obj_type = type(obj).__name__
-        size = obj.shape
-        label = f"<tr> <td>{obj_type}</td><td>{size}</td> </tr>"
-        ts.dump_triple(uri, "<graphviz-obj-state-label>", '"' + to_base64(label) + '"')        
+        s = obj
+        ts.dump_triple(uri, "rdf:type", "<CCObjStateLabel>")
+        ts.dump_triple(uri, "rdf:type", "<CCObjStateLabelSeries>")
+        ts.dump_triple(uri, "<s-size>", f'"{s.shape}"')
 
         
 class CCGlance:
@@ -66,7 +71,7 @@ class CCGlance:
         s = obj
         ts.dump_triple(uri, "rdf:type", "<CCGlance>")
         ts.dump_triple(uri, "<shape>", f"{len(s)}")
-        ts.dump_triple(uri, "<df-head>", '"NONE"')
+        ts.dump_triple(uri, "<s-head>", '"NONE"')
 
 class CCBasicPlot:
     def __init__(self, triple_store):
