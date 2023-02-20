@@ -97,6 +97,7 @@ class CCBasicPlot:
     @to_rdf.register
     def to_rdf_impl(self, obj: pd.Series, uri: str) -> None:
         ts = self.triple_store
+        s = obj
         ts.dump_triple(uri, "rdf:type", "<CCBasicPlot>")
         ts.dump_triple(uri, "<shape>", f"{len(s)}")
         out_fd = io.BytesIO()
