@@ -2,6 +2,7 @@ from functools import singledispatchmethod
 import pandas as pd
 import textwrap
 import io, base64
+from . import fstriplestore
 
 def to_base64(s):
     return base64.b64encode(s.encode('ascii')).decode('ascii')
@@ -16,33 +17,33 @@ class CCObjStateLabel:
     CCObjStateLabelSeries --> CCObjStateLabel
     ```
     """
-    def __init__(self, triple_store):
-        self.triple_store = triple_store
-
+    def __init__(self):
+        pass
+    
     @singledispatchmethod
     def to_rdf(self, obj, uri):
         raise Exception(f"can't find impl to_rdf for {type(obj)}, uri was {uri}")
 
     @to_rdf.register
     def to_rdf_impl(self, obj: pd.DataFrame, uri: str) -> None:
-        ts = self.triple_store
+        ts = fstriplestore.triple_store
         df = obj
-        ts.dump_triple(uri, "rdf:type", "<CCObjStateLabel>")
+        #ts.dump_triple(uri, "rdf:type", "<CCObjStateLabel>")
         ts.dump_triple(uri, "rdf:type", "<CCObjStateLabelDataFrame>")
         ts.dump_triple(uri, "<df-shape>", f'"{df.shape}"')
 
     @to_rdf.register
     def to_rdf_impl(self, obj: pd.Series, uri: str) -> None:
-        ts = self.triple_store
+        ts = fstriplestore.triple_store
         s = obj
-        ts.dump_triple(uri, "rdf:type", "<CCObjStateLabel>")
+        #ts.dump_triple(uri, "rdf:type", "<CCObjStateLabel>")
         ts.dump_triple(uri, "rdf:type", "<CCObjStateLabelSeries>")
         ts.dump_triple(uri, "<s-size>", f'"{s.shape}"')
 
         
 class CCGlance:
-    def __init__(self, triple_store):
-        self.triple_store = triple_store
+    def __init__(self):
+        pass
 
     @singledispatchmethod
     def to_rdf(self, obj, uri):
@@ -50,7 +51,7 @@ class CCGlance:
 
     @to_rdf.register    
     def to_rdf_impl(self, obj: pd.DataFrame, uri: str) -> None:
-        ts = self.triple_store
+        ts = fstriplestore.triple_store
         df = obj
         ts.dump_triple(uri, "rdf:type", "<CCGlance>")
         ts.dump_triple(uri, "<shape>", f'"{df.shape}"')
@@ -67,7 +68,7 @@ class CCGlance:
 
     @to_rdf.register
     def to_rdf_impl(self, obj: pd.Series, uri: str) -> None:        
-        ts = self.triple_store
+        ts = fstriplestore.triple_store
         s = obj
         ts.dump_triple(uri, "rdf:type", "<CCGlance>")
         ts.dump_triple(uri, "<shape>", f"{len(s)}")
@@ -75,7 +76,7 @@ class CCGlance:
 
 class CCBasicPlot:
     def __init__(self, triple_store):
-        self.triple_store = triple_store
+        pass
 
     @singledispatchmethod
     def to_rdf(self, obj, uri):
@@ -83,7 +84,7 @@ class CCBasicPlot:
 
     @to_rdf.register
     def to_rdf_impl(self, obj: pd.DataFrame, uri: str) -> None:
-        ts = self.triple_store
+        ts = fstriplestore.triple_store
         df = obj
         ts.dump_triple(uri, "rdf:type", "<CCBasicPlot>")
         ts.dump_triple(uri, "<shape>", f'"{df.shape}"')
@@ -96,7 +97,7 @@ class CCBasicPlot:
 
     @to_rdf.register
     def to_rdf_impl(self, obj: pd.Series, uri: str) -> None:
-        ts = self.triple_store
+        ts = fstriplestore.triple_store
         s = obj
         ts.dump_triple(uri, "rdf:type", "<CCBasicPlot>")
         ts.dump_triple(uri, "<shape>", f"{len(s)}")

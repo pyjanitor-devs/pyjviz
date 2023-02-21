@@ -10,37 +10,31 @@ from . import obj_utils
 
 from .nested_call import NestedCall
 
-
-class CodeBlock(wb_stack.WithBlock):
-    def __init__(self, label=None):
-        super().__init__(rdf_type="CodeBlock", label=label)
-
-
-CB = CodeBlock
-
 method_counter = 0  # NB: should be better way to count method calls
-
-
 class MethodCall(wb_stack.WithBlock):
     def __init__(self, method_name):
-        super().__init__(rdf_type="MethodCall", label=method_name)
+        super().__init__(method_name)
+        self.set_obj_uri("MethodCall")
         self.method_name = method_name
         self.method_bound_args = None
         self.nested_call_args = []
 
+    def dump_rdf(self):
+        ts = fstriplestore.triple_store
+        
     def handle_start_method_call(
         self, method_name, method_signature, method_args, method_kwargs
     ):
         if method_name == "pin":
             arg0_obj = method_args[0]
-            t_obj, obj_found = obj_tracking.tracking_store.get_tracking_obj(
+            t_obj, obj_found = obj_tracking.get_tracking_obj(
                 arg0_obj
             )
             if not obj_found:
                 t_obj = obj_utils.dump_obj_state(arg0_obj)
-            obj_utils.dump_obj_state_cc(
-                t_obj.last_obj_state_uri, arg0_obj, "plot"
-            )
+            #obj_utils.dump_obj_state_cc(
+            #    t_obj.last_obj_state.uri, arg0_obj, "plot"
+            #)
             return method_args, method_kwargs
 
         all_args = method_args
@@ -86,6 +80,11 @@ class MethodCall(wb_stack.WithBlock):
         thread_id = threading.get_native_id()
 
         # NB: since apply_defaults is not called then no tracking of args with default values will take place
+
+        ts = fstriplestore.triple_store
+        ts.dump_triple(self.uri, "rdf:type", self.rdf_type_uri)
+        ts.dump_triple(self.uri, "rdf:label", '"' + method_name + '"')
+        ts.dump_triple(self.uri, "<part-of>", self.parent_stack_entry.uri)
         self.dump_method_call_in__(
             thread_id, method_name, method_signature, self.method_bound_args
         )
@@ -104,12 +103,12 @@ class MethodCall(wb_stack.WithBlock):
 
         ret_t_obj = obj_utils.dump_obj_state(ret_obj)
         ts.dump_triple(
-            self.uri, "<method-call-return>", ret_t_obj.last_obj_state_uri
+            self.uri, "<method-call-return>", ret_t_obj.last_obj_state.uri
         )
 
         # catching nested calls values returned after method call executed
         for nested_call_obj in self.nested_call_args:
-            t_obj, obj_found = obj_tracking.tracking_store.get_tracking_obj(
+            t_obj, obj_found = obj_tracking.get_tracking_obj(
                 nested_call_obj.ret
             )
             if not obj_found:
@@ -117,7 +116,7 @@ class MethodCall(wb_stack.WithBlock):
                     "expected nested call return obj to be tracked already"
                 )
             ts.dump_triple(
-                nested_call_obj.uri, "<ret-val>", t_obj.last_obj_state_uri
+                nested_call_obj.uri, "<ret-val>", t_obj.last_obj_state.uri
             )
 
     def dump_method_call_arg__(self, c, arg_name, arg_obj):
@@ -141,13 +140,13 @@ class MethodCall(wb_stack.WithBlock):
             (
                 arg_t_obj,
                 obj_found,
-            ) = obj_tracking.tracking_store.get_tracking_obj(arg_obj)
+            ) = obj_tracking.get_tracking_obj(arg_obj)
             if not obj_found:
                 arg_t_obj = obj_utils.dump_obj_state(arg_obj)
             ts.dump_triple(
                 method_call_uri,
                 f"<method-call-arg{c}>",
-                arg_t_obj.last_obj_state_uri,
+                arg_t_obj.last_obj_state.uri,
             )
             ts.dump_triple(
                 method_call_uri,

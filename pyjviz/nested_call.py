@@ -3,7 +3,7 @@ from . import obj_tracking
 from . import obj_utils
 from . import wb_stack
 from . import fstriplestore
-from . import rdf_node
+from . import dia_objs
 
 
 class profile_objs:
@@ -55,7 +55,7 @@ class profile_objs:
                 )
 
 
-class NestedCall(rdf_node.RDFNode):
+class NestedCall(dia_objs.DiagramObj):
     """
     NestedCall object is to represent situation like this:
     ```python
@@ -75,18 +75,22 @@ class NestedCall(rdf_node.RDFNode):
     """
 
     def __init__(self, arg_name, arg_func):
-        super().__init__(
-            rdf_type="NestedCall", label=f"nested_call({arg_name})"
-        )
-        rdfl = fstriplestore.triple_store
-        parent_uri = wb_stack.wb_stack.stack_entries__[-1].uri
-        rdfl.dump_triple(self.uri, "<part-of>", parent_uri)
+        super().__init__()
+        self.label = f"nested_call({arg_name})"
 
         # ipdb.set_trace()
         self.arg_name = arg_name
         self.arg_func = arg_func
         self.ret = None
 
+        self.set_obj_uri("NestedCall")
+
+    def dump_rdf(self):
+        ts = fstriplestore.triple_store
+        ts.dump_triple(self.uri, "rdf:type", self.rdf_type_uri)
+        parent_uri = wb_stack.wb_stack.stack_entries__[-1].uri
+        ts.dump_triple(self.uri, "<part-of>", parent_uri)
+        
     def __call__(self, *args, **kwargs):
         ts = fstriplestore.triple_store
         print("NestedCall called")
@@ -98,9 +102,9 @@ class NestedCall(rdf_node.RDFNode):
 
         ctx.dump_nested_call_refs(self.uri)
 
-        ret_t_obj, obj_found = obj_tracking.tracking_store.get_tracking_obj(
-            self.ret
-        )
+        ret_t_obj, obj_found = obj_tracking.get_tracking_obj(self.ret)
         if not obj_found:
             ret_t_obj = obj_utils.dump_obj_state(self.ret)
+
+        self.dump_rdf()
         return self.ret

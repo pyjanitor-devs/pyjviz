@@ -187,7 +187,7 @@ def dump_dot_code(g, vertical, show_objects, popup_output):
     if show_objects:  # show transient objects
         rq = """
         select ?obj ?obj_type ?obj_uuid ?obj_pyid {
-          ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid; <obj-pyid> ?obj_pyid
+          ?obj rdf:type <ObjId>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid; <obj-pyid> ?obj_pyid
         }
         """
         for obj, obj_type, obj_uuid, obj_pyid in g.query(

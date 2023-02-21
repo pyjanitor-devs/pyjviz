@@ -33,7 +33,6 @@ class FSTripleOutput:
         <MethodCall> rdf:type rdfs:Class .
         <MethodCall> rdfs:subClassOf <WithBlock> .
         <NestedCall> rdf:type rdfs:Class .
-        <NestedCall> rdfs:subClassOf <WithBlock> .
 
         <Obj> rdf:type rdfs:Class .
         <ObjState> rdf:type rdfs:Class .

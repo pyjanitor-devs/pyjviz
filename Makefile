@@ -23,6 +23,10 @@ test:
 	pytest -v -n auto --color=yes
 
 lint:
+	@echo "Checking code formatting..."
+	pre-commit run flake8 --all-files
+
+lint-src:
 	@echo "Checking code formatting in pyjviz source dir..."
 	flake8 --color never pyjviz
 

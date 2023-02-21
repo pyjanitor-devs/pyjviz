@@ -93,7 +93,7 @@ class ObjStateGraphVizNode:
         obj_state_rq = """
         select ?obj_type ?version {
           ?obj_state <obj> ?obj; <version> ?version.
-          ?obj rdf:type <Obj>; <obj-type> ?obj_type.
+          ?obj rdf:type <ObjId>; <obj-type> ?obj_type.
         }
         """
         res_d = rq_d(self.g, obj_state_rq, {'obj_state': self.obj_state})
@@ -119,6 +119,7 @@ class ObjStateGraphVizNode:
 
         
     def build_popup_content(self):
+        return
         rq = """
         select ?obj_state_cc ?cc_type {
            ?obj_state_cc <obj-state> ?obj_state.

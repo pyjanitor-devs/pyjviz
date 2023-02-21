@@ -1,8 +1,8 @@
 from . import fstriplestore
-from . import rdf_node
+from . import dia_objs
 
 
-class WithBlock(rdf_node.RDFNode):
+class WithBlock(dia_objs.DiagramObj):
     """
     Code blocks in python - https://docs.python.org/3/reference/executionmodel.html#:~:text=A%20Python%20program%20is%20constructed,typed%20interactively%20is%20a%20block.
     With PEP use of 'block' - https://peps.python.org/pep-0343/#specification-the-with-statement
@@ -12,17 +12,18 @@ class WithBlock(rdf_node.RDFNode):
       - rdf_type_uri- to identify node type
     """  # noqa: E501
 
-    def __init__(self, *, rdf_type, label):
-        super().__init__(rdf_type, label)
-        rdfl = fstriplestore.triple_store
+    def __init__(self, label):
+        super().__init__()
         global wb_stack
-        parent_uri = (
-            wb_stack.stack_entries__[-1].uri
+        self.label = label
+        self.parent_stack_entry = (
+            wb_stack.stack_entries__[-1]
             if wb_stack.size() > 0
-            else "rdf:nil"
+            else None
         )
-        rdfl.dump_triple(self.uri, "<part-of>", parent_uri)
 
+        self.dump_rdf()
+        
     def __enter__(self):
         global wb_stack
         wb_stack.push(self)
@@ -40,7 +41,7 @@ class WithBlockStack:
 
     def to_string(self):
         return ":".join(
-            [f"{x.label}@{x.rdf_type}" for x in self.stack_entries__]
+            [f"{x.label}@{type(x).__name__}" for x in self.stack_entries__]
         )
 
     def size(self):
@@ -59,10 +60,10 @@ class WithBlockStack:
         ret = None
 
         for se in reversed(self.stack_entries__):
-            if se.rdf_type == "MethodCall":
+            if type(se).__name__ == "MethodCall":
                 ret = se
                 break
-            elif se.rdf_type == "CodeBlock":
+            elif type(se).__name__ == "CodeBlock":
                 continue
 
         return ret

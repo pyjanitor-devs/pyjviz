@@ -5,7 +5,7 @@ import inspect
 from contextlib import nullcontext
 
 from . import wb_stack
-from . import wb_stack_entries
+from . import method_call
 
 
 class DataFrameFunc:
@@ -21,7 +21,7 @@ class DataFrameFunc:
 
         latest_method_call = wb_stack.wb_stack.get_latest_method_call()
         if latest_method_call is None:
-            method_ctx = wb_stack_entries.MethodCall(self.func_name)
+            method_ctx = method_call.MethodCall(self.func_name)
         else:
             method_ctx = nullcontext()
 
@@ -47,7 +47,7 @@ class PandasFlavorMethodCallFactory:
 
         latest_method_call = wb_stack.wb_stack.get_latest_method_call()
         if latest_method_call is None:
-            ret = wb_stack_entries.MethodCall(method_name)
+            ret = method_call.MethodCall(method_name)
         else:
             ret = nullcontext()
 
