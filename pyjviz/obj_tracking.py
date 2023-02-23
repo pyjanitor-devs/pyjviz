@@ -10,7 +10,7 @@ class TrackingStore:
 
     def get_last_obj_state_uri(self, obj_pyid):
         t_obj = self.tracking_objs.get(obj_pyid)
-        return t_obj.last_obj_state.uri if t_obj and t_obj.is_alive() else None
+        return t_obj.last_obj_state.back.uri if t_obj and t_obj.is_alive() else None
 
     def find_tracking_obj(self, obj):
         t_obj, obj_found = self.get_tracking_obj(obj, add_missing=False)
@@ -28,9 +28,6 @@ class TrackingStore:
 
         if tracking_obj is None and add_missing:
             tracking_obj = self.tracking_objs[obj_pyid] = obj_utils.ObjId(obj)
-
-        if obj_found == False:
-            tracking_obj.dump_rdf()
             
         return tracking_obj, obj_found
 

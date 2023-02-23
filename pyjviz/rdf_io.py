@@ -4,9 +4,6 @@ import textwrap
 import io, base64
 from . import fstriplestore
 
-def to_base64(s):
-    return base64.b64encode(s.encode('ascii')).decode('ascii')
-
 class CCObjStateLabel:
     """
     CCObjStateLabel - provides to_rdf methods to convert objects to RDF class CCObjStateLabel.

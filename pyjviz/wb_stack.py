@@ -1,6 +1,5 @@
-from . import fstriplestore
+import ipdb
 from . import dia_objs
-
 
 class WithBlock(dia_objs.DiagramObj):
     """
@@ -22,15 +21,16 @@ class WithBlock(dia_objs.DiagramObj):
             else None
         )
 
-        self.dump_rdf()
-        
     def __enter__(self):
         global wb_stack
         wb_stack.push(self)
         return self
 
+    def on_exit__(self):
+        pass
+    
     def __exit__(self, type, value, traceback):
-        fstriplestore.triple_store.flush()
+        self.on_exit__()
         global wb_stack
         wb_stack.pop()
 
@@ -54,7 +54,7 @@ class WithBlockStack:
         return self.stack_entries__.pop()
 
     def get_top(self):
-        return self.stack_entries__[-1]
+        return self.stack_entries__[-1] if self.size() > 0 else None
 
     def get_latest_method_call(self):
         ret = None
@@ -69,7 +69,7 @@ class WithBlockStack:
         return ret
 
     def get_parent_of_current_entry(self):
-        ret = self.stack_entries__[-1] if self.size() > 0 else None
+        ret = self.stack_entries__[-2] if self.size() > 1 else None
         return ret
 
 

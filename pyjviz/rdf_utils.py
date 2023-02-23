@@ -1,6 +1,6 @@
 import uuid
 
-class RDFRepOfObj:
+class RDFRep:
     def __init__(self):
         self.rdf_type_uri = None
         self.uri = None

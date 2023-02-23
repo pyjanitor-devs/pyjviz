@@ -20,7 +20,7 @@ def rq_d(g, rq, init_bindings):
 
 def rq_df(g, rq, init_bindings):
     rq_res = g.query(rq, base = fstriplestore.base_uri, initBindings = init_bindings)
-    return pd.DataFrame.from_dict(rq_res.bindings).loc[:, rq_res.vars]
+    return pd.DataFrame.from_dict(rq_res.bindings).loc[:, rq_res.vars] if len(rq_res) > 0 else pd.DataFrame(columns = rq_res.vars)
 
 def make_table_popup_href(head_html, popup_output):
     if head_html is None:

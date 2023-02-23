@@ -1,10 +1,11 @@
+import ipdb
 import sys
 from . import obj_tracking
 from . import obj_utils
 from . import wb_stack
 from . import fstriplestore
 from . import dia_objs
-
+from . import nested_call_rdf
 
 class profile_objs:
     def __init__(self):
@@ -43,18 +44,6 @@ class profile_objs:
     def __exit__(self, type, value, traceback):
         sys.setprofile(None)
 
-    def dump_nested_call_refs(self, nested_call_uri):
-        print("nested call:", nested_call_uri)
-        print("collected ids:", self.collected_ids)
-        ts = fstriplestore.triple_store
-
-        for _, ref_obj_state_uri in self.collected_ids:
-            if ref_obj_state_uri:
-                ts.dump_triple(
-                    nested_call_uri, "<nested-call-ref>", ref_obj_state_uri
-                )
-
-
 class NestedCall(dia_objs.DiagramObj):
     """
     NestedCall object is to represent situation like this:
@@ -76,35 +65,28 @@ class NestedCall(dia_objs.DiagramObj):
 
     def __init__(self, arg_name, arg_func):
         super().__init__()
+        self.back = nested_call_rdf.NestedCallRDF(self)
         self.label = f"nested_call({arg_name})"
-
+        self.parent_uri = wb_stack.wb_stack.get_parent_of_current_entry().back.uri
+        if self.parent_uri is None:
+            self.parent_uri = "rdf:nil"
+        
         # ipdb.set_trace()
         self.arg_name = arg_name
         self.arg_func = arg_func
         self.ret = None
-
-        self.set_obj_uri("NestedCall")
-
-    def dump_rdf(self):
-        ts = fstriplestore.triple_store
-        ts.dump_triple(self.uri, "rdf:type", self.rdf_type_uri)
-        parent_uri = wb_stack.wb_stack.stack_entries__[-1].uri
-        ts.dump_triple(self.uri, "<part-of>", parent_uri)
         
     def __call__(self, *args, **kwargs):
-        ts = fstriplestore.triple_store
-        print("NestedCall called")
-
-        ctx = profile_objs()
+        self.ctx = profile_objs()
         # ctx = contextlib.nullcontext()
-        with ctx:
-            self.ret = self.arg_func(*args, **kwargs)
+        with self.ctx:
+            ret_obj = self.arg_func(*args, **kwargs)
 
-        ctx.dump_nested_call_refs(self.uri)
+        ret_obj_id, found = obj_tracking.get_tracking_obj(ret_obj)
+        if not found:
+            self.ret = obj_utils.ObjState(ret_obj, ret_obj_id)
+        else:
+            self.ret = ret_obj_id.last_obj_state
 
-        ret_t_obj, obj_found = obj_tracking.get_tracking_obj(self.ret)
-        if not obj_found:
-            ret_t_obj = obj_utils.dump_obj_state(self.ret)
-
-        self.dump_rdf()
+        self.back.dump_return()
         return self.ret

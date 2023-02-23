@@ -3,6 +3,7 @@ import sys
 from .fstriplestore import set_triple_store__, FSTripleOutputOneShot
 from .pf_pandas import enable_pf_pandas__
 from .code_block import CodeBlock, CB
+from .dia_objs import Text
 from .viz import save_dot
 
 pyjviz_enabled = not (

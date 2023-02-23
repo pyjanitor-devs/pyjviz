@@ -1,11 +1,16 @@
 import os
 import os.path
 import textwrap
-import io
+import io, base64
 import rdflib
 
 base_uri = "https://github.com/pyjanitor-devs/pyjviz/rdflog.shacl.ttl#"
 
+def to_base64(s):
+    return base64.b64encode(s.encode('ascii')).decode('ascii')
+
+def from_base64(s):
+    return base64.b64decode(s).decode('ascii')
 
 class FSTripleOutput:
     def __init__(self, out_fd):

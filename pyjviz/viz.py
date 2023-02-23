@@ -290,6 +290,22 @@ def dump_dot_code(g, vertical, show_objects, popup_output):
                 file=out_fd,
             )
 
+    if 1:
+        rq = "select ?s ?label ?text { ?s rdf:type <Text>; rdf:label ?label; <text> ?text }"
+        r_df = viz_nodes.rq_df(g, rq, {})
+        for ii, s, label, text in r_df.itertuples():
+            text_s = fstriplestore.from_base64(text).replace('>', '&gt;').replace('\n', '<br/>')
+            print(f"""
+            node_{uri_to_dot_id(s)} [
+            shape = rect
+            label = <<table>
+            <tr><td>{label}</td></tr>
+            <tr><td>{text_s}</td></tr>
+            </table>>
+            ];
+            """, file = out_fd)
+            
+            
     print("}", file=out_fd)
     return out_fd.getvalue()
 
