@@ -119,34 +119,31 @@ class ObjStateGraphVizNode:
 
         
     def build_popup_content(self):
-        return
         rq = """
-        select ?obj_state_cc ?cc_type {
-           ?obj_state_cc <obj-state> ?obj_state.
-           ?obj_state_cc rdf:type <ObjStateCC>.
-           ?obj_state_cc rdf:type ?cc_type.
-           ?cc_type rdfs:subClassOf <CC>.
+        select ?obj_state ?cc_type {
+           ?obj_state rdf:type ?cc_type.
+           ?cc_type rdfs:subClassOf+ <CC>.
         }
         """
         res_df = rq_df(self.g, rq, {'obj_state': self.obj_state})
 
-        for _, obj_state_cc, cc_type in res_df.itertuples():
+        for _, obj_state, cc_type in res_df.itertuples():
             if cc_type == to_uri("CCGlance"):
                 if self.obj_type == "DataFrame":
-                    rq = "select ?df_head { ?obj_state_cc <df-head> ?df_head }"
-                    rq_res = rq_d(self.g, rq, {'obj_state_cc': obj_state_cc})
+                    rq = "select ?df_head { ?obj_state <df-head> ?df_head }"
+                    rq_res = rq_d(self.g, rq, {'obj_state': obj_state})
                     self.node_bgcolor = "#88000022"
                     self.href = make_table_popup_href(rq_res.get("df_head"), self.popup_output)
                 elif self.obj_type == "Series":
-                    rq = "select ?s_head { ?obj_state_cc <s-head> ?s_head }"
-                    rq_res = rq_d(self.g, rq, {'obj_state_cc': obj_state_cc})
+                    rq = "select ?s_head { ?obj_state <s-head> ?s_head }"
+                    rq_res = rq_d(self.g, rq, {'obj_state': obj_state})
                     self.node_bgcolor = "#88000022"
                     self.href = make_table_popup_href(rq_res.get("s_head"), self.popup_output)
                 else:
                     raise Exception(f"unknown obj_type {self.obj_type}")
             elif cc_type == to_uri("CCBasicPlot"):
-                rq = "select ?plot_im { ?obj_state_cc <plot-im> ?plot_im }"
-                rq_res = rq_d(self.g, rq, {'obj_state_cc': obj_state_cc})
+                rq = "select ?plot_im { ?obj_state <plot-im> ?plot_im }"
+                rq_res = rq_d(self.g, rq, {'obj_state': obj_state})
                 self.node_bgcolor = "#44056022"
                 self.href = make_image_popup_href(rq_res.get("plot_im"), self.popup_output)
             else:

@@ -1,3 +1,4 @@
+import ipdb
 import threading
 import pandas as pd
 import base64
@@ -11,6 +12,8 @@ from . import obj_utils
 from .nested_call import NestedCall
 
 from . import method_call_rdf
+
+from . import rdf_io
 
 method_counter = 0  # NB: should be better way to count method calls
 class MethodCall(wb_stack.WithBlock):
@@ -58,14 +61,13 @@ class MethodCall(wb_stack.WithBlock):
     def handle_start_method_call(self, method_name, method_signature, method_args, method_kwargs):
         if method_name == "pin":
             arg0_obj = method_args[0]
-            t_obj, obj_found = obj_tracking.get_tracking_obj(arg0_obj)
-            if not obj_found:
-                t_obj = obj_utils.dump_obj_state(arg0_obj)
-            #obj_utils.dump_obj_state_cc(
-            #    t_obj.last_obj_state.uri, arg0_obj, "plot"
-            #)
+            arg0_obj_id, found = obj_tracking.get_tracking_obj(arg0_obj)
+            if found:
+                rdf_io.CCBasicPlot().to_rdf(arg0_obj, arg0_obj_id.last_obj_state.back.uri)
+            else:
+                raise Exception("logical error: expected to have obj state created before")
             return method_args, method_kwargs
-
+            
         self.thread_id = threading.get_native_id()
 
         all_args = method_args
@@ -103,7 +105,6 @@ class MethodCall(wb_stack.WithBlock):
         
         new_args = self.method_bound_args.args
         new_kwargs = self.method_bound_args.kwargs
-
         
         # NB: since apply_defaults is not called then no tracking of args with default values will take place
         self.back.dump_rdf_method_call_in()

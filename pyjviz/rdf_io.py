@@ -72,7 +72,7 @@ class CCGlance:
         ts.dump_triple(uri, "<s-head>", '"NONE"')
 
 class CCBasicPlot:
-    def __init__(self, triple_store):
+    def __init__(self):
         pass
 
     @singledispatchmethod
