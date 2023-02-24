@@ -35,6 +35,7 @@ theme:
 # in which pages show up.
 nav:
   - Home: index.md
+  - Examples: examples.md
   - API Reference:
     - Test: api/test.md
     

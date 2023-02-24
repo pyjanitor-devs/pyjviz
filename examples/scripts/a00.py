@@ -1,3 +1,7 @@
+"""
+a00.py - examples of how to use Text diagram object
+"""
+
 import ipdb
 import janitor
 import pandas_flavor as pf

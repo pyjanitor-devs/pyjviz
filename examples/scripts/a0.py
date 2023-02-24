@@ -1,3 +1,7 @@
+"""
+a0.py - basic unit test, nothing else and more
+"""
+
 # import ipdb
 import janitor
 import pandas_flavor as pf
@@ -10,9 +14,11 @@ import pandas as pd
 TestDF = typing.NewType("TestDF", pd.DataFrame)
 TestDF.columns = ["a"]
 
-
 @pf.register_dataframe_method
 def a0(df: pd.DataFrame) -> TestDF:
+    """
+    test test test 123
+    """
     # ipdb.set_trace()
     print("a0")
     return pd.DataFrame(df)
