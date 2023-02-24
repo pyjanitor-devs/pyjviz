@@ -35,6 +35,9 @@ theme:
 # in which pages show up.
 nav:
   - Home: index.md
+  - API Reference:
+    - Test: api/test.md
+    
 
 plugins:
   - search
