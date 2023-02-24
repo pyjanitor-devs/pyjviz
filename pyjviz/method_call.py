@@ -37,8 +37,6 @@ class MethodCall(wb_stack.WithBlock):
                 arg_obj_state = arg_obj_id.last_obj_state
             else:
                 arg_obj_state = obj_utils.ObjState(arg_obj, arg_obj_id)
-                if arg_obj_id.last_obj_state is None:
-                    arg_obj_id.last_obj_state = arg_obj_state
                     
             self.args_l.append((arg_name, arg_obj_state))
         else:
@@ -115,14 +113,15 @@ class MethodCall(wb_stack.WithBlock):
         if self.method_name == "pin":
             return
 
-        # TODO: obj is undefined, please define this.
-        ret_obj_id, found = obj_tracking.get_tracking_obj(ret)
-        print("ret id:", id(ret), found)
-        if found:
-            #self.ret_obj_state = ret_obj_id.last_obj_state
-            ret_obj_id.last_version_num += 1
+        if ret is None:
+            raise Exception(f"method call of {self.method_name} returned None, can't use it chained method calls")
         
-        self.ret_obj_state = obj_utils.ObjState(ret if not ret is None else obj, ret_obj_id)
-        ret_obj_id.last_obj_state = self.ret_obj_state
+        ret_obj_id, found = obj_tracking.get_tracking_obj(ret)
+        if found:
+            ret_obj_id.last_version_num += 1
+
+        # since we don't know was object state changed or not
+        # we create new object state and set it as last obj state in obj id
+        self.ret_obj_state = obj_utils.ObjState(ret, ret_obj_id)
         
         self.back.dump_rdf_method_call_out()

@@ -44,9 +44,4 @@ class ObjState(dia_objs.DiagramObj):
         self.obj = obj
         self.back = obj_utils_rdf.ObjStateRDF(self)
         self.obj_id = obj_id
-        
-        #obj_id, found = obj_tracking.get_tracking_obj(self.obj)
-        #if found:
-        #    obj_id.last_version_num += 1
-        #obj_id.last_obj_state = self
-        #self.obj_id = obj_id
+        self.obj_id.last_obj_state = self

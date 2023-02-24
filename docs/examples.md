@@ -1,6 +1,4 @@
-# Privet
-
-<i>Hello</i>
+# Examples
 
 ::: examples
 

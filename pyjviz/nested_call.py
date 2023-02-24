@@ -78,7 +78,6 @@ class NestedCall(dia_objs.DiagramObj):
         
     def __call__(self, *args, **kwargs):
         self.ctx = profile_objs()
-        # ctx = contextlib.nullcontext()
         with self.ctx:
             ret_obj = self.arg_func(*args, **kwargs)
 
