@@ -89,4 +89,4 @@ class NestedCall(dia_objs.DiagramObj):
             self.ret = ret_obj_id.last_obj_state
 
         self.back.dump_return()
-        return self.ret
+        return ret_obj
