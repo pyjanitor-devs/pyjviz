@@ -15,6 +15,7 @@ class MethodCallRDF(rdf_utils.RDFRep):
     def __init__(self, method_call):
         super().__init__()
         self.front = method_call
+        self.set_rdf_rep(rdf_type = "MethodCall")
 
     def dump_rdf_method_call_arg__(self, c, arg_name, arg_obj):
         ts = fstriplestore.triple_store
@@ -51,7 +52,6 @@ class MethodCallRDF(rdf_utils.RDFRep):
     def dump_rdf_method_call_in(self):
         ts = fstriplestore.triple_store
 
-        self.set_obj_uri("MethodCall")
         ts.dump_triple(self.uri, "rdf:type", self.rdf_type_uri)
         ts.dump_triple(self.uri, "rdf:label", '"' + self.front.method_name + '"')
         parent_obj = self.front.parent_stack_entry

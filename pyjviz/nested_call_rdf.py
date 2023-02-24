@@ -4,12 +4,11 @@ from . import rdf_utils
 
 class NestedCallRDF(rdf_utils.RDFRep):
     def __init__(self, nested_call_obj):
+        self.set_rdf_rep(rdf_type = "NestedCall")
         self.front = nested_call_obj
 
     def dump_rdf(self):
         ts = fstriplestore.triple_store
-        self.set_obj_uri("NestedCall")
-
         ts.dump_triple(self.uri, "rdf:type", self.rdf_type_uri)
         ts.dump_triple(self.uri, "<part-of>", self.front.parent_uri)
 

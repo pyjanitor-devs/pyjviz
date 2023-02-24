@@ -3,13 +3,12 @@ from . import dia_objs
 
 class WithBlock(dia_objs.DiagramObj):
     """
-    Code blocks in python - https://docs.python.org/3/reference/executionmodel.html#:~:text=A%20Python%20program%20is%20constructed,typed%20interactively%20is%20a%20block.
-    With PEP use of 'block' - https://peps.python.org/pep-0343/#specification-the-with-statement
+    WithBlock is a class of python context objects which are used to implement behavior when python *with* statement is used.
+    See also `https://peps.python.org/pep-0343/#specification-the-with-statement`.
+    For pyjviz we are using WithBlock to implement the idea of visual contrainer where other diagram objects can be placed.
 
-    Base class for CodeBlock, MethodCall and NestedCall.
-      - uri - to identify itself in graph as node
-      - rdf_type_uri- to identify node type
-    """  # noqa: E501
+    pyjviz has wb_atack global object which is maintained using WithBlock implementation of __enter__/__exit__ methods.
+    """
 
     def __init__(self, label):
         super().__init__()
@@ -72,10 +71,13 @@ class WithBlockStack:
         ret = self.stack_entries__[-2] if self.size() > 1 else None
         return ret
 
-
+    
 wb_stack = WithBlockStack()
 
 
 def get_wb_stack():
+    """
+    returns ref to global wb_stack object.
+    """
     global wb_stack
     return wb_stack

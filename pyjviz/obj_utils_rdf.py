@@ -1,4 +1,3 @@
-import ipdb
 import uuid
 import weakref
 import textwrap
@@ -20,6 +19,7 @@ random_id = 0
 
 class ObjIdRDF(rdf_utils.RDFRep):
     def __init__(self, obj_id):
+        self.set_rdf_rep(rdf_type = "ObjId")
         self.front = obj_id
         self.was_dumped = False
         
@@ -27,7 +27,6 @@ class ObjIdRDF(rdf_utils.RDFRep):
         if self.was_dumped == False:
             self.was_dumped = True
             ts = fstriplestore.triple_store
-            self.set_obj_uri("ObjId")
             ts.dump_triple(self.uri, "rdf:type", self.rdf_type_uri)
             ts.dump_triple(self.uri, "<obj-type>", f'"{self.front.obj_type}"')
             ts.dump_triple(self.uri, "<obj-uuid>", f'"{self.front.uuid}"')
@@ -40,6 +39,9 @@ class ObjStateRDF(rdf_utils.RDFRep):
         self.front = obj_state
         self.was_dumped = False
 
+        global random_id
+        self.set_rdf_rep(rdf_type = "ObjState", obj_id = str(random_id)); random_id += 1
+        
     def dump_rdf(self):
         if self.was_dumped == False:
             self.was_dumped = True
@@ -49,9 +51,6 @@ class ObjStateRDF(rdf_utils.RDFRep):
             ts = fstriplestore.triple_store
             caller_stack_entry = wb_stack.wb_stack.get_top()
             
-            global random_id
-            #ipdb.set_trace()
-            self.set_obj_uri("ObjState", str(random_id)); random_id += 1
             ts.dump_triple(self.uri, "rdf:type", self.rdf_type_uri)
             #ts.dump_triple(self.uri, "rdf:type", rdf_io.CCObjStateLabel.rdf_type)
             
