@@ -1,26 +1,34 @@
 import graphviz
-import IPython.display
+from bs4 import BeautifulSoup
+from IPython.display import display, HTML
 
+def replace_a_href_with_onclick(output):
+    soup = BeautifulSoup(output, features="xml")
 
+    # Find all <b> tags and replace them with <strong> tags
+    for a_tag in soup.find_all('a'):
+        on_click_code = a_tag.attrs.get('xlink:href')
+        a_tag.parent.attrs['onclick'] = on_click_code.replace('javascript:', '')
+        a_tag.parent.attrs['cursor'] = 'pointer'
+        del a_tag.attrs['xlink:href']
+        del a_tag.attrs['xlink:title']
+
+    for a_tag in soup.find_all('a'):
+        p_tag = a_tag.parent
+        for c in a_tag.find_all():
+            p_tag.insert(-1, c)
+        a_tag.decompose()
+    
+    # Print the modified HTML output
+    return soup.prettify()
+    
 def show_method_chain(dot_code):
     gvz = graphviz.Source(dot_code)
 
-    # NB: I don't understand how code below works in jupyter notebook
-    # somehow obj gvz of type graphviz.Source converted to image
-    # by IPython module
-    # and note that no temp files in current dirctory are visible
-    if 1:
-        print("gvz:", type(gvz))
-        # print(dir(gvz))
-        IPython.display.display_png(gvz)
-    else:
-        gvz.render(format="png")
-        print("gvz:", type(gvz))
-        # print("filename:", gvz.filename)
-        # image = IPython.display.Image(filename = gvz.filename + '.png')
-        image = gvz.view()
-        print("image:", type(image), image[:20])
-        # scale = 0.3
-        # image = image.resize(( int(image.width * scale), \
-        #                       int(image.height * scale)))
-        IPython.display.display_png(image)
+    output = gvz.pipe(engine = 'dot', format = 'svg').decode('ascii')
+    mod_output = replace_a_href_with_onclick(output)
+    #print(mod_output)
+    display(HTML(mod_output))
+        
+        
+        

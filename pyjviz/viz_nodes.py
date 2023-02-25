@@ -47,6 +47,15 @@ def make_table_popup_href(head_html, popup_output):
                 """
             else:
                 href = 'href="tmp/' + os.path.basename(temp_file.name) + '"'
+    else:
+        # svg output generation with inline tables and images
+        # graphviz href will be replaced with onclick to provide popup window functionality
+        popup_size = (800, 200)
+        href = f"""href="javascript:
+        window.open('', '_blank', 'width={popup_size[0]},height={popup_size[1]}').document.body.innerHTML = `&lt;b&gt;Hello, world!!!&lt;/b&gt;`
+        "
+        """
+        
 
     return href
 
