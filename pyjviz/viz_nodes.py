@@ -1,5 +1,6 @@
 import ipdb
 import os.path
+import uuid
 import tempfile
 import rdflib
 import pandas as pd
@@ -22,24 +23,21 @@ def rq_df(g, rq, init_bindings):
     rq_res = g.query(rq, base = fstriplestore.base_uri, initBindings = init_bindings)
     return pd.DataFrame.from_dict(rq_res.bindings).loc[:, rq_res.vars] if len(rq_res) > 0 else pd.DataFrame(columns = rq_res.vars)
 
+big_strings_table = {}
+
 def make_table_popup_href(head_html, popup_output):
     if head_html is None:
         return ""
 
     href = ""
+    table_html = fstriplestore.from_base64(head_html.toPython())
     if fstriplestore.triple_store.output_dir:
         temp_dir = os.path.join(fstriplestore.triple_store.output_dir, "tmp")
         temp_file = tempfile.NamedTemporaryFile(dir=temp_dir, suffix=".html", delete=False)
         with temp_file:
             popup_size = (800, 200)
-            temp_file.write(
-                head_html.toPython()
-                .replace("&lt;", "<")
-                .replace("&gt;", ">")
-                .replace("&quot;", "'")
-                .replace("&#10;", "\n")
-                .encode("ascii")
-            )
+            temp_file.write(table_html.encode('ascii'))
+
             if popup_output:
                 href = f"""href="javascript:
                 {{ window.open(location.pathname.match(/.*\//) + 'tmp/' + '{os.path.basename(temp_file.name)}', '_blank', 'width={popup_size[0]},height={popup_size[1]}'); }}
@@ -51,8 +49,11 @@ def make_table_popup_href(head_html, popup_output):
         # svg output generation with inline tables and images
         # graphviz href will be replaced with onclick to provide popup window functionality
         popup_size = (800, 200)
+        s_id = str(uuid.uuid4())
+        global big_strings_table
+        big_strings_table[s_id] = table_html
         href = f"""href="javascript:
-        window.open('', '_blank', 'width={popup_size[0]},height={popup_size[1]}').document.body.innerHTML = `&lt;b&gt;Hello, world!!!&lt;/b&gt;`
+        window.open('', '_blank', 'width={popup_size[0]},height={popup_size[1]}').document.body.innerHTML = `%%{s_id}%%`
         "
         """
         
@@ -60,6 +61,8 @@ def make_table_popup_href(head_html, popup_output):
     return href
 
 def make_image_popup_href(image_b64, popup_output):
+    img_html = "<img src='data:image/png;base64," + image_b64.toPython() + "'></img>"
+
     href = ""
     if fstriplestore.triple_store.output_dir:
         temp_dir = os.path.join(fstriplestore.triple_store.output_dir, "tmp")
@@ -67,13 +70,7 @@ def make_image_popup_href(image_b64, popup_output):
                 dir=temp_dir, suffix=".html", delete=False
         ) as temp_fp:
             popup_size = (900, 500)
-            temp_fp.write(
-                (
-                    "<img src='data:image/png;base64,"
-                    + image_b64.toPython()
-                    + "'></img>"
-                ).encode("ascii")
-            )
+            temp_fp.write(img_html.encode("ascii"))            
             if popup_output:
                 href = f"""href="javascript:
                 {{ window.open(location.pathname.match(/.*\//) + 'tmp/' + '{os.path.basename(temp_fp.name)}', '_blank', 'width={popup_size[0]},height={popup_size[1]}'); }}
@@ -81,7 +78,16 @@ def make_image_popup_href(image_b64, popup_output):
                 """
             else:
                 href = 'href="tmp/' + os.path.basename(temp_fp.name) + '"'
-
+    else:
+        popup_size = (900, 500)
+        s_id = str(uuid.uuid4())
+        global big_strings_table
+        big_strings_table[s_id] = img_html
+        href = f"""href="javascript:
+        window.open('', '_blank', 'width={popup_size[0]},height={popup_size[1]}').document.body.innerHTML = `%%{s_id}%%`
+        "
+        """
+                
     return href
 
 class ObjStateGraphVizNode:

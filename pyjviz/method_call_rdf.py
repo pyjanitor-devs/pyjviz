@@ -43,16 +43,14 @@ class MethodCallRDF(rdf_utils.RDFRep):
                     + str(p).replace("<", "&lt;").replace(">", "&gt;")
                 )
 
-        method_display_s = base64.b64encode(
-            (
+        method_display_s = fstriplestore.to_base64(            
                 "<i>"
                 + self.front.method_name
                 + "</i>"
                 + "  ("
                 + ", ".join(method_display_args)
                 + ")"
-            ).encode("ascii")
-        ).decode("ascii")
+            )
         ts.dump_triple(self.uri, "<method-display>", '"' + method_display_s + '"')
 
         # ipdb.set_trace()
