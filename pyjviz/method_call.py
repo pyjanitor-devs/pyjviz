@@ -1,7 +1,6 @@
 import ipdb
 import threading
 import pandas as pd
-import base64
 import inspect
 
 from . import wb_stack

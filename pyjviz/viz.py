@@ -3,12 +3,9 @@ import ipdb
 # there is no dependency of this code to other part of pyjanitor
 #
 import os.path, tempfile
-import base64
 import pandas as pd
-
 import rdflib
 from io import StringIO
-
 import graphviz
 
 from . import fstriplestore
@@ -66,10 +63,7 @@ def dump_subgraph(g, cc_uri, out_fd, popup_output):
         ) in g.query(
             rq, base=fstriplestore.base_uri, initBindings={"sg": subgraph}
         ):
-            method_display = base64.b64decode(
-                method_display.toPython().encode("ascii")
-            ).decode("ascii")
-            # method_display = "<br/>".join(textwrap.wrap(method_display, width = 40))
+            method_display = fstriplestore.from_base64(method_display.toPython())
             print(
                 f"""
             node_{uri_to_dot_id(method_call_obj)} [ label = <<TABLE border="0" align="left"><TR><TD>{method_display}</TD></TR></TABLE>> ];

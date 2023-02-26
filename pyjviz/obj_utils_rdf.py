@@ -3,7 +3,6 @@ import weakref
 import textwrap
 import pandas as pd
 import io
-import base64
 
 from . import fstriplestore
 from . import obj_tracking
