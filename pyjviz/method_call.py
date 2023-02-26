@@ -40,7 +40,7 @@ class MethodCall(wb_stack.WithBlock):
                     
             self.args_l.append((arg_name, arg_obj_state))
         else:
-            pass
+            self.args_l.append((arg_name, arg_obj))
                 
     def build_args_l__(self):
         self.args_l = []

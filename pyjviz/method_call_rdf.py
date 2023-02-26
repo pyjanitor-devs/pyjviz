@@ -56,10 +56,13 @@ class MethodCallRDF(rdf_utils.RDFRep):
         # ipdb.set_trace()
         c = 0
         for arg_name, arg_obj in self.front.args_l:
-            #ipdb.set_trace()
-            arg_obj.back.dump_rdf()
             ts.dump_triple(self.uri, f"<method-call-arg{c}-name>", '"' + arg_name + '"')
-            ts.dump_triple(self.uri, f"<method-call-arg{c}>", arg_obj.back.uri)
+            #ipdb.set_trace()
+            if hasattr(arg_obj, 'back'):
+                arg_obj.back.dump_rdf()
+                ts.dump_triple(self.uri, f"<method-call-arg{c}>", arg_obj.back.uri)
+            else:
+                ts.dump_triple(self.uri, f"<method-call-arg{c}>", '"' + str(arg_obj) + '"')
             c += 1
 
         return self.uri
