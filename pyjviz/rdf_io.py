@@ -83,15 +83,8 @@ class CCBasicPlot:
         out_fd = io.BytesIO()
 
         if 1:
-            if pd.options.plotting.backend == "matplotlib":
-                fig = df.plot().get_figure()
-                fig.savefig(out_fd)
-            elif pd.options.plotting.backend == "plotly":
-                fig = df.plot()
-                fig.write_image(file = out_fd, format = 'png')
-            else:
-                raise Exception(f"pandas plotting backend {pd.options.plotting.backend} is not supported")
-            
+            fig = df.plot(backend = 'plotly')
+            fig.write_image(file = out_fd, format = 'png')
             im_s = base64.b64encode(out_fd.getvalue()).decode("ascii")
         else:
             out_fd.write("""&lt;img src='data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4
