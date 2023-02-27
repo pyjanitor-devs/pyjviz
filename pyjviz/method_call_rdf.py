@@ -1,10 +1,10 @@
 #import ipdb
+import textwrap
 from . import rdf_utils
 from . import fstriplestore
 from . import wb_stack
 from . import obj_tracking
 from . import obj_utils
-from . import rdf_utils
 
 method_counter = 0  # NB: should be better way to count method calls
 class MethodCallRDF(rdf_utils.RDFRep):
@@ -29,24 +29,28 @@ class MethodCallRDF(rdf_utils.RDFRep):
         ts.dump_triple(self.uri, "<method-stack-trace>", '"' + wb_stack.wb_stack.to_string() + '"')
 
         method_display_args = []
+        more_args = False
         for p_name, p in self.front.args_l:
             if isinstance(p, obj_utils.ObjState):
-                method_display_args.append("<b>" + p_name + "</b>")
+                method_display_args.append(p_name)
             else:
-                method_display_args.append(
-                    p_name
-                    + " = "
-                    + str(p).replace("<", "&lt;").replace(">", "&gt;")
-                )
+                more_args = True
+                if 0:
+                    method_display_args.append(
+                        p_name
+                        + " = "
+                        + str(p).replace("<", "&lt;").replace(">", "&gt;")
+                    )
+                    
+        if more_args:
+            method_display_args.append("...")
 
-        method_display_s = fstriplestore.to_base64(            
-                "<i>"
-                + self.front.method_name
-                + "</i>"
-                + "  ("
-                + ", ".join(method_display_args)
-                + ")"
-            )
+        method_display_s = "".join([self.front.method_name,
+                                    "(",
+                                    ", ".join(method_display_args),
+                                    ")"])
+        method_display_s = "<br/>".join(textwrap.wrap(method_display_s, width = 35))
+        method_display_s = fstriplestore.to_base64(method_display_s)
         ts.dump_triple(self.uri, "<method-display>", '"' + method_display_s + '"')
 
         # ipdb.set_trace()
