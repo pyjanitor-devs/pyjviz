@@ -1,22 +1,16 @@
-import ipdb
 import uuid
 import weakref
-import textwrap
-import pandas as pd
-import io
 
-from . import fstriplestore
-from . import obj_tracking
-from . import wb_stack
-from . import rdf_utils
-from . import rdf_io
 from . import dia_objs
 from . import obj_utils_rdf
+
 
 def obj_del_cb(ref):
     print("obj deleted", ref)
 
+
 random_id = 0
+
 
 class ObjId:
     def __init__(self, obj):
@@ -26,9 +20,8 @@ class ObjId:
         self.pyid = id(obj)
         self.last_obj_state = None
         self.last_version_num = 0
-
         self.back = obj_utils_rdf.ObjIdRDF(self)
-        
+
     def is_alive(self):
         return not self.obj_wref() is None
 
@@ -36,6 +29,7 @@ class ObjId:
         ret = self.last_version_num
         self.last_version_num += 1
         return ret
+
 
 class ObjState(dia_objs.DiagramObj):
     def __init__(self, obj, obj_id):

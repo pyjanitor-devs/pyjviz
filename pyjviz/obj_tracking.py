@@ -1,5 +1,6 @@
 from . import obj_utils
 
+
 class TrackingStore:
     def __init__(self):
         self.tracking_objs = {}  # id(obj) -> TrackingObj
@@ -10,7 +11,10 @@ class TrackingStore:
 
     def get_last_obj_state_uri(self, obj_pyid):
         t_obj = self.tracking_objs.get(obj_pyid)
-        return t_obj.last_obj_state.back.uri if t_obj and t_obj.is_alive() else None
+        ret = None
+        if t_obj and t_obj.is_alive():
+            ret = t_obj.last_obj_state.back.uri
+        return ret
 
     def find_tracking_obj(self, obj):
         t_obj, obj_found = self.get_tracking_obj(obj, add_missing=False)
@@ -28,12 +32,13 @@ class TrackingStore:
 
         if tracking_obj is None and add_missing:
             tracking_obj = self.tracking_objs[obj_pyid] = obj_utils.ObjId(obj)
-            
+
         return tracking_obj, obj_found
 
 
 tracking_store = TrackingStore()
 
-def get_tracking_obj(obj, add_missing = True):
+
+def get_tracking_obj(obj, add_missing=True):
     global tracking_store
     return tracking_store.get_tracking_obj(obj, add_missing)

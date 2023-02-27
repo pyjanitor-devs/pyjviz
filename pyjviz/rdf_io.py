@@ -1,8 +1,10 @@
 from functools import singledispatchmethod
 import pandas as pd
 import textwrap
-import io, base64
+import io
+import base64
 from . import fstriplestore
+
 
 class CCObjStateLabel:
     """

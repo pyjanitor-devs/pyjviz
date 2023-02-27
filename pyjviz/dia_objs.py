@@ -27,34 +27,36 @@ TextRDF is the class which defines method [dump_rdf()](/pyjviz/user_guide/#about
     + dump_rdf()
     }
     ```
-
-
-"""
+""" # noqa : 501
 from . import wb_stack
 from .dia_objs_rdf import TextRDF
+
 
 class DiagramObj:
     """
     base class of python objects which will have visible diagram representation.
     The diagram object has corresponding <b>back</b> object which class belongs to RDFRep.
     E.g. Text class will have back ref to TextRDF class object.
-    """
+    """ # noqa : 501
+
     def __init__(self):
         self.back = None
+
 
 class Text(DiagramObj):
     """
     Text class is to represent text box primitive for pyjviz diagram.
     """
-    def __init__(self, title, text, parent_obj = None):
-        if parent_obj:
-            if not isinstance(parent_obj, DiagramObj):
-                raise Exception(f"parent_obj must be instance of subclass of DiagramObj, {type(parent_obj)}")
-        else:
+    def __init__(self, title, text, parent_obj=None):
+        if not parent_obj:
             parent_obj = wb_stack.wb_stack.get_top()
 
-        self.back = TextRDF(self)
+        if not isinstance(parent_obj, DiagramObj):
+            msg = \
+                f"parent_obj is not subclass of DiagramObj, {type(parent_obj)}"
+            raise Exception(msg)
 
+        self.back = TextRDF(self)
         self.parent_obj = parent_obj
         self.title = title
         self.text = text

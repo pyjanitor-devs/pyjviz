@@ -1,5 +1,5 @@
-import ipdb
 from . import dia_objs
+
 
 class WithBlock(dia_objs.DiagramObj):
     """
@@ -8,7 +8,7 @@ class WithBlock(dia_objs.DiagramObj):
     For pyjviz we are using WithBlock to implement the idea of visual contrainer where other diagram objects can be placed.
 
     pyjviz has wb_atack global object which is maintained using WithBlock implementation of __enter__/__exit__ methods.
-    """
+    """ # noqa : E501
 
     def __init__(self, label):
         super().__init__()
@@ -27,7 +27,7 @@ class WithBlock(dia_objs.DiagramObj):
 
     def on_exit__(self):
         pass
-    
+
     def __exit__(self, type, value, traceback):
         self.on_exit__()
         global wb_stack
@@ -71,7 +71,7 @@ class WithBlockStack:
         ret = self.stack_entries__[-2] if self.size() > 1 else None
         return ret
 
-    
+
 wb_stack = WithBlockStack()
 
 

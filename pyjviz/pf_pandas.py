@@ -8,7 +8,8 @@ from contextlib import nullcontext
 from . import wb_stack
 from . import method_call
 
-warnings.filterwarnings("ignore", category = UserWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
+
 
 class DataFrameFunc:
     def __init__(self, func_name, func):
@@ -87,8 +88,9 @@ def enable_pf_pandas__():
         )(*x, **y)
 
     if 1:
-        # we need those registration of pin method to make sure method call syntax work
-        # actual pin implementation is in MethodCall handle_* methods
+        # we need those registration of pin method to make sure method call
+        # syntax work actual pin implementation is in
+        # MethodCall handle_* methods
         @pf.register_series_method
         def pin(s: pd.Series, output_type="head"):
             return s
@@ -108,10 +110,10 @@ def enable_pf_pandas__():
 
     old_dropna = pd.DataFrame.dropna
     del pd.DataFrame.dropna
-    
+
     old_drop = pd.DataFrame.drop
     del pd.DataFrame.drop
-    
+
     old_rename = pd.DataFrame.rename
     del pd.DataFrame.rename
     old_assign = pd.DataFrame.assign

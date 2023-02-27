@@ -1,9 +1,6 @@
-import ipdb
 # pyjviz module implements basic visualisation of pyjviz rdf log
 # there is no dependency of this code to other part of pyjanitor
 #
-import os.path, tempfile
-import pandas as pd
 import rdflib
 from io import StringIO
 import graphviz
@@ -13,16 +10,17 @@ from . import nb_utils
 from . import viz_nodes
 from .viz_nodes import uri_to_dot_id
 
+
 def dump_subgraph(g, cc_uri, out_fd, popup_output):
-    subgraphs = [
-        r
-        for r in g.query(
-            "select ?pp ?pl { ?pp rdf:type <CodeBlock>; rdf:label ?pl; <part-of> ?sg }",
-            base=fstriplestore.base_uri,
-            initBindings={"sg": cc_uri},
-        )
-    ]
-    for subgraph, subgraph_label in subgraphs:
+    rq = """
+    select ?pp ?pl {
+      ?pp rdf:type <CodeBlock>; rdf:label ?pl; <part-of> ?sg
+    }
+    """
+    rq_res = g.query(rq,
+                     base=fstriplestore.base_uri, initBindings={"sg": cc_uri})
+
+    for subgraph, subgraph_label in rq_res:
         if subgraph_label != rdflib.RDF.nil:
             print(
                 f"""
@@ -34,20 +32,29 @@ def dump_subgraph(g, cc_uri, out_fd, popup_output):
 
         dump_subgraph(g, subgraph, out_fd, popup_output)
 
-        rq = "select ?obj_state { ?obj_state rdf:type <ObjState>; <part-of>+ ?sg . }"
-        for obj_state in g.query(rq, base=fstriplestore.base_uri, initBindings={"sg": subgraph}):
+        rq = """
+        select ?obj_state {
+          ?obj_state rdf:type <ObjState>; <part-of>+ ?sg .
+        }
+        """
+        rq_res = g.query(rq,
+                         base=fstriplestore.base_uri,
+                         initBindings={"sg": subgraph})
+
+        for obj_state in rq_res:
             obj_state = obj_state[0]
             n = viz_nodes.ObjStateGraphVizNode(g, obj_state, popup_output)
             n.build_label()
             n.build_popup_content()
             n.dump(out_fd)
-            
-            
+
         rq = """
-        select ?method_call_obj ?method_name ?method_display ?method_count ?method_stack_depth ?method_stack_trace {
+        select ?method_call_obj ?method_name ?method_display ?method_count
+               ?method_stack_depth ?method_stack_trace {
           ?method_call_obj rdf:type <MethodCall>;
                            rdf:label ?method_name;
-                           <method-counter> ?method_count; <method-display> ?method_display;
+                           <method-counter> ?method_count;
+                           <method-display> ?method_display;
                            <method-stack-depth> ?method_stack_depth;
                            <method-stack-trace> ?method_stack_trace;
                            <part-of>+ ?sg .
@@ -87,7 +94,7 @@ def dump_subgraph(g, cc_uri, out_fd, popup_output):
             )
 
         if subgraph_label != rdflib.RDF.nil:
-            print(f"}}", file=out_fd)
+            print("}", file=out_fd)
 
 
 def dump_dot_code(g, vertical, show_objects, popup_output):
@@ -297,9 +304,8 @@ def dump_dot_code(g, vertical, show_objects, popup_output):
             <tr><td>{text_s}</td></tr>
             </table>>
             ];
-            """, file = out_fd)
-            
-            
+            """, file=out_fd)
+
     print("}", file=out_fd)
     return out_fd.getvalue()
 

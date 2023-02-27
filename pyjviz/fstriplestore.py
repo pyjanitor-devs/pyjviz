@@ -1,16 +1,20 @@
 import os
 import os.path
 import textwrap
-import io, base64
+import io
+import base64
 import rdflib
 
 base_uri = "https://github.com/pyjanitor-devs/pyjviz/rdflog.shacl.ttl#"
 
+
 def to_base64(s):
     return base64.b64encode(s.encode('ascii')).decode('ascii')
 
+
 def from_base64(s):
     return base64.b64decode(s).decode('ascii')
+
 
 class FSTripleOutput:
     def __init__(self, out_fd):
@@ -45,8 +49,10 @@ class FSTripleOutput:
 
         <CC> rdf:type rdfs:Class .
         <CCObjStateLabel> rdf:type rdfs:Class .
-        <CCObjStateLabelDataFrame> rdf:type rdfs:Class; rdfs:subClassOf <CCObjStateLabel> .
-        <CCObjStateLabelSeries> rdf:type rdfs:Class; rdfs:subClassOf <CCObjStateLabel> .
+        <CCObjStateLabelDataFrame> rdf:type rdfs:Class .
+        <CCObjStateLabelDataFrame> rdfs:subClassOf <CCObjStateLabel> .
+        <CCObjStateLabelSeries> rdf:type rdfs:Class .
+        <CCObjStateLabelSeries> rdfs:subClassOf <CCObjStateLabel> .
         <CCGlance> rdf:type rdfs:class; rdfs:subClassOf <CC> .
         <CCBasicPlot> rdf:type rdfs:Class; rdfs:subClassOf <CC> .
         """
@@ -98,6 +104,5 @@ triple_store = None
 
 
 def set_triple_store__(o):
-    #print("setting up triple_store:", o)
     global triple_store
     triple_store = o

@@ -1,11 +1,10 @@
-import ipdb
 import sys
 from . import obj_tracking
 from . import obj_utils
 from . import wb_stack
-from . import fstriplestore
 from . import dia_objs
 from . import nested_call_rdf
+
 
 class profile_objs:
     def __init__(self):
@@ -44,6 +43,7 @@ class profile_objs:
     def __exit__(self, type, value, traceback):
         sys.setprofile(None)
 
+
 class NestedCall(dia_objs.DiagramObj):
     """
     NestedCall object is to represent situation like this:
@@ -61,21 +61,21 @@ class NestedCall(dia_objs.DiagramObj):
 
     During method handling (`assign` in example above, see MethodCall.handle_start_method_call) the arguments which are isfunction(arg) == True will be converted to NestedCall object.
     The code then proceed and causes controlled call of `nested_call_func` via __call__ implementation. Results are saved as self.ret and later used by MethodCall.handle_end_method_call
-    """
+    """ # noqa : E501
 
     def __init__(self, arg_name, arg_func):
         super().__init__()
         self.back = nested_call_rdf.NestedCallRDF(self)
         self.label = f"nested_call({arg_name})"
-        self.parent_uri = wb_stack.wb_stack.get_parent_of_current_entry().back.uri
+        p_obj = wb_stack.wb_stack.get_parent_of_current_entry()
+        self.parent_uri = p_obj.back.uri
         if self.parent_uri is None:
             self.parent_uri = "rdf:nil"
-        
-        # ipdb.set_trace()
+
         self.arg_name = arg_name
         self.arg_func = arg_func
         self.ret = None
-        
+
     def __call__(self, *args, **kwargs):
         self.ctx = profile_objs()
         with self.ctx:
