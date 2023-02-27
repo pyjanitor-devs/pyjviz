@@ -98,6 +98,6 @@ triple_store = None
 
 
 def set_triple_store__(o):
-    print("setting up triple_store:", o)
+    #print("setting up triple_store:", o)
     global triple_store
     triple_store = o

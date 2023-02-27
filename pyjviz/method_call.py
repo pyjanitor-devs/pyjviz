@@ -31,7 +31,7 @@ class MethodCall(wb_stack.WithBlock):
             self.args_l.append((arg_name, arg_obj))
         elif isinstance(arg_obj, pd.DataFrame) or isinstance(arg_obj, pd.Series):
             arg_obj_id, found = obj_tracking.get_tracking_obj(arg_obj)
-            print("arg id:", id(arg_obj), found)
+            #print("arg id:", id(arg_obj), found)
             if found:
                 arg_obj_state = arg_obj_id.last_obj_state
             else:
@@ -87,7 +87,8 @@ class MethodCall(wb_stack.WithBlock):
         for arg_name in args_w_specified_values:
             arg_value = self.method_bound_args.arguments.get(arg_name)
             arg_kind = method_signature.parameters.get(arg_name).kind
-            print(method_name, arg_name, arg_kind)
+
+            #print(method_name, arg_name, arg_kind)
             if arg_kind == inspect.Parameter.VAR_KEYWORD:
                 # case for lambda args of assign
                 updates_d = {}

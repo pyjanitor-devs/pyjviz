@@ -39,7 +39,6 @@ class ObjId:
 
 class ObjState(dia_objs.DiagramObj):
     def __init__(self, obj, obj_id):
-        print("ObjState ctor", id(obj), obj_id)
         self.obj = obj
         self.back = obj_utils_rdf.ObjStateRDF(self)
         self.obj_id = obj_id

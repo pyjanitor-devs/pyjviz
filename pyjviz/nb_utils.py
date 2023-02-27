@@ -1,8 +1,11 @@
+import warnings
 import graphviz
 from bs4 import BeautifulSoup
 from IPython.display import display, HTML
 
 from . import viz_nodes
+
+warnings.filterwarnings("ignore", category = DeprecationWarning)
 
 def replace_a_href_with_onclick(output):
     soup = BeautifulSoup(output, features="xml")
@@ -12,7 +15,7 @@ def replace_a_href_with_onclick(output):
         on_click_code = on_click_code.replace('javascript:', '')        
         # NB: really bad way to do string replacement, quadratic complexity for overall code execution
         for k, v in viz_nodes.big_strings_table.items():
-            print("replace", k)
+            #print("replace", k)
             on_click_code = on_click_code.replace(f'%%{k}%%', v)            
         a_tag.parent.attrs['onclick'] = on_click_code
         a_tag.parent.attrs['cursor'] = 'pointer'

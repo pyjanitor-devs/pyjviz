@@ -1,3 +1,4 @@
+import warnings
 import pandas as pd
 import pandas_flavor as pf
 import pandas_flavor.register
@@ -7,6 +8,7 @@ from contextlib import nullcontext
 from . import wb_stack
 from . import method_call
 
+warnings.filterwarnings("ignore", category = UserWarning)
 
 class DataFrameFunc:
     def __init__(self, func_name, func):
@@ -95,18 +97,21 @@ def enable_pf_pandas__():
         def pin(df: pd.DataFrame, output_type="head"):
             return df
 
-    old_describe = pd.DataFrame.describe
-    # del pd.DataFrame.describe
+    if 0:
+        old_describe = pd.DataFrame.describe
+        # del pd.DataFrame.describe
 
-    @pf.register_dataframe_method
-    def describe(df: pd.DataFrame) -> pd.DataFrame:
-        print("override describe")
-        return old_describe(df)
+        @pf.register_dataframe_method
+        def describe(df: pd.DataFrame) -> pd.DataFrame:
+            print("override describe")
+            return old_describe(df)
 
     old_dropna = pd.DataFrame.dropna
     del pd.DataFrame.dropna
+    
     old_drop = pd.DataFrame.drop
     del pd.DataFrame.drop
+    
     old_rename = pd.DataFrame.rename
     del pd.DataFrame.rename
     old_assign = pd.DataFrame.assign

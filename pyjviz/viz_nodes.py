@@ -104,7 +104,6 @@ class ObjStateGraphVizNode:
         self.href = ""
 
     def build_label(self):
-        print("obj_state:", self.obj_state)
         obj_state_rq = """
         select ?obj_type ?version {
           ?obj_state <obj> ?obj; <version> ?version.
