@@ -16,6 +16,15 @@ if pyjviz_enabled:
         tstr = FSTripleOutputOneShot(
             None, None
         )  # -- NB: how can we detect that this is notebook run
+
+        from .nb_utils import register_pre_run, get_cell_id
+        
+        def pre_run_cell():
+            print("pre_run_cell: This function will be called before every cell is executed.")
+            print("cell_id:", get_cell_id())
+
+        dummy_reg_pre_run = register_pre_run(pre_run_cell)
+        pre_run_cell()
     else:
         pyjviz_output_dir = os.environ.get("PYJVIZ_OUTPUT_DIR", "~/.pyjviz")
         pyjviz_output_dir = os.path.expanduser(pyjviz_output_dir)
