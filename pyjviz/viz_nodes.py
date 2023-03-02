@@ -1,4 +1,3 @@
-import ipdb
 import os.path
 import uuid
 import tempfile
@@ -20,7 +19,6 @@ def rq_d(g, rq, init_bindings):
         rq, base=fstriplestore.base_uri, initBindings=init_bindings
     )
     if len(rq_res) != 1:
-        ipdb.set_trace()
         raise Exception(
             f"rq_d: query result has length {len(rq_res)}, expected to be 1"
         )
