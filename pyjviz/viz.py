@@ -17,8 +17,9 @@ def dump_subgraph(g, cc_uri, out_fd, popup_output):
       ?pp rdf:type <CodeBlock>; rdf:label ?pl; <part-of> ?sg
     }
     """
-    rq_res = g.query(rq,
-                     base=fstriplestore.base_uri, initBindings={"sg": cc_uri})
+    rq_res = g.query(
+        rq, base=fstriplestore.base_uri, initBindings={"sg": cc_uri}
+    )
 
     for subgraph, subgraph_label in rq_res:
         if subgraph_label != rdflib.RDF.nil:
@@ -37,9 +38,9 @@ def dump_subgraph(g, cc_uri, out_fd, popup_output):
           ?obj_state rdf:type <ObjState>; <part-of>+ ?sg .
         }
         """
-        rq_res = g.query(rq,
-                         base=fstriplestore.base_uri,
-                         initBindings={"sg": subgraph})
+        rq_res = g.query(
+            rq, base=fstriplestore.base_uri, initBindings={"sg": subgraph}
+        )
 
         for obj_state in rq_res:
             obj_state = obj_state[0]
@@ -70,7 +71,9 @@ def dump_subgraph(g, cc_uri, out_fd, popup_output):
         ) in g.query(
             rq, base=fstriplestore.base_uri, initBindings={"sg": subgraph}
         ):
-            method_display = fstriplestore.from_base64(method_display.toPython())
+            method_display = fstriplestore.from_base64(
+                method_display.toPython()
+            )
             print(
                 f"""
             node_{uri_to_dot_id(method_call_obj)} [ label = <<TABLE border="0" align="left"><TR><TD>{method_display}</TD></TR></TABLE>> ];
@@ -295,8 +298,13 @@ def dump_dot_code(g, vertical, show_objects, popup_output):
         rq = "select ?s ?title ?text { ?s rdf:type <Text>; <title> ?title; <text> ?text }"
         r_df = viz_nodes.rq_df(g, rq, {})
         for ii, s, title, text in r_df.itertuples():
-            text_s = fstriplestore.from_base64(text).replace('>', '&gt;').replace('\n', '<br/>')
-            print(f"""
+            text_s = (
+                fstriplestore.from_base64(text)
+                .replace(">", "&gt;")
+                .replace("\n", "<br/>")
+            )
+            print(
+                f"""
             node_{uri_to_dot_id(s)} [
             shape = rect
             label = <<table>
@@ -304,7 +312,9 @@ def dump_dot_code(g, vertical, show_objects, popup_output):
             <tr><td>{text_s}</td></tr>
             </table>>
             ];
-            """, file=out_fd)
+            """,
+                file=out_fd,
+            )
 
     print("}", file=out_fd)
     return out_fd.getvalue()

@@ -9,11 +9,11 @@ base_uri = "https://github.com/pyjanitor-devs/pyjviz/rdflog.shacl.ttl#"
 
 
 def to_base64(s):
-    return base64.b64encode(s.encode('ascii')).decode('ascii')
+    return base64.b64encode(s.encode("ascii")).decode("ascii")
 
 
 def from_base64(s):
-    return base64.b64decode(s).decode('ascii')
+    return base64.b64decode(s).decode("ascii")
 
 
 class FSTripleOutput:
@@ -91,7 +91,7 @@ class FSTripleOutputOneShot(FSTripleOutput):
     def clear(self):
         self.out_fd = io.StringIO()
         self.dump_prefixes__()
-        
+
     def get_graph(self):
         g = rdflib.Graph()
         self.out_fd.seek(0)

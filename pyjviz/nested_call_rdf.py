@@ -23,5 +23,6 @@ class NestedCallRDF(rdf_utils.RDFRep):
 
         for _, ref_obj_state_uri in self.front.ctx.collected_ids:
             if ref_obj_state_uri:
-                ts.dump_triple(self.uri, "<nested-call-ref>",
-                               ref_obj_state_uri)
+                ts.dump_triple(
+                    self.uri, "<nested-call-ref>", ref_obj_state_uri
+                )

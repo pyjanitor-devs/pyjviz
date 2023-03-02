@@ -28,10 +28,14 @@ class MethodCallRDF(rdf_utils.RDFRep):
         global method_counter
         ts.dump_triple(self.uri, "<method-counter>", method_counter)
         method_counter += 1
-        ts.dump_triple(self.uri, "<method-stack-depth>",
-                       wb_stack.wb_stack.size())
-        ts.dump_triple(self.uri, "<method-stack-trace>",
-                       '"' + wb_stack.wb_stack.to_string() + '"')
+        ts.dump_triple(
+            self.uri, "<method-stack-depth>", wb_stack.wb_stack.size()
+        )
+        ts.dump_triple(
+            self.uri,
+            "<method-stack-trace>",
+            '"' + wb_stack.wb_stack.to_string() + '"',
+        )
 
         method_display_args = []
         more_args = False
@@ -50,28 +54,32 @@ class MethodCallRDF(rdf_utils.RDFRep):
         if more_args:
             method_display_args.append("...")
 
-        method_display_s = "".join([self.front.method_name,
-                                    "(",
-                                    ", ".join(method_display_args),
-                                    ")"])
-        method_display_s = \
-            "<br/>".join(textwrap.wrap(method_display_s, width=35))
+        method_display_s = "".join(
+            [self.front.method_name, "(", ", ".join(method_display_args), ")"]
+        )
+        method_display_s = "<br/>".join(
+            textwrap.wrap(method_display_s, width=35)
+        )
         method_display_s = fstriplestore.to_base64(method_display_s)
-        ts.dump_triple(self.uri, "<method-display>",
-                       '"' + method_display_s + '"')
+        ts.dump_triple(
+            self.uri, "<method-display>", '"' + method_display_s + '"'
+        )
 
         # ipdb.set_trace()
         c = 0
         for arg_name, arg_obj in self.front.args_l:
-            ts.dump_triple(self.uri, f"<method-call-arg{c}-name>",
-                           '"' + arg_name + '"')
-            if hasattr(arg_obj, 'back'):
+            ts.dump_triple(
+                self.uri, f"<method-call-arg{c}-name>", '"' + arg_name + '"'
+            )
+            if hasattr(arg_obj, "back"):
                 arg_obj.back.dump_rdf()
-                ts.dump_triple(self.uri, f"<method-call-arg{c}>",
-                               arg_obj.back.uri)
+                ts.dump_triple(
+                    self.uri, f"<method-call-arg{c}>", arg_obj.back.uri
+                )
             else:
-                ts.dump_triple(self.uri, f"<method-call-arg{c}>",
-                               '"' + str(arg_obj) + '"')
+                ts.dump_triple(
+                    self.uri, f"<method-call-arg{c}>", '"' + str(arg_obj) + '"'
+                )
             c += 1
 
         return self.uri

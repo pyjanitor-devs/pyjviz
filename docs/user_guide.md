@@ -11,4 +11,3 @@ If *TextRDF.dump_rdf* method is called we will have following RDF triples in tri
 <Text#1> <title> "Hello, world!" .
 <Text#1> <text> "This is a test of Text" .
 ```
-

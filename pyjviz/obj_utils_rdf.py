@@ -49,8 +49,9 @@ class ObjStateRDF(rdf_utils.RDFRep):
             ts.dump_triple(self.uri, "rdf:type", self.rdf_type_uri)
             ts.dump_triple(self.uri, "<obj>", obj_id.back.uri)
             ts.dump_triple(self.uri, "<part-of>", caller_stack_entry.back.uri)
-            ts.dump_triple(self.uri, "<version>",
-                           f'"{obj_id.last_version_num}"')
+            ts.dump_triple(
+                self.uri, "<version>", f'"{obj_id.last_version_num}"'
+            )
 
             obj_state_label_dumper = rdf_io.CCObjStateLabel()
             obj_state_label_dumper.to_rdf(self.front.obj, self.uri)

@@ -35,8 +35,8 @@ if __name__ == "__main__":
 
         t = pyjviz.Text("a0", inspect.getsource(a0))
         t.back.dump_rdf()
-        
+
     print(df1.describe())
     print(inspect.getsource(a0))
-    
+
     pyjviz.save_dot(show_objects=False)

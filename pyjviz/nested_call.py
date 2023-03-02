@@ -61,7 +61,7 @@ class NestedCall(dia_objs.DiagramObj):
 
     During method handling (`assign` in example above, see MethodCall.handle_start_method_call) the arguments which are isfunction(arg) == True will be converted to NestedCall object.
     The code then proceed and causes controlled call of `nested_call_func` via __call__ implementation. Results are saved as self.ret and later used by MethodCall.handle_end_method_call
-    """ # noqa : E501
+    """  # noqa : E501
 
     def __init__(self, arg_name, arg_func):
         super().__init__()

@@ -29,8 +29,9 @@ class MethodCall(wb_stack.WithBlock):
 
         if type(arg_obj).__name__ == "NestedCall":
             self.args_l.append((arg_name, arg_obj))
-        elif isinstance(arg_obj, pd.DataFrame) \
-                 or isinstance(arg_obj, pd.Series):
+        elif isinstance(arg_obj, pd.DataFrame) or isinstance(
+            arg_obj, pd.Series
+        ):
             arg_obj_id, found = obj_tracking.get_tracking_obj(arg_obj)
 
             if found:
@@ -56,21 +57,29 @@ class MethodCall(wb_stack.WithBlock):
             else:
                 self.add_args_l_entry__(arg_name, arg_obj)
 
-    def handle_start_method_call(self, method_name, method_signature, method_args, method_kwargs):
+    def handle_start_method_call(
+        self, method_name, method_signature, method_args, method_kwargs
+    ):
         if method_name == "pin":
             arg0_obj = method_args[0]
             arg0_obj_id, found = obj_tracking.get_tracking_obj(arg0_obj)
             if found:
-                rdf_io.CCBasicPlot().to_rdf(arg0_obj, arg0_obj_id.last_obj_state.back.uri)
+                rdf_io.CCBasicPlot().to_rdf(
+                    arg0_obj, arg0_obj_id.last_obj_state.back.uri
+                )
             else:
-                raise Exception("logical error: expected to have obj state created before")
+                raise Exception(
+                    "logical error: expected to have obj state created before"
+                )
             return method_args, method_kwargs
 
         self.thread_id = threading.get_native_id()
 
         all_args = method_args
         self.method_signature = method_signature
-        self.method_bound_args = self.method_signature.bind(*all_args, **method_kwargs)
+        self.method_bound_args = self.method_signature.bind(
+            *all_args, **method_kwargs
+        )
         args_w_specified_values = self.method_bound_args.arguments.keys()
         # NB:
         # according to python doc default values are evaluated and saved only

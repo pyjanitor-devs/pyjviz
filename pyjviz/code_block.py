@@ -8,9 +8,9 @@ class CodeBlock(wb_stack.WithBlock):
     ```python
     with pyjviz.CB("test-code"):
        .. python code is here ..
-    
+
     ```
-    """ # noqa : 501
+    """  # noqa : 501
 
     def __init__(self, label=None):
         super().__init__(label)

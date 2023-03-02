@@ -8,16 +8,14 @@ class WithBlock(dia_objs.DiagramObj):
     For pyjviz we are using WithBlock to implement the idea of visual contrainer where other diagram objects can be placed.
 
     pyjviz has wb_atack global object which is maintained using WithBlock implementation of __enter__/__exit__ methods.
-    """ # noqa : E501
+    """  # noqa : E501
 
     def __init__(self, label):
         super().__init__()
         global wb_stack
         self.label = label
         self.parent_stack_entry = (
-            wb_stack.stack_entries__[-1]
-            if wb_stack.size() > 0
-            else None
+            wb_stack.stack_entries__[-1] if wb_stack.size() > 0 else None
         )
 
     def __enter__(self):

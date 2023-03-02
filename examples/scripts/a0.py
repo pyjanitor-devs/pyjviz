@@ -14,6 +14,7 @@ import pandas as pd
 TestDF = typing.NewType("TestDF", pd.DataFrame)
 TestDF.columns = ["a"]
 
+
 @pf.register_dataframe_method
 def a0(df: pd.DataFrame) -> TestDF:
     """
@@ -22,7 +23,7 @@ def a0(df: pd.DataFrame) -> TestDF:
     # ipdb.set_trace()
     print("a0")
     return pd.DataFrame(df)
-    #return df
+    # return df
 
 
 if __name__ == "__main__":
@@ -39,5 +40,5 @@ if __name__ == "__main__":
     # ipdb.set_trace()
     print(df1.describe())
 
-    pyjviz.save_dot(show_objects=True, popup_output = True)
-    #pyjviz.save_dot(show_objects=True, popup_output = False)
+    pyjviz.save_dot(show_objects=True, popup_output=True)
+    # pyjviz.save_dot(show_objects=True, popup_output = False)
