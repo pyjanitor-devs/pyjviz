@@ -39,7 +39,7 @@ def get_cell_id():
     return cell_id
 
 def register_pre_run(my_pre_run_cell):
-    print("register_pre_run")
+    #print("register_pre_run")
     get_ipython().events.register('pre_run_cell', my_pre_run_cell)
     return None
 
@@ -50,3 +50,4 @@ def show_method_chain(dot_code):
     mod_output = replace_a_href_with_onclick(output)
     display(HTML(mod_output))
 
+cell_triplestores_d = {} # cell_id -> FSTripleOutputOneShot

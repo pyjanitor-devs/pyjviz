@@ -122,9 +122,7 @@ def enable_pf_pandas__():
 
     @pf.register_dataframe_method
     def dropna(df: pd.DataFrame, **kwargs) -> pd.DataFrame:
-        print("call dropna")
         ret = old_dropna(df, **kwargs)
-        # print("my dropna", id(df), id(ret))
         return ret
 
     @pf.register_dataframe_method
@@ -136,8 +134,6 @@ def enable_pf_pandas__():
 
     @pf.register_dataframe_method
     def rename(df: pd.DataFrame, columns) -> pd.DataFrame:
-        print("my rename", id(df))
-        # ipdb.set_trace()
         ret = old_rename(df, columns=columns)
         return ret
 
@@ -149,7 +145,6 @@ def enable_pf_pandas__():
 
     @pf.register_dataframe_method
     def copy(df: pd.DataFrame, *x, **y) -> pd.DataFrame:
-        print("new copy:", x, y)
         ret = old_copy(df, *x, **y)
         return ret
 

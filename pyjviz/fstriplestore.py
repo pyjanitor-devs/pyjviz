@@ -88,6 +88,10 @@ class FSTripleOutputOneShot(FSTripleOutput):
         super().__init__(out_fd)
         self.dump_prefixes__()
 
+    def clear(self):
+        self.out_fd = io.StringIO()
+        self.dump_prefixes__()
+        
     def get_graph(self):
         g = rdflib.Graph()
         self.out_fd.seek(0)
