@@ -16,8 +16,7 @@ method_counter = 0
 
 class MethodCall(wb_stack.WithBlock):
     def __init__(self, method_name):
-        super().__init__(method_name)
-        self.back = method_call_rdf.MethodCallRDF(self)
+        super().__init__(method_call_rdf.MethodCallRDF, method_name)
         self.method_name = method_name
         self.method_bound_args = None
 
@@ -63,14 +62,15 @@ class MethodCall(wb_stack.WithBlock):
         if method_name == "pin":
             arg0_obj = method_args[0]
             arg0_obj_id, found = obj_tracking.get_tracking_obj(arg0_obj)
-            if found:
-                rdf_io.CCBasicPlot().to_rdf(
+            if not found:
+                arg0_obj_state = obj_utils.ObjState(arg0_obj, arg0_obj_id)
+                arg0_obj_state.part_of = wb_stack.wb_stack.get_parent_of_current_entry()
+                arg0_obj_state.back.dump_rdf()
+
+            rdf_io.CCBasicPlot().to_rdf(
                     arg0_obj, arg0_obj_id.last_obj_state.back.uri
                 )
-            else:
-                raise Exception(
-                    "logical error: expected to have obj state created before"
-                )
+
             return method_args, method_kwargs
 
         self.thread_id = threading.get_native_id()

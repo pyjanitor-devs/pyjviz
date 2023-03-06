@@ -29,7 +29,7 @@ TextRDF is the class which defines method [dump_rdf()](/pyjviz/user_guide/#about
     ```
 """  # noqa : 501
 from . import wb_stack
-from ..rdf import dia_objs_rdf
+from ..rdf.dia_objs_rdf import TextRDF
 
 
 class DiagramObj:
@@ -39,9 +39,22 @@ class DiagramObj:
     E.g. Text class will have back ref to TextRDF class object.
     """  # noqa : 501
 
-    def __init__(self):
-        self.back = None
+    def find_parent_obj__(self, parent_obj):
+        if not parent_obj:
+            parent_obj = wb_stack.wb_stack.get_top()
 
+        if parent_obj is not None and not isinstance(parent_obj, DiagramObj):
+            msg = (
+                f"parent_obj is not subclass of DiagramObj, {type(parent_obj)}"
+            )
+            raise Exception(msg)
+
+        return parent_obj
+
+    
+    def __init__(self, back_ctor, parent_obj):
+        self.back = back_ctor(self)
+        self.part_of = self.find_parent_obj__(parent_obj)
 
 class Text(DiagramObj):
     """
@@ -49,16 +62,6 @@ class Text(DiagramObj):
     """
 
     def __init__(self, title, text, parent_obj=None):
-        if not parent_obj:
-            parent_obj = wb_stack.wb_stack.get_top()
-
-        if not isinstance(parent_obj, DiagramObj):
-            msg = (
-                f"parent_obj is not subclass of DiagramObj, {type(parent_obj)}"
-            )
-            raise Exception(msg)
-
-        self.back = TextRDF(self)
-        self.parent_obj = parent_obj
+        super().__init__(TextRDF, parent_obj)
         self.title = title
         self.text = text

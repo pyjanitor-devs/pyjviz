@@ -10,7 +10,7 @@ class NestedCallRDF(rdf_utils.RDFRep):
     def dump_rdf(self):
         ts = fstriplestore.triple_store
         ts.dump_triple(self.uri, "rdf:type", self.rdf_type_uri)
-        ts.dump_triple(self.uri, "<part-of>", self.front.parent_uri)
+        ts.dump_triple(self.uri, "<part-of>", self.front.part_of.back.uri)
 
     def dump_return(self):
         ts = fstriplestore.triple_store

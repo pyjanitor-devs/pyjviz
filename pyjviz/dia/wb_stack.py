@@ -10,13 +10,13 @@ class WithBlock(dia_objs.DiagramObj):
     pyjviz has wb_atack global object which is maintained using WithBlock implementation of __enter__/__exit__ methods.
     """  # noqa : E501
 
-    def __init__(self, label):
-        super().__init__()
+    def __init__(self, rdf_back_ctor, label):
         global wb_stack
-        self.label = label
-        self.parent_stack_entry = (
+        parent_stack_entry = (
             wb_stack.stack_entries__[-1] if wb_stack.size() > 0 else None
         )
+        super().__init__(rdf_back_ctor, parent_stack_entry)
+        self.label = label
 
     def __enter__(self):
         global wb_stack

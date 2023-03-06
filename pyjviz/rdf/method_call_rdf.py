@@ -5,7 +5,7 @@ from ..dia import wb_stack
 from ..dia import obj_utils
 
 
-method_counter = 0  # NB: should be better way to count method calls
+method_counter = 0
 
 
 class MethodCallRDF(rdf_utils.RDFRep):
@@ -20,7 +20,7 @@ class MethodCallRDF(rdf_utils.RDFRep):
         ts.dump_triple(self.uri, "rdf:type", self.rdf_type_uri)
         method_name_lit = '"' + self.front.method_name + '"'
         ts.dump_triple(self.uri, "rdf:label", method_name_lit)
-        parent_obj = self.front.parent_stack_entry
+        parent_obj = self.front.part_of
         parent_uri = parent_obj.back.uri if parent_obj else "rdf:nil"
         ts.dump_triple(self.uri, "<part-of>", parent_uri)
 
@@ -28,6 +28,8 @@ class MethodCallRDF(rdf_utils.RDFRep):
         global method_counter
         ts.dump_triple(self.uri, "<method-counter>", method_counter)
         method_counter += 1
+        
+        # NB: wb_stack is used in rdf hier class
         ts.dump_triple(
             self.uri, "<method-stack-depth>", wb_stack.wb_stack.size()
         )

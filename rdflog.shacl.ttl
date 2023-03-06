@@ -32,6 +32,7 @@
 	     sh:property [sh:path <method-call-return>; sh:minCount 1; sh:maxCount 1; sh:class <ObjState>].
 
 <NestedCall> rdf:type rdfs:Class; rdf:type sh:NodeShape; sh:closed true;
+	     sh:property [sh:path <part-of>; sh:minCount 1; sh:maxCount 1; sh:class <MethodCall>].
 	     sh:property [sh:path <ret-val>; sh:minCount 1; sh:maxCount 1; sh:class <ObjState>].
 
 <Obj> rdf:type rdfs:Class; rdf:type sh:NodeShape; sh:closed true; dash:closedByType true;
@@ -42,7 +43,7 @@
 
 <ObjState> rdf:type rdfs:Class; rdf:type sh:NodeShape; sh:closed true; dash:closedByType true;
 	   sh:property [sh:path rdf:type; sh:minCount 1; sh:maxCount 1; sh:class <ObjState>];
-	   sh:property [sh:path <part-of>; sh:minCount 1; sh:maxCount 1; sh:class <WithBlock>];
+	   sh:property [sh:path <part-of>; sh:minCount 1; sh:maxCount 1; sh:class <MethodCall>];
 	   sh:property [sh:path <obj>; sh:minCount 1; sh:maxCount 1; sh:class <Obj>];
 	   sh:property [sh:path <version>; sh:minCount 1; sh:maxCount 1; sh:datatype xsd:string];
 	   sh:property [sh:path <df-shape>; sh:minCount 1; sh:maxCount: 1; sh:datatype xsd:string];

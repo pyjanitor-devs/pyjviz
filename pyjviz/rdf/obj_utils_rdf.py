@@ -1,5 +1,4 @@
 from . import fstriplestore
-from ..dia import wb_stack
 from . import rdf_utils
 from . import rdf_io
 
@@ -44,11 +43,10 @@ class ObjStateRDF(rdf_utils.RDFRep):
             obj_id.back.dump_rdf()
 
             ts = fstriplestore.triple_store
-            caller_stack_entry = wb_stack.wb_stack.get_top()
 
             ts.dump_triple(self.uri, "rdf:type", self.rdf_type_uri)
             ts.dump_triple(self.uri, "<obj>", obj_id.back.uri)
-            ts.dump_triple(self.uri, "<part-of>", caller_stack_entry.back.uri)
+            ts.dump_triple(self.uri, "<part-of>", self.front.part_of.back.uri)
             ts.dump_triple(
                 self.uri, "<version>", f'"{obj_id.last_version_num}"'
             )

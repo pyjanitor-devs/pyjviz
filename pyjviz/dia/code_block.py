@@ -13,9 +13,7 @@ class CodeBlock(wb_stack.WithBlock):
     """  # noqa : 501
 
     def __init__(self, label=None):
-        super().__init__(label)
-        self.back = code_block_rdf.CodeBlockRDF(self)
-
+        super().__init__(code_block_rdf.CodeBlockRDF, label)
         self.back.dump_rdf()
 
     def on_exit__(self):

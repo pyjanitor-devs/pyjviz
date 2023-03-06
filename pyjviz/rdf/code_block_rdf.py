@@ -15,8 +15,8 @@ class CodeBlockRDF(rdf_utils.RDFRep):
         else:
             l_uri = "rdf:nil"
 
-        if self.front.parent_stack_entry:
-            parent_uri = self.front.parent_stack_entry.back.uri
+        if self.front.part_of:
+            parent_uri = self.front.part_of.back.uri
         else:
             parent_uri = "rdf:nil"
 

@@ -17,6 +17,6 @@ if __name__ == "__main__":
         d_poison = Pmf(ps, qs)
         d_poison.pin()
 
-        pyjviz.arrow(d6, "goes to", d_poison)
+        #pyjviz.arrow(d6, "goes to", d_poison)
 
     pyjviz.save_dot()

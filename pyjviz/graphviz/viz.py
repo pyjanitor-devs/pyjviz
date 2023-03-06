@@ -1,3 +1,4 @@
+#import ipdb
 # pyjviz module implements basic visualisation of pyjviz rdf log
 # there is no dependency of this code to other part of pyjanitor
 #
@@ -33,15 +34,46 @@ def dump_subgraph(g, cc_uri, out_fd, popup_output):
 
         dump_subgraph(g, subgraph, out_fd, popup_output)
 
-        rq = """
-        select ?obj_state {
-          ?obj_state rdf:type <ObjState>; <part-of>+ ?sg .
-        }
-        """
+        if 0:
+            rq = """
+            select ?obj_state {
+              #bind(<CodeBlock> as ?pt)
+              ?obj_state rdf:type <ObjState>; <part-of> ?parent_o .
+              ?parent_o rdf:type <CodeBlock>; <part-of> ?sg . 
+              #?pt rdfs:subClassOf <WithBlock>
+            }
+            """
+        elif 0:
+            rq = """
+            select ?obj_state {
+            ?obj_state rdf:type <ObjState>.
+            ?obj_state <part-of> ?code_block.
+            ?code_block <part-of> ?sg
+                       #?code_block rdf:type <CodeBlock>; <part-of> ?sg
+            }
+            """            
+        elif 0:
+            rq = """
+            select ?obj_state {
+            ?obj_state rdf:type <ObjState>.
+            optional { ?obj_state <part-of> ?method_call.
+                       ?method_call rdf:type <MethodCall>; <part-of> ?sg }
+            optional { ?obj_state <part-of> ?code_block.
+                       ?code_block rdf:type <CodeBlock>; <part-of> ?sg }
+            }
+            """
+        else:
+            rq = """
+            select ?obj_state {
+              ?obj_state rdf:type <ObjState>; 
+              <part-of>+ ?sg .
+            }
+            """
         rq_res = g.query(
             rq, base=fstriplestore.base_uri, initBindings={"sg": subgraph}
         )
-
+        #print("sg:", subgraph)
+        #ipdb.set_trace()
         for obj_state in rq_res:
             obj_state = obj_state[0]
             n = viz_nodes.ObjStateGraphVizNode(g, obj_state, popup_output)
@@ -58,7 +90,7 @@ def dump_subgraph(g, cc_uri, out_fd, popup_output):
                            <method-display> ?method_display;
                            <method-stack-depth> ?method_stack_depth;
                            <method-stack-trace> ?method_stack_trace;
-                           <part-of>+ ?sg .
+                           <part-of> ?sg .
         }
         """
         for (
@@ -83,7 +115,8 @@ def dump_subgraph(g, cc_uri, out_fd, popup_output):
 
         rq = """
         select ?nested_call ?sg {
-          ?nested_call rdf:type <NestedCall>; <part-of>+ ?sg.
+          ?nested_call rdf:type <NestedCall>; <part-of> ?method_call.
+          ?method_call rdf:type <MethodCall>; <part-of> ?sg.
         }
         """
         for nested_call, sg in g.query(

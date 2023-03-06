@@ -33,7 +33,7 @@ class ObjId:
 
 class ObjState(dia_objs.DiagramObj):
     def __init__(self, obj, obj_id):
+        super().__init__(obj_utils_rdf.ObjStateRDF, None)
         self.obj = obj
-        self.back = obj_utils_rdf.ObjStateRDF(self)
         self.obj_id = obj_id
         self.obj_id.last_obj_state = self

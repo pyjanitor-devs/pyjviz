@@ -64,14 +64,8 @@ class NestedCall(dia_objs.DiagramObj):
     """  # noqa : E501
 
     def __init__(self, arg_name, arg_func):
-        super().__init__()
-        self.back = nested_call_rdf.NestedCallRDF(self)
+        super().__init__(nested_call_rdf.NestedCallRDF, None)
         self.label = f"nested_call({arg_name})"
-        p_obj = wb_stack.wb_stack.get_parent_of_current_entry()
-        self.parent_uri = p_obj.back.uri
-        if self.parent_uri is None:
-            self.parent_uri = "rdf:nil"
-
         self.arg_name = arg_name
         self.arg_func = arg_func
         self.ret = None
