@@ -2,9 +2,18 @@ import os
 import os.path
 import textwrap
 import io
+import base64
 import rdflib
 
 base_uri = "https://github.com/pyjanitor-devs/pyjviz/rdflog.shacl.ttl#"
+
+
+def to_base64(s):
+    return base64.b64encode(s.encode("ascii")).decode("ascii")
+
+
+def from_base64(s):
+    return base64.b64decode(s).decode("ascii")
 
 
 class FSTripleOutput:
@@ -33,17 +42,19 @@ class FSTripleOutput:
         <MethodCall> rdf:type rdfs:Class .
         <MethodCall> rdfs:subClassOf <WithBlock> .
         <NestedCall> rdf:type rdfs:Class .
-        <NestedCall> rdfs:subClassOf <WithBlock> .
 
         <Obj> rdf:type rdfs:Class .
         <ObjState> rdf:type rdfs:Class .
         <ObjStateCC> rdf:type rdfs:Class .
 
         <CC> rdf:type rdfs:Class .
-        <CCGlance> rdf:type rdfs:Class .
-        <CCGlance> rdfs:subClassOf <CC> .
-        <CCBasicPlot> rdf:type rdfs:Class .
-        <CCBasicPlot> rdfs:subClassOf <CC> .
+        <CCObjStateLabel> rdf:type rdfs:Class .
+        <CCObjStateLabelDataFrame> rdf:type rdfs:Class .
+        <CCObjStateLabelDataFrame> rdfs:subClassOf <CCObjStateLabel> .
+        <CCObjStateLabelSeries> rdf:type rdfs:Class .
+        <CCObjStateLabelSeries> rdfs:subClassOf <CCObjStateLabel> .
+        <CCGlance> rdf:type rdfs:class; rdfs:subClassOf <CC> .
+        <CCBasicPlot> rdf:type rdfs:Class; rdfs:subClassOf <CC> .
         """
             ),
             file=self.out_fd,
@@ -77,6 +88,10 @@ class FSTripleOutputOneShot(FSTripleOutput):
         super().__init__(out_fd)
         self.dump_prefixes__()
 
+    def clear(self):
+        self.out_fd = io.StringIO()
+        self.dump_prefixes__()
+
     def get_graph(self):
         g = rdflib.Graph()
         self.out_fd.seek(0)
@@ -93,6 +108,5 @@ triple_store = None
 
 
 def set_triple_store__(o):
-    print("setting up triple_store:", o)
     global triple_store
     triple_store = o

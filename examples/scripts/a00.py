@@ -1,3 +1,7 @@
+"""
+a00.py - examples of how to use Text diagram object
+"""
+
 import ipdb
 import janitor
 import pandas_flavor as pf
@@ -6,6 +10,7 @@ import os.path, sys
 
 import typing
 import pandas as pd
+import inspect
 
 TestDF = typing.NewType("TestDF", pd.DataFrame)
 TestDF.columns = ["a"]
@@ -28,6 +33,10 @@ if __name__ == "__main__":
         res1 = df2.a0()
         res2 = df2.a0()
 
+        t = pyjviz.Text("a0", inspect.getsource(a0))
+        t.back.dump_rdf()
+
     print(df1.describe())
+    print(inspect.getsource(a0))
 
     pyjviz.save_dot(show_objects=False)

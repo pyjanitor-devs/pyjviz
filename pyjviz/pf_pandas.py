@@ -1,3 +1,4 @@
+import warnings
 import pandas as pd
 import pandas_flavor as pf
 import pandas_flavor.register
@@ -5,7 +6,9 @@ import inspect
 from contextlib import nullcontext
 
 from . import wb_stack
-from . import wb_stack_entries
+from . import method_call
+
+warnings.filterwarnings("ignore", category=UserWarning)
 
 
 class DataFrameFunc:
@@ -21,7 +24,7 @@ class DataFrameFunc:
 
         latest_method_call = wb_stack.wb_stack.get_latest_method_call()
         if latest_method_call is None:
-            method_ctx = wb_stack_entries.MethodCall(self.func_name)
+            method_ctx = method_call.MethodCall(self.func_name)
         else:
             method_ctx = nullcontext()
 
@@ -47,7 +50,7 @@ class PandasFlavorMethodCallFactory:
 
         latest_method_call = wb_stack.wb_stack.get_latest_method_call()
         if latest_method_call is None:
-            ret = wb_stack_entries.MethodCall(method_name)
+            ret = method_call.MethodCall(method_name)
         else:
             ret = nullcontext()
 
@@ -85,8 +88,9 @@ def enable_pf_pandas__():
         )(*x, **y)
 
     if 1:
-        # we need those registration of pin method to make sure method call syntax work
-        # actual pin implementation is in MethodCall handle_* methods
+        # we need those registration of pin method to make sure method call
+        # syntax work actual pin implementation is in
+        # MethodCall handle_* methods
         @pf.register_series_method
         def pin(s: pd.Series, output_type="head"):
             return s
@@ -95,18 +99,21 @@ def enable_pf_pandas__():
         def pin(df: pd.DataFrame, output_type="head"):
             return df
 
-    old_describe = pd.DataFrame.describe
-    # del pd.DataFrame.describe
+    if 0:
+        old_describe = pd.DataFrame.describe
+        # del pd.DataFrame.describe
 
-    @pf.register_dataframe_method
-    def describe(df: pd.DataFrame) -> pd.DataFrame:
-        print("override describe")
-        return old_describe(df)
+        @pf.register_dataframe_method
+        def describe(df: pd.DataFrame) -> pd.DataFrame:
+            print("override describe")
+            return old_describe(df)
 
     old_dropna = pd.DataFrame.dropna
     del pd.DataFrame.dropna
+
     old_drop = pd.DataFrame.drop
     del pd.DataFrame.drop
+
     old_rename = pd.DataFrame.rename
     del pd.DataFrame.rename
     old_assign = pd.DataFrame.assign
@@ -115,9 +122,7 @@ def enable_pf_pandas__():
 
     @pf.register_dataframe_method
     def dropna(df: pd.DataFrame, **kwargs) -> pd.DataFrame:
-        print("call dropna")
         ret = old_dropna(df, **kwargs)
-        # print("my dropna", id(df), id(ret))
         return ret
 
     @pf.register_dataframe_method
@@ -129,8 +134,6 @@ def enable_pf_pandas__():
 
     @pf.register_dataframe_method
     def rename(df: pd.DataFrame, columns) -> pd.DataFrame:
-        print("my rename", id(df))
-        # ipdb.set_trace()
         ret = old_rename(df, columns=columns)
         return ret
 
@@ -142,7 +145,6 @@ def enable_pf_pandas__():
 
     @pf.register_dataframe_method
     def copy(df: pd.DataFrame, *x, **y) -> pd.DataFrame:
-        print("new copy:", x, y)
         ret = old_copy(df, *x, **y)
         return ret
 

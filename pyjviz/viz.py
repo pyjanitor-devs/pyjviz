@@ -1,89 +1,27 @@
 # pyjviz module implements basic visualisation of pyjviz rdf log
 # there is no dependency of this code to other part of pyjanitor
 #
-import os.path, tempfile
-import base64
-import pandas as pd
-
 import rdflib
 from io import StringIO
-
 import graphviz
 
 from . import fstriplestore
 from . import nb_utils
-
-
-def uri_to_dot_id(uri):
-    return str(hash(uri)).replace("-", "d")
-
-
-def make_table_popup_href(head_html, popup_output):
-    if head_html is None:
-        return ""
-
-    href = ""
-    if fstriplestore.triple_store.output_dir:
-        temp_dir = os.path.join(fstriplestore.triple_store.output_dir, "tmp")
-        with tempfile.NamedTemporaryFile(
-            dir=temp_dir, suffix=".html", delete=False
-        ) as temp_fp:
-            popup_size = (800, 200)
-            temp_fp.write(
-                head_html.toPython()
-                .replace("&lt;", "<")
-                .replace("&gt;", ">")
-                .replace("&quot;", "'")
-                .replace("&#10;", "\n")
-                .encode("ascii")
-            )
-            if popup_output:
-                href = f"""href="javascript:
-                {{ window.open(location.pathname.match(/.*\//) + 'tmp/' + '{os.path.basename(temp_fp.name)}', '_blank', 'width={popup_size[0]},height={popup_size[1]}'); }}
-            "
-                """
-            else:
-                href = 'href="tmp/' + os.path.basename(temp_fp.name) + '"'
-
-    return href
-
-
-def make_image_popup_href(image_b64, popup_output):
-    href = ""
-    if fstriplestore.triple_store.output_dir:
-        temp_dir = os.path.join(fstriplestore.triple_store.output_dir, "tmp")
-        with tempfile.NamedTemporaryFile(
-            dir=temp_dir, suffix=".html", delete=False
-        ) as temp_fp:
-            popup_size = (900, 500)
-            temp_fp.write(
-                (
-                    "<img src='data:image/png;base64,"
-                    + image_b64.toPython()
-                    + "'></img>"
-                ).encode("ascii")
-            )
-            if popup_output:
-                href = f"""href="javascript:
-                {{ window.open(location.pathname.match(/.*\//) + 'tmp/' + '{os.path.basename(temp_fp.name)}', '_blank', 'width={popup_size[0]},height={popup_size[1]}'); }}
-                "
-                """
-            else:
-                href = 'href="tmp/' + os.path.basename(temp_fp.name) + '"'
-
-    return href
+from . import viz_nodes
+from .viz_nodes import uri_to_dot_id
 
 
 def dump_subgraph(g, cc_uri, out_fd, popup_output):
-    subgraphs = [
-        r
-        for r in g.query(
-            "select ?pp ?pl { ?pp rdf:type <CodeBlock>; rdf:label ?pl; <part-of> ?sg }",
-            base=fstriplestore.base_uri,
-            initBindings={"sg": cc_uri},
-        )
-    ]
-    for subgraph, subgraph_label in subgraphs:
+    rq = """
+    select ?pp ?pl {
+      ?pp rdf:type <CodeBlock>; rdf:label ?pl; <part-of> ?sg
+    }
+    """
+    rq_res = g.query(
+        rq, base=fstriplestore.base_uri, initBindings={"sg": cc_uri}
+    )
+
+    for subgraph, subgraph_label in rq_res:
         if subgraph_label != rdflib.RDF.nil:
             print(
                 f"""
@@ -96,120 +34,28 @@ def dump_subgraph(g, cc_uri, out_fd, popup_output):
         dump_subgraph(g, subgraph, out_fd, popup_output)
 
         rq = """
-        select ?obj_state ?version ?obj_type ?obj_uuid {
-          ?obj_state rdf:type <ObjState>; <obj> ?obj.
-          ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid.
-          ?obj_state <part-of>+ ?sg; <version> ?version .
+        select ?obj_state {
+          ?obj_state rdf:type <ObjState>; <part-of>+ ?sg .
         }
         """
-        for obj_state, version, obj_type, obj_uudi in g.query(
+        rq_res = g.query(
             rq, base=fstriplestore.base_uri, initBindings={"sg": subgraph}
-        ):
-            obj_state_cc_rq = """
-            select ?obj_state ?cc_type {
-            ?obj_state_cc rdf:type/rdfs:subClassOf+ <CC>;
-                          rdf:type ?cc_type;
-                          <obj-state> ?obj_state.
-            }
-            """
+        )
 
-            ccs = pd.DataFrame(columns=["obj_state_cc", "cc_type"])
-            for obj_state_cc, cc_type in g.query(
-                obj_state_cc_rq,
-                base=fstriplestore.base_uri,
-                initBindings={"obj_state": obj_state},
-            ):
-                ccs = pd.concat(
-                    [
-                        ccs,
-                        pd.DataFrame(
-                            [[obj_state_cc, cc_type]], columns=ccs.columns
-                        ),
-                    ],
-                    axis=0,
-                    ignore_index=True,
-                )
-
-            cc_basic_plot_uri = rdflib.URIRef(
-                "CCBasicPlot", base=fstriplestore.base_uri
-            )
-            cc_glance_uri = rdflib.URIRef(
-                "CCGlance", base=fstriplestore.base_uri
-            )
-            target_cc_type = (
-                cc_basic_plot_uri
-                if (ccs.cc_type == cc_basic_plot_uri).any()
-                else cc_glance_uri
-            )
-            bindings = {
-                "obj_state": obj_state,
-                "target_cc_type": target_cc_type,
-            }
-
-            if target_cc_type == cc_glance_uri:
-                if obj_type.toPython() == "DataFrame":
-                    glance_rq = """
-                    select ?shape ?head {
-                      ?obj_state_cc <obj-state> ?obj_state; rdf:type ?target_cc_type; <shape> ?shape; <df-head> ?head .
-                    }
-                    """
-                    for shape, head in g.query(
-                        glance_rq,
-                        base=fstriplestore.base_uri,
-                        initBindings=bindings,
-                    ):
-                        shape = shape
-                        node_bgcolor = "#88000022"
-                        href = make_table_popup_href(head, popup_output)
-                elif obj_type.toPython() == "Series":
-                    glance_rq = "select ?shape ?head { ?obj_state_cc <obj-state> ?obj_state; rdf:type ?target_cc_type; <shape> ?shape; <df-head> ?head }"
-                    for shape, head in g.query(
-                        glance_rq,
-                        base=fstriplestore.base_uri,
-                        initBindings=bindings,
-                    ):
-                        shape = shape
-                        node_bgcolor = "#88000022"
-                        href = make_table_popup_href(head, popup_output)
-                else:
-                    raise Exception(f"unknown obj_type {obj_type}")
-            elif target_cc_type == cc_basic_plot_uri:
-                basic_plot_rq = "select ?shape ?plot_im { ?obj_state_cc <obj-state> ?obj_state; rdf:type ?target_cc_type; <shape> ?shape; <plot-im> ?plot_im }"
-                # ipdb.set_trace()
-                for shape, plot_im in g.query(
-                    basic_plot_rq,
-                    base=fstriplestore.base_uri,
-                    initBindings=bindings,
-                ):
-                    shape = shape
-                    node_bgcolor = "#44056022"
-                    href = make_image_popup_href(plot_im, popup_output)
-            else:
-                raise Exception(f"unknown cc_type {target_cc_type}")
-
-            print(
-                f"""
-            node_{uri_to_dot_id(obj_state)} [
-            color="{node_bgcolor}"
-            shape = rect
-            label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
-            <tr> <td> <b>{obj_state.split('/')[-1]}</b><br/>{obj_type} {shape.toPython()} {version}</td> </tr>
-            </table>>
-            {href}
-            ];
-            """,
-                file=out_fd,
-            )
-
-            del shape
-            del href
-            del node_bgcolor
+        for obj_state in rq_res:
+            obj_state = obj_state[0]
+            n = viz_nodes.ObjStateGraphVizNode(g, obj_state, popup_output)
+            n.build_label()
+            n.build_popup_content()
+            n.dump(out_fd)
 
         rq = """
-        select ?method_call_obj ?method_name ?method_display ?method_count ?method_stack_depth ?method_stack_trace {
+        select ?method_call_obj ?method_name ?method_display ?method_count
+               ?method_stack_depth ?method_stack_trace {
           ?method_call_obj rdf:type <MethodCall>;
                            rdf:label ?method_name;
-                           <method-counter> ?method_count; <method-display> ?method_display;
+                           <method-counter> ?method_count;
+                           <method-display> ?method_display;
                            <method-stack-depth> ?method_stack_depth;
                            <method-stack-trace> ?method_stack_trace;
                            <part-of>+ ?sg .
@@ -225,10 +71,9 @@ def dump_subgraph(g, cc_uri, out_fd, popup_output):
         ) in g.query(
             rq, base=fstriplestore.base_uri, initBindings={"sg": subgraph}
         ):
-            method_display = base64.b64decode(
-                method_display.toPython().encode("ascii")
-            ).decode("ascii")
-            # method_display = "<br/>".join(textwrap.wrap(method_display, width = 40))
+            method_display = fstriplestore.from_base64(
+                method_display.toPython()
+            )
             print(
                 f"""
             node_{uri_to_dot_id(method_call_obj)} [ label = <<TABLE border="0" align="left"><TR><TD>{method_display}</TD></TR></TABLE>> ];
@@ -252,7 +97,7 @@ def dump_subgraph(g, cc_uri, out_fd, popup_output):
             )
 
         if subgraph_label != rdflib.RDF.nil:
-            print("}}", file=out_fd)
+            print("}", file=out_fd)
 
 
 def dump_dot_code(g, vertical, show_objects, popup_output):
@@ -346,7 +191,7 @@ def dump_dot_code(g, vertical, show_objects, popup_output):
     if show_objects:  # show transient objects
         rq = """
         select ?obj ?obj_type ?obj_uuid ?obj_pyid {
-          ?obj rdf:type <Obj>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid; <obj-pyid> ?obj_pyid
+          ?obj rdf:type <ObjId>; <obj-type> ?obj_type; <obj-uuid> ?obj_uuid; <obj-pyid> ?obj_pyid
         }
         """
         for obj, obj_type, obj_uuid, obj_pyid in g.query(
@@ -445,6 +290,28 @@ def dump_dot_code(g, vertical, show_objects, popup_output):
             print(
                 f"""
             node_{uri_to_dot_id(from_obj)} -> node_{uri_to_dot_id(to_obj)} [label="{arrow_label.toPython()}", penwidth=4.5];
+            """,
+                file=out_fd,
+            )
+
+    if 1:
+        rq = "select ?s ?title ?text { ?s rdf:type <Text>; <title> ?title; <text> ?text }"
+        r_df = viz_nodes.rq_df(g, rq, {})
+        for ii, s, title, text in r_df.itertuples():
+            text_s = (
+                fstriplestore.from_base64(text)
+                .replace(">", "&gt;")
+                .replace("\n", "<br/>")
+            )
+            print(
+                f"""
+            node_{uri_to_dot_id(s)} [
+            shape = rect
+            label = <<table>
+            <tr><td>{title}</td></tr>
+            <tr><td>{text_s}</td></tr>
+            </table>>
+            ];
             """,
                 file=out_fd,
             )

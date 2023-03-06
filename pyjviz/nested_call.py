@@ -2,8 +2,8 @@ import sys
 from . import obj_tracking
 from . import obj_utils
 from . import wb_stack
-from . import fstriplestore
-from . import rdf_node
+from . import dia_objs
+from . import nested_call_rdf
 
 
 class profile_objs:
@@ -43,19 +43,8 @@ class profile_objs:
     def __exit__(self, type, value, traceback):
         sys.setprofile(None)
 
-    def dump_nested_call_refs(self, nested_call_uri):
-        print("nested call:", nested_call_uri)
-        print("collected ids:", self.collected_ids)
-        ts = fstriplestore.triple_store
 
-        for _, ref_obj_state_uri in self.collected_ids:
-            if ref_obj_state_uri:
-                ts.dump_triple(
-                    nested_call_uri, "<nested-call-ref>", ref_obj_state_uri
-                )
-
-
-class NestedCall(rdf_node.RDFNode):
+class NestedCall(dia_objs.DiagramObj):
     """
     NestedCall object is to represent situation like this:
     ```python
@@ -72,35 +61,31 @@ class NestedCall(rdf_node.RDFNode):
 
     During method handling (`assign` in example above, see MethodCall.handle_start_method_call) the arguments which are isfunction(arg) == True will be converted to NestedCall object.
     The code then proceed and causes controlled call of `nested_call_func` via __call__ implementation. Results are saved as self.ret and later used by MethodCall.handle_end_method_call
-    """
+    """  # noqa : E501
 
     def __init__(self, arg_name, arg_func):
-        super().__init__(
-            rdf_type="NestedCall", label=f"nested_call({arg_name})"
-        )
-        rdfl = fstriplestore.triple_store
-        parent_uri = wb_stack.wb_stack.stack_entries__[-1].uri
-        rdfl.dump_triple(self.uri, "<part-of>", parent_uri)
+        super().__init__()
+        self.back = nested_call_rdf.NestedCallRDF(self)
+        self.label = f"nested_call({arg_name})"
+        p_obj = wb_stack.wb_stack.get_parent_of_current_entry()
+        self.parent_uri = p_obj.back.uri
+        if self.parent_uri is None:
+            self.parent_uri = "rdf:nil"
 
-        # ipdb.set_trace()
         self.arg_name = arg_name
         self.arg_func = arg_func
         self.ret = None
 
     def __call__(self, *args, **kwargs):
-        ts = fstriplestore.triple_store
-        print("NestedCall called")
+        self.ctx = profile_objs()
+        with self.ctx:
+            ret_obj = self.arg_func(*args, **kwargs)
 
-        ctx = profile_objs()
-        # ctx = contextlib.nullcontext()
-        with ctx:
-            self.ret = self.arg_func(*args, **kwargs)
+        ret_obj_id, found = obj_tracking.get_tracking_obj(ret_obj)
+        if not found:
+            self.ret = obj_utils.ObjState(ret_obj, ret_obj_id)
+        else:
+            self.ret = ret_obj_id.last_obj_state
 
-        ctx.dump_nested_call_refs(self.uri)
-
-        ret_t_obj, obj_found = obj_tracking.tracking_store.get_tracking_obj(
-            self.ret
-        )
-        if not obj_found:
-            ret_t_obj = obj_utils.dump_obj_state(self.ret)
-        return self.ret
+        self.back.dump_return()
+        return ret_obj

@@ -1,40 +1,4 @@
-import weakref
-import uuid
-from . import fstriplestore
-
-
-def obj_del_cb(ref):
-    print("obj deleted", ref)
-
-
-class TrackingObj:
-    def __init__(self, obj):
-        self.obj_wref = weakref.ref(obj, obj_del_cb)
-        self.uuid = uuid.uuid4()
-        self.pyid = id(obj)
-        self.last_version_num = 0
-        self.last_obj_state_uri = None
-
-        self.uri = f"<Obj#{self.uuid}>"
-
-        fstriplestore.triple_store.dump_triple(self.uri, "rdf:type", "<Obj>")
-        fstriplestore.triple_store.dump_triple(
-            self.uri, "<obj-type>", f'"{type(obj).__name__}"'
-        )
-        fstriplestore.triple_store.dump_triple(
-            self.uri, "<obj-uuid>", f'"{self.uuid}"'
-        )
-        fstriplestore.triple_store.dump_triple(
-            self.uri, "<obj-pyid>", f"{self.pyid}"
-        )
-
-    def is_alive(self):
-        return not self.obj_wref() is None
-
-    def incr_version(self):
-        ret = self.last_version_num
-        self.last_version_num += 1
-        return ret
+from . import obj_utils
 
 
 class TrackingStore:
@@ -47,13 +11,16 @@ class TrackingStore:
 
     def get_last_obj_state_uri(self, obj_pyid):
         t_obj = self.tracking_objs.get(obj_pyid)
-        return t_obj.last_obj_state_uri if t_obj and t_obj.is_alive() else None
+        ret = None
+        if t_obj and t_obj.is_alive():
+            ret = t_obj.last_obj_state.back.uri
+        return ret
 
     def find_tracking_obj(self, obj):
         t_obj, obj_found = self.get_tracking_obj(obj, add_missing=False)
         return t_obj
 
-    def get_tracking_obj(self, obj, add_missing=True):
+    def get_tracking_obj(self, obj, add_missing):
         obj_found = False
         obj_pyid = id(obj)
         tracking_obj = None
@@ -64,9 +31,14 @@ class TrackingStore:
                 tracking_obj = candidate_tracking_obj
 
         if tracking_obj is None and add_missing:
-            tracking_obj = self.tracking_objs[obj_pyid] = TrackingObj(obj)
+            tracking_obj = self.tracking_objs[obj_pyid] = obj_utils.ObjId(obj)
 
         return tracking_obj, obj_found
 
 
 tracking_store = TrackingStore()
+
+
+def get_tracking_obj(obj, add_missing=True):
+    global tracking_store
+    return tracking_store.get_tracking_obj(obj, add_missing)

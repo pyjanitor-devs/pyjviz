@@ -12,8 +12,8 @@ import pandas as pd
 @pf.register_dataframe_method
 def a0(df: pd.DataFrame) -> pd.DataFrame:
     print("a0")
-    # return pd.DataFrame(df)
-    return df
+    return pd.DataFrame(df)
+    # return df
 
 
 def test_f(x):
@@ -54,6 +54,7 @@ if __name__ == "__main__":
         with pyjviz.CB("c2") as cc:
             aux_df = pd.DataFrame({"b": range(5)}).a0()
             df2 = df.assign(c=lambda x: x.a + aux_df.shape[0])
+
             # df2 = df.assign(c = test_f)
             # df2 = df.assign(c = df.a, cc = lambda x: x.a)
             # df2 = df.assign(c = df.a, b = lambda x: x.c, bb = lambda x: x.a + x.b + x.c, d = lambda x: x.a)

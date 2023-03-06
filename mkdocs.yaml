@@ -35,6 +35,11 @@ theme:
 # in which pages show up.
 nav:
   - Home: index.md
+  - User Guide: user_guide.md
+  - Examples: examples.md
+  - API Reference:
+    - Test: api/test.md
+
 
 plugins:
   - search
@@ -50,9 +55,18 @@ plugins:
             show_submodules: true
             show_source: true
 
+# was able to enable mermaid diagrams using advice from https://squidfunk.github.io/mkdocs-material/reference/diagrams/
+#
 markdown_extensions:
   - admonition
   - pymdownx.highlight:
       use_pygments: true
   - pymdownx.inlinehilite
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+         - name: mermaid
+           class: mermaid
+           format: !!python/name:pymdownx.superfences.fence_code_format
+
+extra_css:
+  - css/apidocs.css
