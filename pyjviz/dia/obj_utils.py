@@ -2,6 +2,7 @@ import uuid
 import weakref
 
 from . import dia_objs
+from . import wb_stack
 from ..rdf import obj_utils_rdf
 
 
@@ -32,8 +33,13 @@ class ObjId:
 
 
 class ObjState(dia_objs.DiagramObj):
+    """
+    ObjState - represent arugments and return objects of pyjanitor method chains.
+    ObjState always belong to parent of the pyjanitor method call
+    """
     def __init__(self, obj, obj_id):
-        super().__init__(obj_utils_rdf.ObjStateRDF, None)
+        super().__init__(obj_utils_rdf.ObjStateRDF,
+                         wb_stack.wb_stack.get_parent_of_current_entry())
         self.obj = obj
         self.obj_id = obj_id
         self.obj_id.last_obj_state = self

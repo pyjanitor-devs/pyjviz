@@ -64,7 +64,6 @@ class MethodCall(wb_stack.WithBlock):
             arg0_obj_id, found = obj_tracking.get_tracking_obj(arg0_obj)
             if not found:
                 arg0_obj_state = obj_utils.ObjState(arg0_obj, arg0_obj_id)
-                arg0_obj_state.part_of = wb_stack.wb_stack.get_parent_of_current_entry()
                 arg0_obj_state.back.dump_rdf()
 
             rdf_io.CCBasicPlot().to_rdf(
