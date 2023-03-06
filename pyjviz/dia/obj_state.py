@@ -3,7 +3,7 @@ import weakref
 
 from . import dia_objs
 from . import wb_stack
-from ..rdf import obj_utils_rdf
+from ..rdf import obj_state_rdf
 
 
 def obj_del_cb(ref):
@@ -21,7 +21,7 @@ class ObjId:
         self.pyid = id(obj)
         self.last_obj_state = None
         self.last_version_num = 0
-        self.back = obj_utils_rdf.ObjIdRDF(self)
+        self.back = obj_state_rdf.ObjIdRDF(self)
 
     def is_alive(self):
         return not self.obj_wref() is None
@@ -38,7 +38,7 @@ class ObjState(dia_objs.DiagramObj):
     ObjState always belong to parent of the pyjanitor method call
     """
     def __init__(self, obj, obj_id):
-        super().__init__(obj_utils_rdf.ObjStateRDF,
+        super().__init__(obj_state_rdf.ObjStateRDF,
                          wb_stack.wb_stack.get_parent_of_current_entry())
         self.obj = obj
         self.obj_id = obj_id

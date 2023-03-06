@@ -4,7 +4,7 @@ import inspect
 
 from . import wb_stack
 from . import obj_tracking
-from . import obj_utils
+from . import obj_state
 from ..rdf import method_call_rdf
 from ..rdf import rdf_io
 
@@ -36,7 +36,7 @@ class MethodCall(wb_stack.WithBlock):
             if found:
                 arg_obj_state = arg_obj_id.last_obj_state
             else:
-                arg_obj_state = obj_utils.ObjState(arg_obj, arg_obj_id)
+                arg_obj_state = obj_state.ObjState(arg_obj, arg_obj_id)
 
             self.args_l.append((arg_name, arg_obj_state))
         else:
@@ -63,7 +63,7 @@ class MethodCall(wb_stack.WithBlock):
             arg0_obj = method_args[0]
             arg0_obj_id, found = obj_tracking.get_tracking_obj(arg0_obj)
             if not found:
-                arg0_obj_state = obj_utils.ObjState(arg0_obj, arg0_obj_id)
+                arg0_obj_state = obj_state.ObjState(arg0_obj, arg0_obj_id)
                 arg0_obj_state.back.dump_rdf()
 
             rdf_io.CCBasicPlot().to_rdf(
@@ -140,6 +140,6 @@ class MethodCall(wb_stack.WithBlock):
 
         # since we don't know was object state changed or not
         # we create new object state and set it as last obj state in obj id
-        self.ret_obj_state = obj_utils.ObjState(ret, ret_obj_id)
+        self.ret_obj_state = obj_state.ObjState(ret, ret_obj_id)
 
         self.back.dump_rdf_method_call_out()

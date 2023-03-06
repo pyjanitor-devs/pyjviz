@@ -2,7 +2,7 @@ import textwrap
 from . import rdf_utils
 from . import fstriplestore
 from ..dia import wb_stack
-from ..dia import obj_utils
+from ..dia import obj_state
 
 
 method_counter = 0
@@ -42,7 +42,7 @@ class MethodCallRDF(rdf_utils.RDFRep):
         method_display_args = []
         more_args = False
         for p_name, p in self.front.args_l:
-            if isinstance(p, obj_utils.ObjState):
+            if isinstance(p, obj_state.ObjState):
                 method_display_args.append(p_name)
             else:
                 more_args = True

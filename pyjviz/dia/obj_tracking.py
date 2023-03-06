@@ -1,4 +1,4 @@
-from . import obj_utils
+from . import obj_state
 
 
 class TrackingStore:
@@ -31,7 +31,7 @@ class TrackingStore:
                 tracking_obj = candidate_tracking_obj
 
         if tracking_obj is None and add_missing:
-            tracking_obj = self.tracking_objs[obj_pyid] = obj_utils.ObjId(obj)
+            tracking_obj = self.tracking_objs[obj_pyid] = obj_state.ObjId(obj)
 
         return tracking_obj, obj_found
 

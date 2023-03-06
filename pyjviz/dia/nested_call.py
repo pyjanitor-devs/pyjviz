@@ -1,6 +1,6 @@
 import sys
 from . import obj_tracking
-from . import obj_utils
+from . import obj_state
 from . import wb_stack
 from . import dia_objs
 from ..rdf import nested_call_rdf
@@ -77,7 +77,7 @@ class NestedCall(dia_objs.DiagramObj):
 
         ret_obj_id, found = obj_tracking.get_tracking_obj(ret_obj)
         if not found:
-            self.ret = obj_utils.ObjState(ret_obj, ret_obj_id)
+            self.ret = obj_state.ObjState(ret_obj, ret_obj_id)
         else:
             self.ret = ret_obj_id.last_obj_state
 
