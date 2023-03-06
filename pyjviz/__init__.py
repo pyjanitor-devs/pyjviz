@@ -13,7 +13,7 @@ pyjviz_enabled = not (
 
 if pyjviz_enabled:
     if os.path.basename(sys.argv[0]) == "ipykernel_launcher.py":
-        from .nb_utils import (
+        from .graphviz.nb_utils import (
             register_pre_run,
             get_cell_id,
             cell_triplestores_d,
