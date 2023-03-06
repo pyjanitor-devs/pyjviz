@@ -1,8 +1,8 @@
 import textwrap
 from . import rdf_utils
 from . import fstriplestore
-from . import wb_stack
-from . import obj_utils
+from ..dia import wb_stack
+from ..dia import obj_utils
 
 
 method_counter = 0  # NB: should be better way to count method calls

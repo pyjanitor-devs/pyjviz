@@ -1,4 +1,4 @@
-from . import code_block_rdf
+from ..rdf import code_block_rdf
 from . import wb_stack
 
 

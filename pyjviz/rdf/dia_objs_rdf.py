@@ -1,5 +1,5 @@
 from __future__ import annotations
-from . import dia_objs
+from ..dia import dia_objs
 
 from . import fstriplestore
 from . import rdf_utils

@@ -5,8 +5,8 @@ import pandas_flavor.register
 import inspect
 from contextlib import nullcontext
 
-from . import wb_stack
-from . import method_call
+from .dia import wb_stack
+from .dia import method_call
 
 warnings.filterwarnings("ignore", category=UserWarning)
 

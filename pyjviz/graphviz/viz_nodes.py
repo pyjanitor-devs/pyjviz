@@ -3,7 +3,7 @@ import uuid
 import tempfile
 import rdflib
 import pandas as pd
-from . import fstriplestore
+from ..rdf import fstriplestore
 
 
 def to_uri(s):

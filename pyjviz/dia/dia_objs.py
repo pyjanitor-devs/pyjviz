@@ -29,7 +29,7 @@ TextRDF is the class which defines method [dump_rdf()](/pyjviz/user_guide/#about
     ```
 """  # noqa : 501
 from . import wb_stack
-from .dia_objs_rdf import TextRDF
+from ..rdf import dia_objs_rdf
 
 
 class DiagramObj:

@@ -5,7 +5,7 @@ import rdflib
 from io import StringIO
 import graphviz
 
-from . import fstriplestore
+from ..rdf import fstriplestore
 from . import nb_utils
 from . import viz_nodes
 from .viz_nodes import uri_to_dot_id

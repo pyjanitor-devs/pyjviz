@@ -1,10 +1,10 @@
 import os
 import sys
-from .fstriplestore import set_triple_store__, FSTripleOutputOneShot
+from .rdf.fstriplestore import set_triple_store__, FSTripleOutputOneShot
 from .pf_pandas import enable_pf_pandas__
-from .code_block import CodeBlock, CB
-from .dia_objs import Text
-from .viz import save_dot, show
+from .dia.code_block import CodeBlock, CB
+from .dia.dia_objs import Text
+from .graphviz.viz import save_dot, show
 
 pyjviz_enabled = not (
     "PYJVIZ_DISABLED" in os.environ

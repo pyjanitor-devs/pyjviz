@@ -5,8 +5,8 @@ import inspect
 from . import wb_stack
 from . import obj_tracking
 from . import obj_utils
-from . import method_call_rdf
-from . import rdf_io
+from ..rdf import method_call_rdf
+from ..rdf import rdf_io
 
 from .nested_call import NestedCall
 

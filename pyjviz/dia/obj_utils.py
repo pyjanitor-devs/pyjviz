@@ -2,7 +2,7 @@ import uuid
 import weakref
 
 from . import dia_objs
-from . import obj_utils_rdf
+from ..rdf import obj_utils_rdf
 
 
 def obj_del_cb(ref):

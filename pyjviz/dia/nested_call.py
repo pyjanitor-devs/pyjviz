@@ -3,7 +3,7 @@ from . import obj_tracking
 from . import obj_utils
 from . import wb_stack
 from . import dia_objs
-from . import nested_call_rdf
+from ..rdf import nested_call_rdf
 
 
 class profile_objs:

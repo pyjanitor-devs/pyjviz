@@ -1,5 +1,5 @@
 from . import fstriplestore
-from . import wb_stack
+from ..dia import wb_stack
 from . import rdf_utils
 from . import rdf_io
 
