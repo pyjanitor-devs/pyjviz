@@ -10,6 +10,11 @@ from ..rdf import rdf_io
 
 from .nested_call import NestedCall
 
+no_effect_method_names = set()
+def no_effect_method(m):
+    no_effect_method_names.add(m.__name__)
+
+
 # NB: should be better way to count method calls
 method_counter = 0
 
@@ -59,19 +64,6 @@ class MethodCall(wb_stack.WithBlock):
     def handle_start_method_call(
         self, method_name, method_signature, method_args, method_kwargs
     ):
-        if method_name == "pin":
-            arg0_obj = method_args[0]
-            arg0_obj_id, found = obj_tracking.get_tracking_obj(arg0_obj)
-            if not found:
-                arg0_obj_state = obj_state.ObjState(arg0_obj, arg0_obj_id)
-                arg0_obj_state.back.dump_rdf()
-
-            rdf_io.CCBasicPlot().to_rdf(
-                    arg0_obj, arg0_obj_id.last_obj_state.back.uri
-                )
-
-            return method_args, method_kwargs
-
         self.thread_id = threading.get_native_id()
 
         all_args = method_args
@@ -126,9 +118,6 @@ class MethodCall(wb_stack.WithBlock):
         return new_args, new_kwargs
 
     def handle_end_method_call(self, ret):
-        if self.method_name == "pin":
-            return
-
         if ret is None:
             msg = f"method call of {self.method_name} returned None,"
             " can't use it chained method calls"
@@ -138,8 +127,15 @@ class MethodCall(wb_stack.WithBlock):
         if found:
             ret_obj_id.last_version_num += 1
 
-        # since we don't know was object state changed or not
-        # we create new object state and set it as last obj state in obj id
-        self.ret_obj_state = obj_state.ObjState(ret, ret_obj_id)
+        # if the method is marked as being 'no effect' - i.e. passing first arg as return value
+        #   we will return the same obj state as we got back from method call
+        # otherwise
+        #   since we don't know was object state changed or not
+        #   we create new object state and set it as last obj state in obj id
+        global no_effect_method_names
+        if self.method_name in no_effect_method_names:
+            self.ret_obj_state = ret_obj_id.last_obj_state
+        else:
+            self.ret_obj_state = obj_state.ObjState(ret, ret_obj_id)
 
         self.back.dump_rdf_method_call_out()

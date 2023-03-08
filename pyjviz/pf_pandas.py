@@ -7,9 +7,11 @@ from contextlib import nullcontext
 
 from .dia import wb_stack
 from .dia import method_call
+from .dia import obj_tracking
+from .dia import obj_state
+from .rdf import rdf_io
 
 warnings.filterwarnings("ignore", category=UserWarning)
-
 
 class DataFrameFunc:
     def __init__(self, func_name, func):
@@ -91,12 +93,33 @@ def enable_pf_pandas__():
         # we need those registration of pin method to make sure method call
         # syntax work actual pin implementation is in
         # MethodCall handle_* methods
+        @method_call.no_effect_method
         @pf.register_series_method
         def pin(s: pd.Series, output_type="head"):
+            arg0_obj = s
+            arg0_obj_id, found = obj_tracking.get_tracking_obj(arg0_obj)
+            if not found:
+                arg0_obj_state = obj_state.ObjState(arg0_obj, arg0_obj_id)
+                arg0_obj_state.back.dump_rdf()
+
+            rdf_io.CCBasicPlot().to_rdf(
+                    arg0_obj, arg0_obj_id.last_obj_state.back.uri
+                )
+            
             return s
 
+        @method_call.no_effect_method
         @pf.register_dataframe_method
         def pin(df: pd.DataFrame, output_type="head"):
+            arg0_obj = df
+            arg0_obj_id, found = obj_tracking.get_tracking_obj(arg0_obj)
+            if not found:
+                arg0_obj_state = obj_state.ObjState(arg0_obj, arg0_obj_id)
+                arg0_obj_state.back.dump_rdf()
+
+            rdf_io.CCBasicPlot().to_rdf(
+                    arg0_obj, arg0_obj_id.last_obj_state.back.uri
+                )
             return df
 
     if 0:

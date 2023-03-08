@@ -33,6 +33,8 @@ if __name__ == "__main__":
                 )
             )
             .drop(columns="certification_1")
+            # NB: to be implemented
+            #.plot(y_col = "percent_allocated").hist(col = "employee_status")
             .assign(
                 hire_date=lambda df: pd.to_datetime(
                     df.hire_date, unit="D", origin="1899-12-30"

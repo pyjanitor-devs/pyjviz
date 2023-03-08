@@ -60,6 +60,8 @@ def dump_subgraph(g, cc_uri, out_fd, popup_output):
                            <method-stack-depth> ?method_stack_depth;
                            <method-stack-trace> ?method_stack_trace;
                            <part-of> ?sg .
+          ?method_call_obj <method-call-arg0> ?m_arg0; <method-call-return> ?m_ret
+          filter(?m_arg0 != ?m_ret)
         }
         """
         for (
@@ -141,7 +143,8 @@ def dump_dot_code(g, vertical, show_objects, popup_output):
         select ?method_call_obj ?arg0_obj ?arg0_name ?ret_obj ?arg1_name ?arg1_obj ?arg2_name ?arg2_obj ?arg3_name ?arg3_obj {
           ?method_call_obj rdf:type <MethodCall>;
                            <method-call-arg0> ?arg0_obj; <method-call-arg0-name> ?arg0_name;
-                           <method-call-return> ?ret_obj .
+                           <method-call-return> ?ret_obj 
+                           filter (?arg0_obj != ?ret_obj) .          
           optional { ?arg1_obj rdf:type <ObjState>. ?method_call_obj <method-call-arg1> ?arg1_obj; <method-call-arg1-name> ?arg1_name }
           optional { ?arg2_obj rdf:type <ObjState>. ?method_call_obj <method-call-arg2> ?arg2_obj; <method-call-arg2-name> ?arg2_name }
           optional { ?arg3_obj rdf:type <ObjState>. ?method_call_obj <method-call-arg3> ?arg3_obj; <method-call-arg3-name> ?arg3_name }
