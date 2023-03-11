@@ -100,6 +100,29 @@ def dump_subgraph(g, cc_uri, out_fd, popup_output):
                 file=out_fd,
             )
 
+        rq = "select ?s ?title ?text { ?s rdf:type <Text>; <title> ?title; <text> ?text; <part-of> ?sg }"
+        r_df = viz_nodes.rq_df(g, rq, {})
+        for ii, s, title, text in r_df.itertuples():
+            text_s = (
+                fstriplestore.from_base64(text)
+                .replace(">", "&gt;")
+                .replace("\n", "<br/>")
+            )
+            print(
+                f"""
+            node_{uri_to_dot_id(s)} [
+            shape = rect
+            label = <<table>
+            <tr><td>{title}</td></tr>
+            <tr><td>{text_s}</td></tr>
+            </table>>
+            ];
+            """,
+                file=out_fd,
+            )
+
+
+            
         if subgraph_label != rdflib.RDF.nil:
             print("}", file=out_fd)
 
@@ -288,35 +311,19 @@ def dump_dot_code(g, vertical, show_objects, popup_output):
             )
 
     if 1:
-        rq = "select ?from ?to ?arrow_label { [] rdf:type <Arrow>; <arrow-from> ?from; <arrow-to> ?to; <arrow-label> ?arrow_label }"
+        rq = """
+        select ?from ?to ?arrow_label { 
+          ?arr rdf:type <Arrow>; <arrow-from> ?from; <arrow-to> ?to .
+          optional {?arr <arrow-label> ?arrow_label }
+        }
+        """
         for from_obj, to_obj, arrow_label in g.query(
             rq, base=fstriplestore.base_uri
         ):
+            arrow_label_s = arrow_label.toPython() if arrow_label else ""
             print(
                 f"""
-            node_{uri_to_dot_id(from_obj)} -> node_{uri_to_dot_id(to_obj)} [label="{arrow_label.toPython()}", penwidth=4.5];
-            """,
-                file=out_fd,
-            )
-
-    if 1:
-        rq = "select ?s ?title ?text { ?s rdf:type <Text>; <title> ?title; <text> ?text }"
-        r_df = viz_nodes.rq_df(g, rq, {})
-        for ii, s, title, text in r_df.itertuples():
-            text_s = (
-                fstriplestore.from_base64(text)
-                .replace(">", "&gt;")
-                .replace("\n", "<br/>")
-            )
-            print(
-                f"""
-            node_{uri_to_dot_id(s)} [
-            shape = rect
-            label = <<table>
-            <tr><td>{title}</td></tr>
-            <tr><td>{text_s}</td></tr>
-            </table>>
-            ];
+            node_{uri_to_dot_id(from_obj)} -> node_{uri_to_dot_id(to_obj)} [label="{arrow_label_s}", penwidth=4.5];
             """,
                 file=out_fd,
             )

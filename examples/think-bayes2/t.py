@@ -7,17 +7,19 @@ import pyjviz
 from empiricaldist import Pmf
 
 if __name__ == "__main__":
-    with pyjviz.CB("c1") as cb:
-        d6 = Pmf.from_seq([1, 2, 3, 4, 5, 6])
-        d6.make_plot()
 
-        lam = 1.4
-        qs = np.arange(10)
-        ps = poisson(lam).pmf(qs)
-        d_poison = Pmf(ps, qs)
-        d_poison.make_plot()
+    if 1:
+        with pyjviz.CB("c1") as cb:
+            d6 = Pmf.from_seq([1, 2, 3, 4, 5, 6])
+            d6.make_plot()
+            
+            lam = 1.4
+            qs = np.arange(10)
+            ps = poisson(lam).pmf(qs)
+            d_poison = Pmf(ps, qs)
+            d_poison.make_plot()
         
-        pyjviz.Arrow(d6, d_poison, label = "goes to")
+            pyjviz.Arrow(d6, d_poison, label = "goes to")
 
     if 0:
         with pyjviz.CB("c2") as cb:
