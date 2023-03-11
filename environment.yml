@@ -11,8 +11,8 @@ dependencies:
   - black
   - mypy
   - flake8
-  - mkdocs
   - pre-commit
+  - mkdocs
   - mkdocs-material
-  - mkdocstrings
-  - pymdown-extensions
+  - mkdocstrings>=0.19.0
+  - mkdocstrings-python
