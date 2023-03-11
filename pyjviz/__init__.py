@@ -4,6 +4,7 @@ from .rdf.fstriplestore import set_triple_store__, FSTripleOutputOneShot
 from .pf_pandas import enable_pf_pandas__
 from .dia.code_block import CodeBlock, CB
 from .dia.dia_objs import Text
+from .dia.arrow import Arrow
 from .graphviz.viz import save_dot, show
 
 pyjviz_enabled = not (
