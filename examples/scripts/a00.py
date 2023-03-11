@@ -33,8 +33,7 @@ if __name__ == "__main__":
         res1 = df2.a0()
         res2 = df2.a0()
 
-        t = pyjviz.Text("a0", inspect.getsource(a0))
-        t.back.dump_rdf()
+        t = pyjviz.Text("new a0", inspect.getsource(a0))
 
     print(df1.describe())
     print(inspect.getsource(a0))

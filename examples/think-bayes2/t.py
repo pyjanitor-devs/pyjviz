@@ -9,14 +9,17 @@ from empiricaldist import Pmf
 if __name__ == "__main__":
     with pyjviz.CB() as cb:
         d6 = Pmf.from_seq([1, 2, 3, 4, 5, 6])
-        d6.pin()
+        d6.make_plot()
 
         lam = 1.4
         qs = np.arange(10)
         ps = poisson(lam).pmf(qs)
         d_poison = Pmf(ps, qs)
-        d_poison.pin()
+        d_poison.make_plot()
+        
+        #pyjviz.Arrow(d6, d_poison, label = "goes to")
 
-        #pyjviz.arrow(d6, "goes to", d_poison)
+        #t = pyjviz.Text("test", "test")
+
 
     pyjviz.save_dot()

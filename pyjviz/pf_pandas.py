@@ -93,9 +93,9 @@ def enable_pf_pandas__():
         # we need those registration of pin method to make sure method call
         # syntax work actual pin implementation is in
         # MethodCall handle_* methods
-        @method_call.no_effect_method
+        @method_call.pass_through_method
         @pf.register_series_method
-        def pin(s: pd.Series, output_type="head"):
+        def make_plot(s: pd.Series):
             arg0_obj = s
             arg0_obj_id, found = obj_tracking.get_tracking_obj(arg0_obj)
             if not found:
@@ -108,9 +108,9 @@ def enable_pf_pandas__():
             
             return s
 
-        @method_call.no_effect_method
+        @method_call.pass_through_method
         @pf.register_dataframe_method
-        def pin(df: pd.DataFrame, output_type="head"):
+        def make_plot(df: pd.DataFrame):
             arg0_obj = df
             arg0_obj_id, found = obj_tracking.get_tracking_obj(arg0_obj)
             if not found:

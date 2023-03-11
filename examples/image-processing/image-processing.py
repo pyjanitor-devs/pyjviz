@@ -126,6 +126,7 @@ if 1:
             initial_phase_df.get_properties_of_each_region()
             .assign(type=lambda x: x.im_name.apply(lambda x: x.split(".")[0]))
             .drop(columns="im_name")
+            #.plot_cols('permiter')
             .apply_feature_engeneering()
         )
 

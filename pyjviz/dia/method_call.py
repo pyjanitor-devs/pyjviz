@@ -10,9 +10,9 @@ from ..rdf import rdf_io
 
 from .nested_call import NestedCall
 
-no_effect_method_names = set()
-def no_effect_method(m):
-    no_effect_method_names.add(m.__name__)
+pass_through_method_names = set()
+def pass_through_method(m):
+    pass_through_method_names.add(m.__name__)
 
 
 # NB: should be better way to count method calls
@@ -127,13 +127,15 @@ class MethodCall(wb_stack.WithBlock):
         if found:
             ret_obj_id.last_version_num += 1
 
-        # if the method is marked as being 'no effect' - i.e. passing first arg as return value
+        # if the method is marked as being 'pass though' - i.e. passing first arg as return value
         #   we will return the same obj state as we got back from method call
         # otherwise
         #   since we don't know was object state changed or not
         #   we create new object state and set it as last obj state in obj id
-        global no_effect_method_names
-        if self.method_name in no_effect_method_names:
+        global pass_through_method_names
+        if self.method_name in pass_through_method_names:
+            if id(self.method_bound_args.args[0]) != id(ret):
+                raise Exception(f"logic error: method {self.method_name} is registered as pass-though but return obj and first arg obj ids don't match")
             self.ret_obj_state = ret_obj_id.last_obj_state
         else:
             self.ret_obj_state = obj_state.ObjState(ret, ret_obj_id)

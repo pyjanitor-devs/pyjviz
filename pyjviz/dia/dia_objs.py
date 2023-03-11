@@ -56,6 +56,7 @@ class DiagramObj:
         self.back = back_ctor(self)
         self.part_of = self.find_parent_obj__(parent_obj)
 
+
 class Text(DiagramObj):
     """
     Text class is to represent text box primitive for pyjviz diagram.
@@ -65,3 +66,4 @@ class Text(DiagramObj):
         super().__init__(TextRDF, parent_obj)
         self.title = title
         self.text = text
+        self.back.dump_rdf()

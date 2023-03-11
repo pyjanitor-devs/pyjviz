@@ -42,7 +42,7 @@ if __name__ == "__main__":
                     ("value_1", "value_2A", ">"),
                     ("value_1", "value_2B", "<"),
                 )
-                .pin()
+                .make_plot()
             )
 
     print(res2)
