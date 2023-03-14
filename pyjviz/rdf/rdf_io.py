@@ -119,8 +119,19 @@ class CCBasicPlot:
         ts.dump_triple(uri, "rdf:type", "<CCBasicPlot>")
         ts.dump_triple(uri, "<shape>", f"{len(s)}")
         out_fd = io.BytesIO()
-        fig = s.plot().get_figure()
-        fig.savefig(out_fd)
-        # ipdb.set_trace()
-        im_s = base64.b64encode(out_fd.getvalue()).decode("ascii")
+
+        if 1:
+            fig = s.plot(backend="plotly")
+            fig.write_image(file=out_fd, format="png")
+            im_s = base64.b64encode(out_fd.getvalue()).decode("ascii")
+        else:
+            out_fd.write(
+                """&lt;img src='data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4
+            //8/w38GIAXDIBKE0DHxgljNBAAO
+            9TXL0Y4OHwAAAABJRU5ErkJggg==' alt='hello'/&gt;""".encode(
+                    "ascii"
+                )
+            )
+            im_s = base64.b64encode(out_fd.getvalue()).decode("ascii")
+
         ts.dump_triple(uri, "<plot-im>", '"' + im_s + '"')

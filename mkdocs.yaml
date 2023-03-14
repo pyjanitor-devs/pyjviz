@@ -2,7 +2,7 @@
 site_name: pyjviz documentation
 site_url: https://pyjanitor-devs.github.io/pyjviz
 site_description: >-
-  Python implementation of the R package janitor
+  pyjviz - pyjanitor method chains visualization
 
 # Repository
 repo_name: "pyjanitor-devs/pyjviz"
@@ -36,7 +36,9 @@ theme:
 nav:
   - Home: index.md
   - User Guide: user_guide.md
-  - Examples: examples.md
+  - Examples:
+    - Scripts: examples.md
+    - Notebooks: examples.md
   - API Reference:
     - Test: api/test.md
 
@@ -54,6 +56,9 @@ plugins:
             show_root_toc_entry: false
             show_submodules: true
             show_source: true
+            show_signature_annotations: true
+            show_root_full_path: true
+            heading_level: 2
 
 # was able to enable mermaid diagrams using advice from https://squidfunk.github.io/mkdocs-material/reference/diagrams/
 #

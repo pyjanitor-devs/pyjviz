@@ -1,3 +1,5 @@
 # Examples
 
-::: examples
+::: examples.scripts.a0
+::: examples.scripts.why-janitor
+
