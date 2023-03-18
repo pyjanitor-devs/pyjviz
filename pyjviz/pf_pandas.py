@@ -61,6 +61,9 @@ class PandasFlavorMethodCallFactory:
 
 def enable_pf_pandas__():
     # ipdb.set_trace()
+    if not hasattr(pandas_flavor.register, 'method_call_ctx_factory'):
+        raise Exception("can't find method_call_ctx_factory, likely wrong pandas_flavor version is used")
+    
     pandas_flavor.register.method_call_ctx_factory = (
         PandasFlavorMethodCallFactory.create
     )

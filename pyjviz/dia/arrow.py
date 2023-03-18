@@ -6,7 +6,7 @@ from .dia_objs import DiagramObj
 
 class Arrow(DiagramObj):
     """
-    Arrow class is to represent arrow connenting two diagram objects.
+    Arrow class is to represent arrow conecting two diagram objects.
     """
 
     def __init__(self, from_dia_obj, to_dia_obj, *, parent_obj = None, label = None):
