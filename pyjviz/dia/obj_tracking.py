@@ -2,6 +2,9 @@ from . import obj_state
 
 
 class TrackingStore:
+    """
+    Singleton used to track ObjState objects
+    """
     def __init__(self):
         self.tracking_objs = {}  # id(obj) -> TrackingObj
 

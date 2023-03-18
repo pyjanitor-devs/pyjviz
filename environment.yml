@@ -16,3 +16,5 @@ dependencies:
   - mkdocs-material
   - mkdocstrings>=0.19.0
   - mkdocstrings-python
+  - mkdocs-gen-files
+  
