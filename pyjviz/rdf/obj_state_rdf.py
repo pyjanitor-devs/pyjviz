@@ -62,4 +62,5 @@ class ObjStateRDF(rdf_utils.RDFRep):
 
     def dump_rdf_text_triple(self):
         ts = fstriplestore.triple_store
-        ts.dump_triple(self.uri, "<text>", '"' + self.front.text + '"')
+        text_b64 = '"' + fstriplestore.to_base64(self.front.text) + '"'
+        ts.dump_triple(self.uri, "<text>", text_b64)

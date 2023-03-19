@@ -20,8 +20,7 @@ TestDF.columns = ["a"]
 def a0(df: pd.DataFrame) -> TestDF:
     print("a0")
     return pd.DataFrame(df)
-
-
+    
 if __name__ == "__main__":
     print(TestDF, TestDF.__name__, TestDF.__supertype__)
     print(TestDF.columns)
@@ -33,8 +32,11 @@ if __name__ == "__main__":
         res1 = df2.a0()
         res2 = df2.a0()
 
-        t = pyjviz.Text("new a0", inspect.getsource(a0))
-
+        #t = pyjviz.Text(dot_pseudo_html_escape("<i>new a0</i><br align='left'/>" + inspect.getsource(a0).replace("\n", "<br align='left'/>")))
+        #t = pyjviz.Text(dot_pseudo_html_escape("<i>new a0</i><br align='left'/>" + inspect.getsource(a0).replace("\n", "<br align='left'/>")))
+        t = pyjviz.Text("new a0<br align='left'/><i>new:-<;  a1</i><br align='right'/>HELOOHELLOHELLOO")
+        t = pyjviz.Text("<i>new a0</i><br align='left'/>" + inspect.getsource(a0).replace("\n", "<br align='left'/>"))
+        
     print(df1.describe())
     print(inspect.getsource(a0))
 

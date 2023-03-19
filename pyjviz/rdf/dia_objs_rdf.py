@@ -20,7 +20,6 @@ class TextRDF(rdf_utils.RDFRep):
         parent_obj = self.front.part_of
         parent_uri = parent_obj.back.uri if parent_obj else "rdf:nil"
         ts.dump_triple(self.uri, "<part-of>", parent_uri)
-        ts.dump_triple(self.uri, "<title>", '"' + self.front.title + '"')
         text_b64 = '"' + fstriplestore.to_base64(self.front.text) + '"'
         ts.dump_triple(self.uri, "<text>", text_b64)
 

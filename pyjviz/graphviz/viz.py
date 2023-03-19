@@ -9,7 +9,7 @@ import graphviz
 from ..rdf import fstriplestore
 from . import nb_utils
 from . import viz_nodes
-from .viz_nodes import uri_to_dot_id
+from .viz_nodes import uri_to_dot_id, dot_pseudo_html_escape
 
 
 def dump_subgraph(g, cc_uri, out_fd, popup_output):
@@ -100,22 +100,15 @@ def dump_subgraph(g, cc_uri, out_fd, popup_output):
                 file=out_fd,
             )
 
-        rq = "select ?s ?title ?text { ?s rdf:type <Text>; <title> ?title; <text> ?text; <part-of> ?sg }"
+        rq = "select ?s ?text { ?s rdf:type <Text>; <text> ?text; <part-of> ?sg }"
         r_df = viz_nodes.rq_df(g, rq, {})
-        for ii, s, title, text in r_df.itertuples():
-            text_s = (
-                fstriplestore.from_base64(text)
-                .replace(">", "&gt;")
-                .replace("\n", "<br/>")
-            )
+        for ii, s, text in r_df.itertuples():
+            text_s = dot_pseudo_html_escape(fstriplestore.from_base64(text))
             print(
                 f"""
             node_{uri_to_dot_id(s)} [
             shape = rect
-            label = <<table>
-            <tr><td>{title}</td></tr>
-            <tr><td>{text_s}</td></tr>
-            </table>>
+            label = <{text_s}>
             ];
             """,
                 file=out_fd,

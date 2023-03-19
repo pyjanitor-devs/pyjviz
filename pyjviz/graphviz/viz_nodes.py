@@ -4,7 +4,38 @@ import uuid
 import tempfile
 import rdflib
 import pandas as pd
+import re, html
 from ..rdf import fstriplestore
+
+def dot_pseudo_html_escape(s):
+    """
+    this function will escape some characters like <, >
+    it has to be done in such complicated way to avoid corruption of html tags
+    supported by graphviz dot pseudo-html used in dot labels
+    label pseudo-html description: https://graphviz.org/doc/info/shapes.html#html
+    """
+    tags = ["<BR>", "<br/>", "<hr/>", "<B>", "</B>", "<i>", "</i>"]
+    pseudo_tags = [x[1:-1].lower() for x in tags]
+    tokens = [x for x in re.split("(<|>)", s) if len(x) > 0]
+    i = 0
+    l = len(tokens)
+    #ipdb.set_trace()
+    while i < l:
+        t = tokens[i]
+        if t == '<':
+            n_t = tokens[i+1] if i+1 < l else None
+            if n_t is None:
+                break
+            close_bracket_i = tokens.index(">", i+1)
+            if n_t.lower().split(' ')[0] in pseudo_tags and close_bracket_i:
+                i = close_bracket_i + 1
+                continue
+        
+        tokens[i] = html.escape(t)
+        i += 1
+                
+    ret = "".join(tokens)        
+    return ret
 
 
 def to_uri(s):
@@ -210,11 +241,12 @@ class ObjStateGraphVizNode:
 
         if self.text:
             #ipdb.set_trace()
+            text_s = dot_pseudo_html_escape(fstriplestore.from_base64(self.text))
             print(f"""
             node_{uri_to_dot_id(self.obj_state)} [
                 color="{self.node_bgcolor}"
                 shape = rect
-                label = <{self.text}>
+                label = <{text_s}>
                 {self.href}
             ];
             """, file = out_fd)
