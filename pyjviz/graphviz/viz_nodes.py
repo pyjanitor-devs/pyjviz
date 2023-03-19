@@ -1,3 +1,4 @@
+import ipdb
 import os.path
 import uuid
 import tempfile
@@ -134,15 +135,17 @@ class ObjStateGraphVizNode:
         self.obj_type = res_d.get("obj_type").toPython()
 
         cc_rq = """
-        select ?cc_type ?df_shape ?s_size {
+        select ?cc_type ?df_shape ?s_size ?text {
           ?obj_state rdf:type ?cc_type.
           ?cc_type rdfs:subClassOf <CCObjStateLabel>.
           optional {?obj_state <df-shape> ?df_shape}
           optional {?obj_state <s-size> ?s_size}
+          optional {?obj_state <text> ?text}
         }
         """
         res_d = rq_d(self.g, cc_rq, {"obj_state": self.obj_state})
-        cc_type = res_d.get("cc_type")
+        
+        cc_type = res_d.get("cc_type")        
         if cc_type == rdflib.URIRef(
             "CCObjStateLabelDataFrame", base=fstriplestore.base_uri
         ):
@@ -153,6 +156,8 @@ class ObjStateGraphVizNode:
             self.s_size = res_d.get("s_size").toPython()
         else:
             raise Exception(f"unknown cc_type {cc_type}")
+
+        self.text = res_d.get("text").toPython() if "text" in res_d else None
 
     def build_popup_content(self):
         rq = """
@@ -203,17 +208,28 @@ class ObjStateGraphVizNode:
         else:
             raise Exception("neither df nor series params are set")
 
-        print(
-            f"""
-        node_{uri_to_dot_id(self.obj_state)} [
-        color="{self.node_bgcolor}"
-        shape = rect
-        label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
-        <tr> <td>{self.obj_type}</td><td>{shape_s}</td> </tr>
-        <tr> <td> <font face="small" point-size="8px"><b>{self.obj_state.split('/')[-1]}</b> <i>{version_s}</i></font></td></tr>
-        </table>>
-        {self.href}
-        ];
-        """,
-            file=out_fd,
-        )
+        if self.text:
+            #ipdb.set_trace()
+            print(f"""
+            node_{uri_to_dot_id(self.obj_state)} [
+                color="{self.node_bgcolor}"
+                shape = rect
+                label = <{self.text}>
+                {self.href}
+            ];
+            """, file = out_fd)
+        else:
+            print(
+                f"""
+                node_{uri_to_dot_id(self.obj_state)} [
+                color="{self.node_bgcolor}"
+                shape = rect
+                label = <<table border="0" cellborder="0" cellspacing="0" cellpadding="4">
+                <tr> <td>{self.obj_type}</td><td>{shape_s}</td> </tr>
+                <tr> <td> <font face="small" point-size="8px"><b>{self.obj_state.split('/')[-1]}</b> <i>{version_s}</i></font></td></tr>
+                </table>>
+                {self.href}
+                ];
+                """,
+                file=out_fd,
+            )

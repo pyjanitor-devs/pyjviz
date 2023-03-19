@@ -34,7 +34,7 @@ theme:
 # We customize the navigation by hand to control the order
 # in which pages show up.
 nav:
-  - Introduction: index.md
+  - Getting started: index.md
   - User Guide: user_guide.md
   - API Reference:
     - Test: api/test.md

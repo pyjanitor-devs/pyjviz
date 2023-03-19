@@ -47,10 +47,10 @@ class ObjStateRDF(rdf_utils.RDFRep):
             ts.dump_triple(self.uri, "rdf:type", self.rdf_type_uri)
             ts.dump_triple(self.uri, "<obj>", obj_id.back.uri)
             ts.dump_triple(self.uri, "<part-of>", self.front.part_of.back.uri)
-            ts.dump_triple(
-                self.uri, "<version>", f'"{obj_id.last_version_num}"'
-            )
-
+            ts.dump_triple(self.uri, "<version>", f'"{obj_id.last_version_num}"')
+            if self.front.text:
+                ts.dump_triple(self.uri, "<text>", '"' + self.front.text + '"')
+            
             obj_state_label_dumper = rdf_io.CCObjStateLabel()
             obj_state_label_dumper.to_rdf(self.front.obj, self.uri)
 
@@ -59,3 +59,7 @@ class ObjStateRDF(rdf_utils.RDFRep):
             if type(self.front.obj).__name__ in ["DataFrame", "Series"]:
                 # put glance to DataFrame
                 rdf_io.CCGlance().to_rdf(self.front.obj, self.uri)
+
+    def dump_rdf_text_triple(self):
+        ts = fstriplestore.triple_store
+        ts.dump_triple(self.uri, "<text>", '"' + self.front.text + '"')

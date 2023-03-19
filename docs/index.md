@@ -2,8 +2,9 @@
 
 `pyjviz` is Python package to deliver some level of visual support to help programmers and data engeneers to use `pyjanitor` package.
 `pyjviz` provides simple way to see method call chains flow and intermidiate results.
+`pyjviz` will work when you run the jupyter notebooks. Traditional python script runs are also welcome - in this case visualization results will be stored in your home directory location ~/.pyjviz
 
-## Quick start
+## Installation
 
 ```
 pip install pyjanitor rdflib graphviz
@@ -11,18 +12,15 @@ pip install ipython matplotlib
 git clone https://github.com/pyjanitor-devs/pyjviz.git
 cd pyjviz
 pip install -e .
-cd examples/scripts
-python a0.py
 ```
 
-Resulting logs are in ~/.pyjviz - visualized output stored in .svg files.
-
-## How pyjviz helps pyjanitor users?
+## Quick examples
 
 Consider pyjanitor example [why-janitor.py](https://github.com/pyjanitor-devs/pyjviz/blob/main/examples/scripts/why-janitor.py).
 
 ```python
-# using example from https://pyjanitor-devs.github.io/pyjanitor/#why-janitor as starting point
+# using example from https://pyjanitor-devs.github.io/pyjanitor/#why-janitor
+# as starting point
 
 import numpy as np
 import pandas as pd

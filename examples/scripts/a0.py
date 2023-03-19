@@ -35,7 +35,7 @@ if __name__ == "__main__":
     with pyjviz.CB("c") as C:
         df0 = df.a0()
         df1 = df.a0().a0()
-        df2 = df.a0()
+        df2 = df.a0().node_text("A 0<br/><b>A</b> <i>0</i>")
 
     # ipdb.set_trace()
     print(df1.describe())

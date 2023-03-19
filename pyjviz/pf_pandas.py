@@ -113,7 +113,7 @@ def enable_pf_pandas__():
 
         @method_call.pass_through_method
         @pf.register_dataframe_method
-        def make_plot(df: pd.DataFrame):
+        def make_plot(df: pd.DataFrame) -> pd.DataFrame:
             arg0_obj = df
             arg0_obj_id, found = obj_tracking.get_tracking_obj(arg0_obj)
             if not found:
@@ -125,6 +125,39 @@ def enable_pf_pandas__():
                 )
             return df
 
+    if 1:
+        @method_call.pass_through_method
+        @pf.register_series_method
+        def node_text(s: pd.Series, text: str) -> pd.Series:
+            arg0_obj = s
+            arg0_obj_id, found = obj_tracking.get_tracking_obj(arg0_obj)
+            if not found:
+                arg0_obj_state = obj_state.ObjState(arg0_obj, arg0_obj_id)
+                arg0_obj_state.text = text
+                arg0_obj_state.back.dump_rdf()
+            else:                
+                arg0_obj_state = arg0_obj_id.last_obj_state
+                arg0_obj_state.text = text
+                arg0_obj_state.back.dump_rdf_text_triple()
+            
+            return s
+
+        @method_call.pass_through_method
+        @pf.register_dataframe_method
+        def node_text(df: pd.DataFrame, text: str) -> pd.DataFrame:
+            arg0_obj = df
+            arg0_obj_id, found = obj_tracking.get_tracking_obj(arg0_obj)
+            if not found:
+                arg0_obj_state = obj_state.ObjState(arg0_obj, arg0_obj_id)
+                arg0_obj_state.text = text
+                arg0_obj_state.back.dump_rdf()
+            else:
+                arg0_obj_state = arg0_obj_id.last_obj_state
+                arg0_obj_state.text = text
+                arg0_obj_state.back.dump_rdf_text_triple()
+            
+            return df
+        
     if 0:
         old_describe = pd.DataFrame.describe
         # del pd.DataFrame.describe

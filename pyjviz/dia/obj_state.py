@@ -43,3 +43,4 @@ class ObjState(dia_objs.DiagramObj):
         self.obj = obj
         self.obj_id = obj_id
         self.obj_id.last_obj_state = self
+        self.text = None
