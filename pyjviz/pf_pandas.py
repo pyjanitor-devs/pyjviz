@@ -207,6 +207,12 @@ def enable_pf_pandas__():
         ret = old_copy(df, *x, **y)
         return ret
 
+    @method_call.pass_through_method
+    @pf.register_dataframe_method
+    def set_columns(df: pd.DataFrame, columns) -> pd.DataFrame:
+        df.columns = columns
+        return df
+    
     if 0:
         old_combine_first = pd.Series.combine_first
 
