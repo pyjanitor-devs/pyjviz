@@ -5,6 +5,7 @@ import ipdb
 import rdflib
 from io import StringIO
 import graphviz
+from bs4 import BeautifulSoup
 
 from ..rdf import fstriplestore
 from . import nb_utils
@@ -330,27 +331,62 @@ def print_dot(vertical=False, show_objects=False):
     g = fstriplestore.triple_store.get_graph()
     print(dump_dot_code(g, vertical=vertical, show_objects=show_objects))
 
+def new_replace_a_href_with_onclick(output):
+    soup = BeautifulSoup(output, features="xml")
 
-def save_dot(
-    dot_output_fn=None, vertical=False, show_objects=False, popup_output=True
-):
+    for a_tag in soup.find_all("a"):
+        on_click_code = a_tag.attrs.get("xlink:href")
+        on_click_code = on_click_code.replace("javascript:", "")
+        # NB: really bad way to do string replacement,
+        # quadratic complexity for overall code execution
+        for k, v in viz_nodes.big_strings_table.items():
+            on_click_code = on_click_code.replace(f"%%{k}%%", v)
+        a_tag.parent.attrs["onclick"] = on_click_code
+        a_tag.parent.attrs["cursor"] = "pointer"
+        del a_tag.attrs["xlink:href"]
+        del a_tag.attrs["xlink:title"]
+
+    for a_tag in soup.find_all("a"):
+        p_tag = a_tag.parent
+        for c in a_tag.find_all():
+            p_tag.insert(-1, c)
+        a_tag.decompose()
+
+    # Print the modified HTML output
+    return soup.prettify()
+
+
+    
+def save_dot(vertical=False, show_objects=False, popup_output=True):
     ts = fstriplestore.triple_store
-    if dot_output_fn is None:
-        if hasattr(ts, "output_fn") and ts.output_fn is not None:
-            ttl_output_fn = ts.output_fn
-            dot_output_fn = ttl_output_fn + ".dot"
-        else:
-            raise Exception("can't guess dot_output_fn")
+    if hasattr(ts, "output_fn") and ts.output_fn is not None:
+        ttl_output_fn = ts.output_fn
+        dot_output_fn = ttl_output_fn + ".dot"
+    else:
+        raise Exception("can't guess dot_output_fn")
 
     g = ts.get_graph()
+    #ipdb.set_trace()
     dot_code = dump_dot_code(
         g,
         vertical=vertical,
         show_objects=show_objects,
         popup_output=popup_output,
     )
+    
+    if 1:
+        with open(dot_output_fn, "w") as out_fd:
+            out_fd.write(dot_code)
+            
     gvz = graphviz.Source(dot_code)
-    gvz.render(dot_output_fn, format="svg", engine="dot")
+
+    if 1:
+        output = gvz.pipe(engine="dot", format="svg").decode("ascii")
+        mod_output = new_replace_a_href_with_onclick(output)
+        with open(dot_output_fn + ".svg", "w") as out_fd:
+            out_fd.write(mod_output)        
+    else:
+        gvz.render(dot_output_fn, format="svg", engine="dot")
 
 
 def show(vertical=False, show_objects=False):

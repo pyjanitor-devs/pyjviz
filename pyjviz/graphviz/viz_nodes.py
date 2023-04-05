@@ -1,7 +1,7 @@
 import ipdb
 import os.path
 import uuid
-import tempfile
+#import tempfile
 import rdflib
 import pandas as pd
 import re, html
@@ -77,7 +77,7 @@ def make_table_popup_href(head_html, popup_output):
 
     href = ""
     table_html = fstriplestore.from_base64(head_html.toPython())
-    if fstriplestore.triple_store.output_dir:
+    if False and fstriplestore.triple_store.output_dir:
         temp_dir = os.path.join(fstriplestore.triple_store.output_dir, "tmp")
         temp_file = tempfile.NamedTemporaryFile(
             dir=temp_dir, suffix=".html", delete=False
@@ -114,7 +114,7 @@ def make_image_popup_href(image_b64, popup_output):
     )
 
     href = ""
-    if fstriplestore.triple_store.output_dir:
+    if False and fstriplestore.triple_store.output_dir:
         temp_dir = os.path.join(fstriplestore.triple_store.output_dir, "tmp")
         with tempfile.NamedTemporaryFile(
             dir=temp_dir, suffix=".html", delete=False

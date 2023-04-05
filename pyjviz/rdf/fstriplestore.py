@@ -79,7 +79,7 @@ class FSTripleOutputOneShot(FSTripleOutput):
             self.output_dir = os.path.expanduser(self.output_dir)
             if not os.path.exists(self.output_dir):
                 os.makedirs(self.output_dir)
-                os.makedirs(os.path.join(self.output_dir, "tmp"))
+                #os.makedirs(os.path.join(self.output_dir, "tmp"))
 
             if output_filename:
                 self.output_fn = os.path.join(self.output_dir, output_filename)
