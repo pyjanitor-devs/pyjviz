@@ -34,6 +34,12 @@ docs:
 	@echo "Building documentation..."
 	mkdocs build
 
+serve-docs:
+	python -m mkdocs serve -a 0.0.0.0:8000
+
+serve-pyjviz:
+	python -m http.server -d ~/.pyjviz 8001
+
 isort:
 	@echo "Sorting imports..."
 	isort --check-only --use-parentheses --trailing-comma --multi-line 3 --line-length 79 .
