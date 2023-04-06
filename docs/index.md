@@ -1,5 +1,7 @@
 # pyjviz
 
+[test](think-bayes-ch6.py-diagram1.svg)
+
 `pyjviz` is Python package to deliver some level of visual support to help programmers and data engeneers to use `pyjanitor` package.
 `pyjviz` provides simple way to see method call chains flow and intermidiate results.
 `pyjviz` will work when you run the jupyter notebooks. Traditional python script runs are also welcome - in this case visualization results will be stored in your home directory location ~/.pyjviz

@@ -6,6 +6,7 @@ from .dia.code_block import CodeBlock, CB
 from .dia.dia_objs import Text
 from .dia.arrow import Arrow
 from .graphviz.viz import save_dot, show
+from .graphviz.viz_utils import set_is_nb_run
 
 pyjviz_enabled = not (
     "PYJVIZ_DISABLED" in os.environ
@@ -14,6 +15,8 @@ pyjviz_enabled = not (
 
 if pyjviz_enabled:
     if os.path.basename(sys.argv[0]) == "ipykernel_launcher.py":
+        set_is_nb_run(True)
+
         from .graphviz.nb_utils import (
             register_pre_run,
             get_cell_id,

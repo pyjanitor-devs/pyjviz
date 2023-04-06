@@ -10,7 +10,7 @@ from ..rdf import fstriplestore
 from . import nb_utils
 from . import viz_nodes
 from .viz_nodes import uri_to_dot_id, dot_pseudo_html_escape
-from .viz_utils import replace_a_href_with_onclick
+from .viz_utils import replace_a_href_with_onclick, is_nb_run
 
 def dump_subgraph(g, cc_uri, out_fd, popup_output):
     rq = """
@@ -365,11 +365,12 @@ def save_dot(vertical=False, show_objects=False, popup_output=True):
 
 def show(vertical=False, show_objects=False):
     ts = fstriplestore.triple_store
-    if not (hasattr(ts, "output_fn") and ts.output_fn is None):
-        raise Exception("triple sink is not in-memory file")
 
     g = ts.get_graph()
     dot_code = dump_dot_code(
         g, vertical=vertical, show_objects=show_objects, popup_output=False
     )
     nb_utils.show_method_chain(dot_code)
+    if not is_nb_run():
+        ts.clear()
+        

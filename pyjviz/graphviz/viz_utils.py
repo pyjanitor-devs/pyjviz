@@ -1,5 +1,15 @@
 from bs4 import BeautifulSoup
 
+_is_nb_run = False
+
+def is_nb_run():
+    global _is_nb_run
+    return _is_nb_run
+
+def set_is_nb_run(v):
+    global _is_nb_run
+    _is_nb_run = v
+
 big_strings_table = {}
 
 def replace_a_href_with_onclick(output):
