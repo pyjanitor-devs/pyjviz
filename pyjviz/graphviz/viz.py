@@ -371,6 +371,5 @@ def show(vertical=False, show_objects=False):
         g, vertical=vertical, show_objects=show_objects, popup_output=False
     )
     nb_utils.show_method_chain(dot_code)
-    if not is_nb_run():
-        ts.clear()
+    ts.clear()
         

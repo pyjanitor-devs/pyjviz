@@ -19,6 +19,8 @@ pip install -e .
 ## Quick examples
 
 Consider pyjanitor example [why-janitor.py](https://github.com/pyjanitor-devs/pyjviz/blob/main/examples/scripts/why-janitor.py).
+<table>
+<tr><td>
 
 ```python
 # using example from https://pyjanitor-devs.github.io/pyjanitor/#why-janitor
@@ -53,9 +55,12 @@ with pyjviz.CB("WHY JANITOR?") as sg:
 pyjviz.save_dot(vertical = True, popup_output = True)
 ```
 
-The [`resulting SVG file`][res] of the run shows method chain calls along with intermidiate return and argument object. It has clickable nodes to provide the details of program behaviour and generated data objects.
+</td><td><a target = "_blank" href="why-janitor.py.ttl.dot.svg"><img src="why-janitor.py.ttl.dot.svg"/></a></td></tr>
+</table>
 
-[res]: https://asmirnov69.github.io/pyjviz-poc/docs/why-janitor.py.ttl.dot.svg
+The [`resulting SVG file`][res] of the run shows method chain calls along with intermediate return and argument objects. It has clickable nodes to provide the details of program behaviour and generated data objects.
+
+[res]: why-janitor.py.ttl.dot.svg
 
 ## How it works?
 
