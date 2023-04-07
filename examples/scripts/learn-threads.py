@@ -65,4 +65,4 @@ if __name__ == "__main__":
             r21 = df.y(1)
             res = r1.m(r20, r21)
 
-    pyjviz.save_dot(show_objects=False)
+    pyjviz.save(show_objects=False)

@@ -42,4 +42,4 @@ if __name__ == "__main__":
     print(res2)
     res2.describe()
 
-    pyjviz.save_dot(vertical=False, show_objects=False)
+    pyjviz.save(vertical=False, show_objects=False)

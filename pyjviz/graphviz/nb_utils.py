@@ -3,12 +3,13 @@ import warnings
 import graphviz
 from IPython.display import display, HTML
 
-from . import viz_nodes
+from ..rdf import fstriplestore
 from .viz_utils import replace_a_href_with_onclick, is_nb_run
+from .viz import dump_dot_code
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-def show_method_chain(dot_code):
+def show_diagram(dot_code):
     gvz = graphviz.Source(dot_code)
 
     output = gvz.pipe(engine="dot", format="svg").decode("ascii")
@@ -29,3 +30,12 @@ def show_method_chain(dot_code):
         with open(out_fn, "w") as out_fd:
             out_fd.write(mod_output)
 
+def show(vertical=False, show_objects=False, popup_output=False):
+    ts = fstriplestore.triple_store
+
+    g = ts.get_graph()
+    dot_code = dump_dot_code(
+        g, vertical=vertical, show_objects=show_objects, popup_output=popup_output
+    )
+    show_diagram(dot_code)
+    ts.clear()

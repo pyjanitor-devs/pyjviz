@@ -5,7 +5,8 @@ from .pf_pandas import enable_pf_pandas__
 from .dia.code_block import CodeBlock, CB
 from .dia.dia_objs import Text
 from .dia.arrow import Arrow
-from .graphviz.viz import save_dot, show
+from .graphviz.viz import save
+from .graphviz.nb_utils import show
 from .graphviz.viz_utils import set_is_nb_run
 
 pyjviz_enabled = not (

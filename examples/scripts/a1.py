@@ -48,4 +48,4 @@ if __name__ == "__main__":
         df5 = df.a0().a0().a0().a2()
     print(df5.describe())
 
-    pyjviz.save_dot()
+    pyjviz.save()

@@ -39,4 +39,4 @@ if __name__ == "__main__":
     # df1.obj_chain_path = None
     print(df1.describe())
 
-    pyjviz.save_dot()
+    pyjviz.save()

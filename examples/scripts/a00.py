@@ -40,4 +40,4 @@ if __name__ == "__main__":
     print(df1.describe())
     print(inspect.getsource(a0))
 
-    pyjviz.save_dot(show_objects=False)
+    pyjviz.save(show_objects=False)
