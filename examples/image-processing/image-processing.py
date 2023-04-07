@@ -130,4 +130,4 @@ if 1:
             .apply_feature_engeneering()
         )
 
-pyjviz.save_dot(vertical=True)
+pyjviz.save(vertical=True)

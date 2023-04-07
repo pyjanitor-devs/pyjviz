@@ -330,21 +330,20 @@ def print_dot(vertical=False, show_objects=False):
     print(dump_dot_code(g, vertical=vertical, show_objects=show_objects))
 
     
-def save(vertical=False, show_objects=False, popup_output=True,
-         ttl_output_fn = None, dot_output_fn = None, svg_output_fn = None):
-    ts = fstriplestore.triple_store
+def save(vertical=False, show_objects=False, popup_output=True, svg_output_fn = None, debug_output = False):
 
-    if ttl_output_fn is None:
+    if svg_output_fn is None:
         pyjviz_output_dir = os.environ.get("PYJVIZ_OUTPUT_DIR", "~/.pyjviz")
         pyjviz_output_dir = os.path.expanduser(pyjviz_output_dir)
         if not os.path.exists(pyjviz_output_dir):
             os.makedirs(pyjviz_output_dir)
-        ttl_output_fn = os.path.join(pyjviz_output_dir, os.path.basename(sys.argv[0]) + ".ttl")
+        svg_output_fn = os.path.join(pyjviz_output_dir, os.path.basename(sys.argv[0]) + ".html")
 
-    if dot_output_fn is None:
-        dot_output_fn = ttl_output_fn + ".dot"
-
+    ttl_output_fn = svg_output_fn + ".ttl" if debug_output else None
+    dot_output_fn = ttl_output_fn + ".dot" if debug_output else None
+    
     #ipdb.set_trace()
+    ts = fstriplestore.triple_store
     g = ts.get_graph(ttl_output_fn = ttl_output_fn)
     dot_code = dump_dot_code(
         g,
@@ -352,17 +351,15 @@ def save(vertical=False, show_objects=False, popup_output=True,
         show_objects=show_objects,
         popup_output=popup_output,
     )
-    
-    with open(dot_output_fn, "w") as out_fd:
-        out_fd.write(dot_code)
+
+    if dot_output_fn:
+        with open(dot_output_fn, "w") as out_fd:
+            out_fd.write(dot_code)
             
     gvz = graphviz.Source(dot_code)
 
     output = gvz.pipe(engine="dot", format="svg").decode("ascii")
     mod_output = replace_a_href_with_onclick(output)
 
-    if svg_output_fn is None:
-        svg_output_fn = dot_output_fn + ".svg"        
     with open(svg_output_fn, "w") as out_fd:
         out_fd.write(mod_output)
-

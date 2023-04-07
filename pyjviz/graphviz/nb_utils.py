@@ -22,7 +22,7 @@ def show_diagram(dot_code):
         dia_num = 0
         while 1:
             dia_num += 1
-            out_fn = os.path.join(".", bn + f"-diagram{dia_num}.svg")
+            out_fn = os.path.join(".", bn + f"-diagram{dia_num}.html")
             if not os.path.exists(out_fn):
                 break
             
