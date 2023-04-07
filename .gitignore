@@ -115,10 +115,6 @@ ENV/
 # Custom
 .pytest_cache
 
-# Ingore docs' symbolic link to notebooks
-docs/notebooks
-docs/*
-
 
 # Swap
 [._]*.s[a-v][a-z]

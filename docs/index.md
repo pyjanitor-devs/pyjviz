@@ -52,15 +52,15 @@ with pyjviz.CB("WHY JANITOR?") as sg:
     )
     print(df)
 
-pyjviz.save_dot(vertical = True, popup_output = True)
+pyjviz.save(vertical = True)
 ```
 
-</td><td><a target = "_blank" href="why-janitor.py.ttl.dot.svg"><img src="why-janitor.py.ttl.dot.svg"/></a></td></tr>
+</td><td><a target = "_blank" href="diagrams/why-janitor.py.svg"><img src="diagrams/why-janitor.py.svg"/></a></td></tr>
 </table>
 
 The [`resulting SVG file`][res] of the run shows method chain calls along with intermediate return and argument objects. It has clickable nodes to provide the details of program behaviour and generated data objects.
 
-[res]: why-janitor.py.ttl.dot.svg
+[res]: diagrams/why-janitor.py.svg
 
 ## How it works?
 

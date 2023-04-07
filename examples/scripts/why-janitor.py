@@ -30,4 +30,4 @@ with pyjviz.CB("WHY JANITOR?") as sg:
     )
     print(df)
 
-pyjviz.save(vertical=True, popup_output=True)
+pyjviz.save(vertical=True)

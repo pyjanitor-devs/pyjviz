@@ -11,17 +11,17 @@
   <polygon fill="white" points="-4,4 -4,-1003 204,-1003 204,4 -4,4" stroke="none"/>
   <g class="cluster" id="clust1">
    <title>
-    cluster_937148812437813850
+    cluster_8812017484426841839
    </title>
    <polygon fill="none" points="8,-8 8,-991 192,-991 192,-8 8,-8" stroke="black"/>
    <text font-family="Helvetica,Arial,sans-serif" font-size="14.00" text-anchor="middle" x="100" y="-975.8">
     WHY JANITOR?
    </text>
   </g>
-  <!-- node_d7131096636517534890 -->
+  <!-- node_d3618317120508637847 -->
   <g class="node" id="node1">
    <title>
-    node_d7131096636517534890
+    node_d3618317120508637847
    </title>
    <g cursor="pointer" id="a_node1" onclick="     window.open('', '_blank', 'width=800,height=200').document.body.innerHTML = `&lt;table border=&quot;1&quot; class=&quot;dataframe&quot;&gt;
   &lt;thead&gt;
@@ -82,20 +82,20 @@
     </text>
    </g>
   </g>
-  <!-- node_4829371401903691281 -->
+  <!-- node_d6171993780379676214 -->
   <g class="node" id="node7">
    <title>
-    node_4829371401903691281
+    node_d6171993780379676214
    </title>
    <polygon fill="lightgrey" points="184,-855 16,-855 16,-819 184,-819 184,-855" stroke="none"/>
    <text font-family="Helvetica,Arial,sans-serif" font-size="14.00" text-anchor="start" x="28" y="-832.8">
     remove_columns(df, ...)
    </text>
   </g>
-  <!-- node_d7131096636517534890&#45;&gt;node_4829371401903691281 -->
+  <!-- node_d3618317120508637847&#45;&gt;node_d6171993780379676214 -->
   <g class="edge" id="edge1">
    <title>
-    node_d7131096636517534890-&gt;node_4829371401903691281
+    node_d3618317120508637847-&gt;node_d6171993780379676214
    </title>
    <path d="M100,-905.57C100,-893.22 100,-878.52 100,-865.98" fill="none" stroke="black"/>
    <polygon fill="black" points="103.5,-866.29 100,-856.29 96.5,-866.29 103.5,-866.29" stroke="black"/>
@@ -103,10 +103,10 @@
     df
    </text>
   </g>
-  <!-- node_d4255783401215655203 -->
+  <!-- node_7011367725173836345 -->
   <g class="node" id="node2">
    <title>
-    node_d4255783401215655203
+    node_7011367725173836345
    </title>
    <g cursor="pointer" id="a_node2" onclick="     window.open('', '_blank', 'width=800,height=200').document.body.innerHTML = `&lt;table border=&quot;1&quot; class=&quot;dataframe&quot;&gt;
   &lt;thead&gt;
@@ -162,20 +162,20 @@
     </text>
    </g>
   </g>
-  <!-- node_d2345765122192788608 -->
+  <!-- node_1344136753564011683 -->
   <g class="node" id="node8">
    <title>
-    node_d2345765122192788608
+    node_1344136753564011683
    </title>
    <polygon fill="lightgrey" points="153,-677 47,-677 47,-641 153,-641 153,-677" stroke="none"/>
    <text font-family="Helvetica,Arial,sans-serif" font-size="14.00" text-anchor="start" x="59" y="-654.8">
     dropna(df, ...)
    </text>
   </g>
-  <!-- node_d4255783401215655203&#45;&gt;node_d2345765122192788608 -->
+  <!-- node_7011367725173836345&#45;&gt;node_1344136753564011683 -->
   <g class="edge" id="edge3">
    <title>
-    node_d4255783401215655203-&gt;node_d2345765122192788608
+    node_7011367725173836345-&gt;node_1344136753564011683
    </title>
    <path d="M100,-727.57C100,-715.22 100,-700.52 100,-687.98" fill="none" stroke="black"/>
    <polygon fill="black" points="103.5,-688.29 100,-678.29 96.5,-688.29 103.5,-688.29" stroke="black"/>
@@ -183,10 +183,10 @@
     df
    </text>
   </g>
-  <!-- node_8528920346317863010 -->
+  <!-- node_3294706075326554590 -->
   <g class="node" id="node3">
    <title>
-    node_8528920346317863010
+    node_3294706075326554590
    </title>
    <g cursor="pointer" id="a_node3" onclick="     window.open('', '_blank', 'width=800,height=200').document.body.innerHTML = `&lt;table border=&quot;1&quot; class=&quot;dataframe&quot;&gt;
   &lt;thead&gt;
@@ -236,20 +236,20 @@
     </text>
    </g>
   </g>
-  <!-- node_8560844432514168699 -->
+  <!-- node_d7451734627906011620 -->
   <g class="node" id="node9">
    <title>
-    node_8560844432514168699
+    node_d7451734627906011620
    </title>
    <polygon fill="lightgrey" points="181,-499 19,-499 19,-463 181,-463 181,-499" stroke="none"/>
    <text font-family="Helvetica,Arial,sans-serif" font-size="14.00" text-anchor="start" x="31" y="-476.8">
     rename_column(df, ...)
    </text>
   </g>
-  <!-- node_8528920346317863010&#45;&gt;node_8560844432514168699 -->
+  <!-- node_3294706075326554590&#45;&gt;node_d7451734627906011620 -->
   <g class="edge" id="edge5">
    <title>
-    node_8528920346317863010-&gt;node_8560844432514168699
+    node_3294706075326554590-&gt;node_d7451734627906011620
    </title>
    <path d="M100,-549.57C100,-537.22 100,-522.52 100,-509.98" fill="none" stroke="black"/>
    <polygon fill="black" points="103.5,-510.29 100,-500.29 96.5,-510.29 103.5,-510.29" stroke="black"/>
@@ -257,10 +257,10 @@
     df
    </text>
   </g>
-  <!-- node_6790959249252996631 -->
+  <!-- node_3179663510198539586 -->
   <g class="node" id="node4">
    <title>
-    node_6790959249252996631
+    node_3179663510198539586
    </title>
    <g cursor="pointer" id="a_node4" onclick="     window.open('', '_blank', 'width=800,height=200').document.body.innerHTML = `&lt;table border=&quot;1&quot; class=&quot;dataframe&quot;&gt;
   &lt;thead&gt;
@@ -310,20 +310,20 @@
     </text>
    </g>
   </g>
-  <!-- node_2853332864033817675 -->
+  <!-- node_d324063115905333955 -->
   <g class="node" id="node10">
    <title>
-    node_2853332864033817675
+    node_d324063115905333955
    </title>
    <polygon fill="lightgrey" points="181,-321 19,-321 19,-285 181,-285 181,-321" stroke="none"/>
    <text font-family="Helvetica,Arial,sans-serif" font-size="14.00" text-anchor="start" x="31" y="-298.8">
     rename_column(df, ...)
    </text>
   </g>
-  <!-- node_6790959249252996631&#45;&gt;node_2853332864033817675 -->
+  <!-- node_3179663510198539586&#45;&gt;node_d324063115905333955 -->
   <g class="edge" id="edge7">
    <title>
-    node_6790959249252996631-&gt;node_2853332864033817675
+    node_3179663510198539586-&gt;node_d324063115905333955
    </title>
    <path d="M100,-371.57C100,-359.22 100,-344.52 100,-331.98" fill="none" stroke="black"/>
    <polygon fill="black" points="103.5,-332.29 100,-322.29 96.5,-332.29 103.5,-332.29" stroke="black"/>
@@ -331,10 +331,10 @@
     df
    </text>
   </g>
-  <!-- node_d3775710241984557315 -->
+  <!-- node_8717303727106962463 -->
   <g class="node" id="node5">
    <title>
-    node_d3775710241984557315
+    node_8717303727106962463
    </title>
    <g cursor="pointer" id="a_node5" onclick="     window.open('', '_blank', 'width=800,height=200').document.body.innerHTML = `&lt;table border=&quot;1&quot; class=&quot;dataframe&quot;&gt;
   &lt;thead&gt;
@@ -384,20 +384,20 @@
     </text>
    </g>
   </g>
-  <!-- node_d1503196699111494589 -->
+  <!-- node_d5968725625554365508 -->
   <g class="node" id="node11">
    <title>
-    node_d1503196699111494589
+    node_d5968725625554365508
    </title>
    <polygon fill="lightgrey" points="169,-143 31,-143 31,-107 169,-107 169,-143" stroke="none"/>
    <text font-family="Helvetica,Arial,sans-serif" font-size="14.00" text-anchor="start" x="43" y="-120.8">
     add_column(df, ...)
    </text>
   </g>
-  <!-- node_d3775710241984557315&#45;&gt;node_d1503196699111494589 -->
+  <!-- node_8717303727106962463&#45;&gt;node_d5968725625554365508 -->
   <g class="edge" id="edge9">
    <title>
-    node_d3775710241984557315-&gt;node_d1503196699111494589
+    node_8717303727106962463-&gt;node_d5968725625554365508
    </title>
    <path d="M100,-193.57C100,-181.22 100,-166.52 100,-153.98" fill="none" stroke="black"/>
    <polygon fill="black" points="103.5,-154.29 100,-144.29 96.5,-154.29 103.5,-154.29" stroke="black"/>
@@ -405,10 +405,10 @@
     df
    </text>
   </g>
-  <!-- node_9124193206885370792 -->
+  <!-- node_7854405584706907504 -->
   <g class="node" id="node6">
    <title>
-    node_9124193206885370792
+    node_7854405584706907504
    </title>
    <g cursor="pointer" id="a_node6" onclick="     window.open('', '_blank', 'width=800,height=200').document.body.innerHTML = `&lt;table border=&quot;1&quot; class=&quot;dataframe&quot;&gt;
   &lt;thead&gt;
@@ -462,42 +462,42 @@
     </text>
    </g>
   </g>
-  <!-- node_4829371401903691281&#45;&gt;node_d4255783401215655203 -->
+  <!-- node_d6171993780379676214&#45;&gt;node_7011367725173836345 -->
   <g class="edge" id="edge2">
    <title>
-    node_4829371401903691281-&gt;node_d4255783401215655203
+    node_d6171993780379676214-&gt;node_7011367725173836345
    </title>
    <path d="M100,-819.03C100,-811.64 100,-802.64 100,-793.79" fill="none" stroke="black"/>
    <polygon fill="black" points="103.5,-793.9 100,-783.9 96.5,-793.9 103.5,-793.9" stroke="black"/>
   </g>
-  <!-- node_d2345765122192788608&#45;&gt;node_8528920346317863010 -->
+  <!-- node_1344136753564011683&#45;&gt;node_3294706075326554590 -->
   <g class="edge" id="edge4">
    <title>
-    node_d2345765122192788608-&gt;node_8528920346317863010
+    node_1344136753564011683-&gt;node_3294706075326554590
    </title>
    <path d="M100,-641.03C100,-633.64 100,-624.64 100,-615.79" fill="none" stroke="black"/>
    <polygon fill="black" points="103.5,-615.9 100,-605.9 96.5,-615.9 103.5,-615.9" stroke="black"/>
   </g>
-  <!-- node_8560844432514168699&#45;&gt;node_6790959249252996631 -->
+  <!-- node_d7451734627906011620&#45;&gt;node_3179663510198539586 -->
   <g class="edge" id="edge6">
    <title>
-    node_8560844432514168699-&gt;node_6790959249252996631
+    node_d7451734627906011620-&gt;node_3179663510198539586
    </title>
    <path d="M100,-463.03C100,-455.64 100,-446.64 100,-437.79" fill="none" stroke="black"/>
    <polygon fill="black" points="103.5,-437.9 100,-427.9 96.5,-437.9 103.5,-437.9" stroke="black"/>
   </g>
-  <!-- node_2853332864033817675&#45;&gt;node_d3775710241984557315 -->
+  <!-- node_d324063115905333955&#45;&gt;node_8717303727106962463 -->
   <g class="edge" id="edge8">
    <title>
-    node_2853332864033817675-&gt;node_d3775710241984557315
+    node_d324063115905333955-&gt;node_8717303727106962463
    </title>
    <path d="M100,-285.03C100,-277.64 100,-268.64 100,-259.79" fill="none" stroke="black"/>
    <polygon fill="black" points="103.5,-259.9 100,-249.9 96.5,-259.9 103.5,-259.9" stroke="black"/>
   </g>
-  <!-- node_d1503196699111494589&#45;&gt;node_9124193206885370792 -->
+  <!-- node_d5968725625554365508&#45;&gt;node_7854405584706907504 -->
   <g class="edge" id="edge10">
    <title>
-    node_d1503196699111494589-&gt;node_9124193206885370792
+    node_d5968725625554365508-&gt;node_7854405584706907504
    </title>
    <path d="M100,-107.03C100,-99.64 100,-90.64 100,-81.79" fill="none" stroke="black"/>
    <polygon fill="black" points="103.5,-81.9 100,-71.9 96.5,-81.9 103.5,-81.9" stroke="black"/>
