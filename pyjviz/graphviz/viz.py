@@ -1,9 +1,10 @@
-import ipdb
+#import ipdb
 # pyjviz module implements basic visualisation of pyjviz rdf log
 # there is no dependency of this code to other part of pyjanitor
 #
+import sys, os.path
 import rdflib
-from io import StringIO
+import io
 import graphviz
 
 from ..rdf import fstriplestore
@@ -122,8 +123,7 @@ def dump_subgraph(g, cc_uri, out_fd, popup_output):
 
 def dump_dot_code(g, vertical, show_objects, popup_output):
     # ipdb.set_trace()
-
-    out_fd = StringIO()
+    out_fd = io.StringIO()
 
     rankdir = "TB" if vertical else "LR"
 
@@ -333,14 +333,15 @@ def print_dot(vertical=False, show_objects=False):
     
 def save_dot(vertical=False, show_objects=False, popup_output=True):
     ts = fstriplestore.triple_store
-    if hasattr(ts, "output_fn") and ts.output_fn is not None:
-        ttl_output_fn = ts.output_fn
-        dot_output_fn = ttl_output_fn + ".dot"
-    else:
-        raise Exception("can't guess dot_output_fn")
+    pyjviz_output_dir = os.environ.get("PYJVIZ_OUTPUT_DIR", "~/.pyjviz")
+    pyjviz_output_dir = os.path.expanduser(pyjviz_output_dir)
+    if not os.path.exists(pyjviz_output_dir):
+        os.makedirs(pyjviz_output_dir)
+    ttl_output_fn = os.path.join(pyjviz_output_dir, os.path.basename(sys.argv[0]) + ".ttl")
+    dot_output_fn = ttl_output_fn + ".dot"
 
-    g = ts.get_graph()
     #ipdb.set_trace()
+    g = ts.get_graph(ttl_output_fn = ttl_output_fn)
     dot_code = dump_dot_code(
         g,
         vertical=vertical,
@@ -348,20 +349,15 @@ def save_dot(vertical=False, show_objects=False, popup_output=True):
         popup_output=popup_output,
     )
     
-    if 1:
-        with open(dot_output_fn, "w") as out_fd:
-            out_fd.write(dot_code)
+    with open(dot_output_fn, "w") as out_fd:
+        out_fd.write(dot_code)
             
     gvz = graphviz.Source(dot_code)
 
-    if 1:
-        output = gvz.pipe(engine="dot", format="svg").decode("ascii")
-        mod_output = replace_a_href_with_onclick(output)
-        with open(dot_output_fn + ".svg", "w") as out_fd:
-            out_fd.write(mod_output)        
-    else:
-        gvz.render(dot_output_fn, format="svg", engine="dot")
-
+    output = gvz.pipe(engine="dot", format="svg").decode("ascii")
+    mod_output = replace_a_href_with_onclick(output)
+    with open(dot_output_fn + ".svg", "w") as out_fd:
+        out_fd.write(mod_output)
 
 def show(vertical=False, show_objects=False):
     ts = fstriplestore.triple_store
@@ -372,4 +368,4 @@ def show(vertical=False, show_objects=False):
     )
     nb_utils.show_method_chain(dot_code)
     ts.clear()
-        
+
