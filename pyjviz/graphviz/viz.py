@@ -337,7 +337,7 @@ def save(vertical=False, show_objects=False, popup_output=True, svg_output_fn = 
         pyjviz_output_dir = os.path.expanduser(pyjviz_output_dir)
         if not os.path.exists(pyjviz_output_dir):
             os.makedirs(pyjviz_output_dir)
-        svg_output_fn = os.path.join(pyjviz_output_dir, os.path.basename(sys.argv[0]) + ".html")
+        svg_output_fn = os.path.join(pyjviz_output_dir, os.path.basename(sys.argv[0]) + ".svg")
 
     ttl_output_fn = svg_output_fn + ".ttl" if debug_output else None
     dot_output_fn = ttl_output_fn + ".dot" if debug_output else None
